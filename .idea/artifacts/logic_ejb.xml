@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-ejb" name="logic:ejb">
+    <output-path>$PROJECT_DIR$/out/artifacts/logic-ejb</output-path>
+    <root id="root">
+      <element id="module-output" name="logic" />
+      <element id="javaee-facet-resources" facet="logic/ejb/EJB" />
+      <element id="jpa-descriptors" facet="logic/jpa/JPA" />
+    </root>
+  </artifact>
+</component>

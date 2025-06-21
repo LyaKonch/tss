@@ -1,0 +1,16 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="faces:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/faces-war</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="faces" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="primefaces-15.0.5-jakarta" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="faces/web/Web" />
+    </root>
+  </artifact>
+</component>
