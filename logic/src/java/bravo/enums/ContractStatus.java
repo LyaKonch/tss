@@ -1,5 +1,11 @@
 package bravo.enums;
 
-public enum ContractStatus{
-    PREPARED,STARTED,TERMINATED,ARCHIVED;
+/**
+ * Represents the status of a contract.
+ */
+public enum ContractStatus {
+    PREPARED,
+    STARTED,
+    TERMINATED,
+    ARCHIVED
 }

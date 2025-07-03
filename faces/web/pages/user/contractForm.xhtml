@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition template="/WEB-INF/templates/page-layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:param name="pageHeadline" value="${msg.contractEditHeadline}" />
+
+    <ui:define name="content">
+        <!--        <f:metadata>-->
+        <!--            <f:viewParam name="uuid" />-->
+        <!--            <f:viewAction action="#{contractFormBean.prepareEdit(param['uuid'])}" />-->
+        <!--        </f:metadata>-->
+        <h:form id="contractForm">
+            <p:panel>
+                <p:messages id="messages" showDetail="true" closable="true">
+                    <p:autoUpdate />
+                </p:messages>
+
+                <p:panelGrid columns="2" styleClass="ui-fluid">
+                    <p:outputLabel for="name" value="${msg.contractNameLabel}" />
+                    <p:inputText id="name" value="#{contractFormBean.contract.name}" required="true" />
+
+                    <p:outputLabel for="startDate" value="${msg.contractStartDateLabel}" />
+                    <p:datePicker id="startDate" value="#{contractFormBean.contract.startDate}" required="true"
+                                  showIcon="true" pattern="yyyy-MM-dd" />
+
+                    <p:outputLabel for="endDate" value="${msg.contractEndDateLabel}" />
+                    <p:datePicker id="endDate" value="#{contractFormBean.contract.endDate}"
+                                  showIcon="true" pattern="yyyy-MM-dd" />
+
+                    <p:outputLabel for="frequency" value="${msg.contractFrequencyLabel}" />
+                    <p:selectOneMenu id="frequency" value="#{contractFormBean.contract.frequency}" required="true">
+                        <f:selectItem itemLabel="Select Frequency" itemValue="" />
+                        <f:selectItems value="#{contractFormBean.frequencies}" var="freq"
+                                       itemLabel="#{freq}" itemValue="#{freq}" />
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="hoursPerWeek" value="${msg.contractHoursPerWeekLabel}" />
+                    <p:inputNumber id="hoursPerWeek" value="#{contractFormBean.contract.hoursPerWeek}"
+                                   required="true" minValue="0" maxValue="168" decimalPlaces="1" />
+
+                    <p:outputLabel for="workingDaysPerWeek" value="${msg.contractWorkingDaysPerWeekLabel}" />
+                    <p:inputNumber id="workingDaysPerWeek" value="#{contractFormBean.contract.workingDaysPerWeek}"
+                                   required="true" minValue="1" maxValue="7" decimalPlaces="0" />
+
+                    <p:outputLabel for="vacationDaysPerYear" value="${msg.contractVacationDaysPerYearLabel}" />
+                    <p:inputNumber id="vacationDaysPerYear" value="#{contractFormBean.contract.vacationDaysPerYear}"
+                                   required="true" minValue="0" maxValue="365" decimalPlaces="0" />
+
+                    <p:outputLabel for="status" value="${msg.contractStatusLabel}" />
+                    <p:selectOneMenu id="status" value="#{contractFormBean.contract.status}" required="true">
+                        <f:selectItem itemLabel="Select Status" itemValue="" />
+                        <f:selectItems value="#{contractFormBean.statuses}" var="status"
+                                       itemLabel="#{status}" itemValue="#{status}" />
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="hoursDue" value="${msg.contractHoursDueLabel}" />
+                    <p:outputLabel id="hoursDue" value="#{contractFormBean.contract.hoursDue}" />
+
+                    <p:outputLabel for="vacationHours" value="${msg.contractVacationHoursLabel}" />
+                    <p:outputLabel id="vacationHours" value="#{contractFormBean.contract.vacationHours}" />
+                </p:panelGrid>
+
+                <p:divider />
+
+                <p:commandButton value="${msg.saveButtonLabel}"
+                                 action="#{contractFormBean.save}"
+                                 icon="pi pi-save"
+                                 update="messages" />
+                <span class="hspace" />
+                <p:button value="${msg.cancelButtonLabel}"
+                          outcome="contractView"
+                          icon="pi pi-times"
+                />
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
