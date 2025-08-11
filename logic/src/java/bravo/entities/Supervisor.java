@@ -1,4 +1,13 @@
 package bravo.entities;
 
-public class Supervisor {
+import jakarta.persistence.*;
+
+
+@Entity
+@Table(name = "supervisor")
+public class Supervisor extends Person {
+  
+ 
+  
+    
 }

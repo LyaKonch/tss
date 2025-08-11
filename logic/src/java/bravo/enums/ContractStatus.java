@@ -1,4 +1,5 @@
 package bravo.enums;
 
-public enum ContractStatus {
+public enum ContractStatus{
+    PREPARED,STARTED,TERMINATED,ARCHIVED;
 }
