@@ -38,27 +38,26 @@ public class Contract {
     @Positive
     private double hoursPerWeek;
 
-    // Personen-Beziehungen
-    @ManyToOne(optional = false)
+    // Genau 1 
+    @OneToOne(optional = false)//korrigiert
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)//Korrigiert
     @JoinColumn(name = "supervisor_id")
     private Supervisor supervisor;
 
-    // Secretaries: mindestens 1
+    // mindestens 1
     @NotNull
     @Size(min = 1, message = "Mindestens eine Secretary erforderlich")
-    @ManyToMany
+    @OneToMany//KOrrigiert
     @JoinTable(name = "contract_secretary",
             joinColumns = @JoinColumn(name = "contract_id"),
             inverseJoinColumns = @JoinColumn(name = "secretary_id"))
     private final List<Secretary> secretaries = new ArrayList<>();///ich weiss nicht ob richtig final ist
 
     // Assistants: 0..*
-    @NotNull
-    @ManyToMany
+    @OneToMany//korrigiert kein NotNull and onetomany?
     @JoinTable(name = "contract_assistant",
             joinColumns = @JoinColumn(name = "contract_id"),
             inverseJoinColumns = @JoinColumn(name = "assistant_id"))
@@ -68,17 +67,17 @@ public class Contract {
     private List<Timesheet> timesheets = new ArrayList<>();
 
     // ===== Fixwerte als nicht-persistente Getter =====
-    @Transient
+    //korrigiert kein transient 
     public int getWorkingDaysPerWeek() {
         return WORKINGDAYS;
     }
 
-    @Transient
+    //KOrrigiert kein transient
     public int getVacationDaysPerYear() {
         return VACATIONDAYS;
     }
 
-    // ===== Berechnete Felder ("/") =====
+    // Berechnet
     @Transient
     public double getVacationHours() {
         int months = getDurationInWholeMonths();

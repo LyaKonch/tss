@@ -4,10 +4,20 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "secretary")
-public class Secretary extends Person {
-  
+@DiscriminatorValue("Secretary")
+public class Secretary extends Role {
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "secretary_contract_id", nullable = false,unique=true)
+    private Contract contract;
 
-  
+    public Contract getContract() {
+        return contract;
+    }
+
+    public void setContract(Contract contract) {
+        this.contract = contract;
+    }
     
 }
+
+

@@ -1,9 +1,13 @@
 package bravo.entities;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
+import java.util.*;
 
-@MappedSuperclass
+//@MappedSuperclass
+@Entity
+@Table(name = "Person")
 public abstract class Person {
 
     @Id
@@ -18,10 +22,16 @@ public abstract class Person {
 
     @Email
     @NotBlank
-    private String emailAddress;   // <— richtig geschrieben
+    private String emailAddress;  
 
-    private LocalDate dateOfBirth; // optional
-    private boolean consent;       // optional
+    private LocalDate dateOfBirth; 
+    private boolean consent;  
+    
+    
+    //Beziehung zu Role
+   @OneToMany(mappedBy = "person", orphanRemoval = false)
+    private Set<Role> roles = new HashSet<>();
+   
 
    
 
@@ -43,6 +53,18 @@ public abstract class Person {
 
     public boolean isConsent() { return consent; }
     public void setConsent(boolean consent) { this.consent = consent; }
+    
 
-   
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+
+
 }
+
+

@@ -4,10 +4,18 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "supervisor")
-public class Supervisor extends Person {
-  
- 
-  
-    
+@DiscriminatorValue("Supervisor")
+public class Supervisor extends Role {
+@OneToOne(optional= false, fetch= FetchType.LAZY)
+@JoinColumn(name="supervisor_contract_id",unique=true,nullable=false)
+private Contract contract;
+
+    public Contract getContract() {
+        return contract;
+    }
+
+    public void setContract(Contract contract) {
+        this.contract = contract;
+    }
+
 }
