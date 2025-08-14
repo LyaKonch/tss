@@ -13,9 +13,9 @@ import java.util.List;
 @Table(name = "contract")
 public class Contract {
 
-    // Fixwerte
-    public static final int WORKINGDAYS = 5;
-    public static final int VACATIONDAYS = 20;
+    
+    public int WORKINGDAYSPERWEEK = 5;
+    public int VACATIONDAYSPERYEAR = 20;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,12 +69,12 @@ public class Contract {
     // ===== Fixwerte als nicht-persistente Getter =====
     //korrigiert kein transient 
     public int getWorkingDaysPerWeek() {
-        return WORKINGDAYS;
+        return WORKINGDAYSPERWEEK;
     }
 
     //KOrrigiert kein transient
     public int getVacationDaysPerYear() {
-        return VACATIONDAYS;
+        return VACATIONDAYSPERYEAR;
     }
 
     // Berechnet
@@ -83,7 +83,7 @@ public class Contract {
         int months = getDurationInWholeMonths();
         if (months <= 0 || hoursPerWeek <= 0) return 0.0;
         // Urlaubstage/Jahr * (Monate/12) * (Stunden/Woche / Arbeitstage/Woche)
-        return VACATIONDAYS * (months / 12.0) * (hoursPerWeek / WORKINGDAYS);
+        return VACATIONDAYSPERYEAR * (months / 12.0) * (hoursPerWeek / WORKINGDAYSPERWEEK);
     }
 
     @Transient
