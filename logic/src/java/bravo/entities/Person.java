@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.*;
 
-//@MappedSuperclass
 @Entity
 @Table(name = "Person")
 public abstract class Person {
@@ -27,32 +26,52 @@ public abstract class Person {
     private LocalDate dateOfBirth; 
     private boolean consent;  
     
-    
-    //Beziehung zu Role
+    //
    @OneToMany(mappedBy = "person", orphanRemoval = false)
     private Set<Role> roles = new HashSet<>();
-   
 
-   
+    //Getter&Setter
+    public Long getId() { 
+        return id; 
+    }
+    public void setId(Long id) { 
+        this.id = id; 
+    }
 
-    // --- Getter/Setter ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getFirstName() { 
+        return firstName; 
+    }
+    public void setFirstName(String firstName) { 
+        this.firstName = firstName; 
+    }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() { 
+        return lastName; 
+    }
+    public void setLastName(String lastName) { 
+        this.lastName = lastName; 
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getEmailAddress() { 
+        return emailAddress; 
+    }
+    public void setEmailAddress(String emailAddress) { 
+        this.emailAddress = emailAddress; 
+    }
 
-    public String getEmailAddress() { return emailAddress; }
-    public void setEmailAddress(String emailAddress) { this.emailAddress = emailAddress; }
+    public LocalDate getDateOfBirth() { 
+        return dateOfBirth; 
+    }
+    public void setDateOfBirth(LocalDate dateOfBirth) { 
+        this.dateOfBirth = dateOfBirth; 
+    }
 
-    public LocalDate getDateOfBirth() { return dateOfBirth; }
-    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-
-    public boolean isConsent() { return consent; }
-    public void setConsent(boolean consent) { this.consent = consent; }
+    public boolean isConsent() { 
+        return consent; 
+    }
+    public void setConsent(boolean consent) { 
+        this.consent = consent; 
+    }
     
 
     public Set<Role> getRoles() {

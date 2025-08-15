@@ -27,7 +27,6 @@ public class TimesheetEntry {
     @Column(length = 500)
     private String description;
 
-    // ===== berechnet ("/") =====
     @Transient
     public double getHours() {
         if (startTime == null || endTime == null) return 0.0;
@@ -35,24 +34,48 @@ public class TimesheetEntry {
         return Math.max(0, minutes) / 60.0;
     }
 
-    // ===== Getter/Setter =====
+    //Getter&Setter
     public Long getId() { return id; }
 
-    public Timesheet getTimesheet() { return timesheet; }
-    public void setTimesheet(Timesheet timesheet) { this.timesheet = timesheet; }
+    public Timesheet getTimesheet() { 
+        return timesheet; 
+    }
+    public void setTimesheet(Timesheet timesheet) { 
+        this.timesheet = timesheet; 
+    }
 
-    public LocalDate getEntryDate() { return entryDate; }
-    public void setEntryDate(LocalDate entryDate) { this.entryDate = entryDate; }
+    public LocalDate getEntryDate() { 
+        return entryDate; 
+    }
+    public void setEntryDate(LocalDate entryDate) { 
+        this.entryDate = entryDate; 
+    }
 
-    public LocalTime getStartTime() { return startTime; }
-    public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+    public LocalTime getStartTime() { 
+        return startTime; 
+    }
+    public void setStartTime(LocalTime startTime) { 
+        this.startTime = startTime; 
+    }
 
-    public LocalTime getEndTime() { return endTime; }
-    public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+    public LocalTime getEndTime() { 
+        return endTime; 
+    }
+    public void setEndTime(LocalTime endTime) { 
+        this.endTime = endTime; 
+    }
 
-    public ReportType getType() { return type; }
-    public void setType(ReportType type) { this.type = type; }
+    public ReportType getType() { 
+        return type; 
+    }
+    public void setType(ReportType type) { 
+        this.type = type; 
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getDescription() { 
+        return description; 
+    }
+    public void setDescription(String description) { 
+        this.description = description; 
+    }
 }

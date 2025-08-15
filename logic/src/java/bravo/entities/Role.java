@@ -9,19 +9,12 @@ import jakarta.persistence.*;
 public abstract class Role {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    //
+    
      @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;
  
-     //@ManyToOne(optional = false, fetch = FetchType.LAZY)
-//@JoinColumn(name = "contract_id", nullable = false)
-//private Contract contract;
-
-
-    // Get  Set
-
+    //Getter&Setter
     public Long getId() {
         return id;
     }
@@ -38,13 +31,6 @@ public abstract class Role {
         this.person = person;
     }
 
-    //public Contract getContract() {
-       // return contract;
-    //}
-
-    //public void setContract(Contract contract) {
-      //  this.contract = contract;
-    //}
     
 }
 
