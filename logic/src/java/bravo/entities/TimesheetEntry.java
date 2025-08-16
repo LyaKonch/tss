@@ -8,11 +8,15 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "timesheet_entry")
-public class TimesheetEntry {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@NamedQueries({
+    @NamedQuery(name = "TimesheetEntry.findByUuid",
+                query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"),
+    @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid",
+                query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid"),
+    @NamedQuery(name = "TimesheetEntry.findAll",
+                query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")
+})
+public class TimesheetEntry extends AbstractEntity {
 
     @ManyToOne(optional = false) @JoinColumn(name = "timesheet_id")
     private Timesheet timesheet;
@@ -33,10 +37,16 @@ public class TimesheetEntry {
         long minutes = Duration.between(startTime, endTime).toMinutes();
         return Math.max(0, minutes) / 60.0;
     }
-
+    
+    public TimesheetEntry(){
+        super();
+    }
+    
+    public TimesheetEntry(boolean NewEntity){
+        super(NewEntity);
+    }
     //Getter&Setter
-    public Long getId() { return id; }
-
+    
     public Timesheet getTimesheet() { 
         return timesheet; 
     }

@@ -7,11 +7,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "Person")
-public abstract class Person {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Person extends AbstractEntity { // abstract Person caused runtime issues with no-arg public constructor, it couldnt see it or whatever
 
     @NotBlank
     private String firstName;
@@ -31,13 +27,12 @@ public abstract class Person {
     private Set<Role> roles = new HashSet<>();
 
     //Getter&Setter
-    public Long getId() { 
-        return id; 
+    public Person() {
+        super();
     }
-    public void setId(Long id) { 
-        this.id = id; 
+    public Person(boolean NewEntity) {
+        super(NewEntity);
     }
-
     public String getFirstName() { 
         return firstName; 
     }

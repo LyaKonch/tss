@@ -11,15 +11,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "contract")
-public class Contract {
+public class Contract extends AbstractEntity{
 
-    
     private int WORKINGDAYSPERWEEK = 5;
     private int VACATIONDAYSPERYEAR = 20;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Enumerated(EnumType.STRING)
     private ContractStatus status = ContractStatus.PREPARED;
@@ -113,13 +108,15 @@ public class Contract {
     }
 
     // Getter&Setter
-    public Long getId() { 
-        return id; 
+    
+    public Contract() {
+        super();
     }
-    public void setId(Long id) { 
-        this.id = id; 
+    
+    public Contract(boolean newEntity) {
+        super(newEntity);
     }
-
+    
     public ContractStatus getStatus() { 
         return status; 
     }

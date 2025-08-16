@@ -11,11 +11,7 @@ import java.util.function.Predicate;
 
 @Entity
 @Table(name = "timesheet")
-public class Timesheet {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Timesheet extends AbstractEntity{
 
     @ManyToOne(optional = false) @JoinColumn(name = "contract_id")
     private Contract contract;
@@ -106,8 +102,14 @@ public class Timesheet {
     }
 
     //Getter&Setter
-    public Long getId() { return id; }
-
+    public Timesheet(){
+        super();
+    }
+    
+    public Timesheet(boolean NewEntity){
+        super(NewEntity);
+    }
+    
     public Contract getContract() { 
         return contract; 
     }
