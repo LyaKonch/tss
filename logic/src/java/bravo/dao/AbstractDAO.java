@@ -33,7 +33,7 @@ public class AbstractDAO<T extends AbstractEntity> {
         this.entityClass = entityClass;
     }
     
-     public T findByID(Long id){
+     public T findById(Long id){
         return em.find(entityClass, id);
     }
     
@@ -60,7 +60,7 @@ public class AbstractDAO<T extends AbstractEntity> {
     }
     
     public void deleteById(Long id) {
-        T entity = findByID(id);
+        T entity = findById(id);
         if (entity != null) {
             delete(entity);
         }

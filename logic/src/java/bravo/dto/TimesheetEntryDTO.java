@@ -18,7 +18,7 @@ public class TimesheetEntryDTO extends AbstractDTO {
     // but i think it's a good practice to use such template
     // should we add AbstactEntity for all entities like AbstractDTO?
     
-    private Long timesheetID; // shouldn't it be a timesheetID instead of ID? perhaps, since i use AbstractDTO where uuid is present already
+    private String timesheetUUID; // shouldn't it be a timesheetID instead of ID? perhaps, since i use AbstractDTO where uuid is present already
     
     private LocalDate entryDate;
     private LocalTime startTime;
@@ -31,9 +31,9 @@ public class TimesheetEntryDTO extends AbstractDTO {
     public TimesheetEntryDTO(){
     }
     
-    public TimesheetEntryDTO(String uuid, int jpaVersion,Long timesheetID, LocalDate entryDate, LocalTime startTime, LocalTime endTime, ReportType type, String description) {
+    public TimesheetEntryDTO(String uuid, int jpaVersion,String timesheetUUID, LocalDate entryDate, LocalTime startTime, LocalTime endTime, ReportType type, String description) {
         super(uuid, jpaVersion);
-        this.timesheetID = timesheetID;
+        this.timesheetUUID = timesheetUUID;
         this.entryDate = entryDate;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -42,7 +42,7 @@ public class TimesheetEntryDTO extends AbstractDTO {
     }
     
     //Getter&Setter
-    public Long gettimesheetID() { return timesheetID; }
+    public String gettimesheetUUID() { return timesheetUUID; }
 
     public LocalDate getEntryDate() { 
         return entryDate; 

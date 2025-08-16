@@ -1,6 +1,7 @@
 package bravo.entities;
 
 import bravo.enums.*;
+import bravo.logic.TimesheetLogic;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -79,8 +80,8 @@ public class Contract extends AbstractEntity{
     }
 
     @Transient
-    public double getHoursDue() {
-        return timesheets.stream().mapToDouble(Timesheet::getHoursDue).sum();
+    public double getHoursDue(TimesheetLogic timesheetLogic) {
+        return timesheets.stream().mapToDouble(timesheet->timesheetLogic.getHoursDue(timesheet)).sum();
     }
 
     //Hilfsmethode
