@@ -105,8 +105,8 @@ public class ContractLogicBean implements ContractLogic {
         bravo.entities.Contract entity = new bravo.entities.Contract();
 
         // Set the UUID only if it's not a new contract
-        if (dto.getUuid() != null) {
-            entity.setUuid(dto.getUuid());
+        if (dto.getId() != null) {
+            entity.setId(dto.getId());
             entity.setVersion(dto.getVersion());
         }
 
@@ -128,7 +128,7 @@ public class ContractLogicBean implements ContractLogic {
      * Converts a Contract entity to a Contract DTO.
      */
     private ContractDto convertToDto(Contract entity) {
-        ContractDto dto = new ContractDto(entity.getUuid(), entity.getVersion());
+        ContractDto dto = new ContractDto(entity.getId(), entity.getVersion());
 
         //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
         dto.setName(entity.getName());

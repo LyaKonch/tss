@@ -1,13 +1,16 @@
 package bravo.entities;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Table(name = "Person")
-public abstract class Person {
+@Table(name = "persons")
+public class Person {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,58 +24,67 @@ public abstract class Person {
 
     @Email
     @NotBlank
-    private String emailAddress;  
+    private String emailAddress;
 
-    private LocalDate dateOfBirth; 
-    private boolean consent;  
-    
-    //
-   @OneToMany(mappedBy = "person", orphanRemoval = false)
+    private LocalDate dateOfBirth;
+
+    private boolean consent;
+
+    @OneToMany(mappedBy = "person", orphanRemoval = false)
     private Set<Role> roles = new HashSet<>();
 
+    public Person() {
+    }
+
     //Getter&Setter
-    public Long getId() { 
-        return id; 
-    }
-    public void setId(Long id) { 
-        this.id = id; 
+    public Long getId() {
+        return id;
     }
 
-    public String getFirstName() { 
-        return firstName; 
-    }
-    public void setFirstName(String firstName) { 
-        this.firstName = firstName; 
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getLastName() { 
-        return lastName; 
-    }
-    public void setLastName(String lastName) { 
-        this.lastName = lastName; 
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getEmailAddress() { 
-        return emailAddress; 
-    }
-    public void setEmailAddress(String emailAddress) { 
-        this.emailAddress = emailAddress; 
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public LocalDate getDateOfBirth() { 
-        return dateOfBirth; 
-    }
-    public void setDateOfBirth(LocalDate dateOfBirth) { 
-        this.dateOfBirth = dateOfBirth; 
+    public String getLastName() {
+        return lastName;
     }
 
-    public boolean isConsent() { 
-        return consent; 
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
-    public void setConsent(boolean consent) { 
-        this.consent = consent; 
+
+    public String getEmailAddress() {
+        return emailAddress;
     }
-    
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public boolean isConsent() {
+        return consent;
+    }
+
+    public void setConsent(boolean consent) {
+        this.consent = consent;
+    }
+
 
     public Set<Role> getRoles() {
         return roles;
@@ -81,7 +93,6 @@ public abstract class Person {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
-
 
 
 }

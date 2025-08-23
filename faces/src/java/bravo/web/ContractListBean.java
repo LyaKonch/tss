@@ -31,6 +31,7 @@ public class ContractListBean implements Serializable {
     private ContractLogic contractLogic;
 
     private String searchText;
+
     private List<ContractDto> contractList;
 
     /**
@@ -94,8 +95,8 @@ public class ContractListBean implements Serializable {
             // Create a few sample contracts
             ContractDto contract1 = new ContractDto();
             contract1.setName("Sample Contract 1");
-            contract1.setStartDate(java.time.LocalDate.now());
-            contract1.setEndDate(java.time.LocalDate.now().plusMonths(6));
+            contract1.setStartDate(java.time.LocalDate.parse("2025-01-01"));
+            contract1.setEndDate(java.time.LocalDate.parse("2025-01-31").plusMonths(6));
             contract1.setFrequency(bravo.enums.TimesheetFrequency.WEEKLY);
             contract1.setHoursPerWeek(40.0);
             contract1.setWorkingDaysPerWeek(5);
@@ -105,8 +106,8 @@ public class ContractListBean implements Serializable {
 
             ContractDto contract2 = new ContractDto();
             contract2.setName("Sample Contract 2");
-            contract2.setStartDate(java.time.LocalDate.now().minusMonths(1));
-            contract2.setEndDate(java.time.LocalDate.now().plusMonths(12));
+            contract2.setStartDate(java.time.LocalDate.parse("2025-01-01").minusMonths(1));
+            contract2.setEndDate(java.time.LocalDate.parse("2025-01-31").plusMonths(12));
             contract2.setFrequency(bravo.enums.TimesheetFrequency.MONTHLY);
             contract2.setHoursPerWeek(35.0);
             contract2.setWorkingDaysPerWeek(5);
@@ -116,8 +117,8 @@ public class ContractListBean implements Serializable {
 
             ContractDto contract3 = new ContractDto();
             contract3.setName("Sample Contract 3");
-            contract3.setStartDate(java.time.LocalDate.now().minusMonths(3));
-            contract3.setEndDate(java.time.LocalDate.now().plusMonths(3));
+            contract3.setStartDate(java.time.LocalDate.parse("2025-01-01").minusMonths(3));
+            contract3.setEndDate(java.time.LocalDate.parse("2025-01-31").plusMonths(3));
             contract3.setFrequency(TimesheetFrequency.WEEKLY);
             contract3.setHoursPerWeek(20.0);
             contract3.setWorkingDaysPerWeek(3);

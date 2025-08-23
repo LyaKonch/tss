@@ -16,13 +16,21 @@ public class ContractDto extends AbstractDto {
     private static final long serialVersionUID = 1L;
 
     private ContractStatus status;
+
     private String name;
+
     private LocalDate startDate;
+
     private LocalDate endDate;
+
     private TimesheetFrequency frequency;
+
     private LocalDate terminationDate;
+
     private double hoursPerWeek;
+
     private int workingDaysPerWeek;
+
     private int vacationDaysPerYear;
 
     /**
@@ -33,13 +41,13 @@ public class ContractDto extends AbstractDto {
     }
 
     /**
-     * Constructor with UUID and JPA version.
+     * Constructor with ID and JPA version.
      *
-     * @param uuid    the unique identifier
+     * @param id      the unique identifier
      * @param version the JPA version
      */
-    public ContractDto(String uuid, int version) {
-        super(uuid, version);
+    public ContractDto(Long id, int version) {
+        super(id, version);
     }
 
 

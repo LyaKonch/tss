@@ -15,7 +15,7 @@ import java.util.Objects;
  * 5. Protect sensitive information by exposing only what's necessary
  * <p>
  * This AbstractDTO provides common functionality for all DTOs:
- * - Unique identifier (uuid) for entity tracking
+ * - Unique identifier (id) for entity tracking
  * - JPA version for optimistic locking
  * - Serialization support for network transfer
  * - Proper equals and hashCode implementations for collections
@@ -25,14 +25,15 @@ public abstract class AbstractDto implements Serializable {
     @Serial
     private static final long serialVersionUID = 8473915468192745681L;
 
-    private String uuid;
+    private Long id;
+
     private int version;
 
     protected AbstractDto() {
     }
 
-    protected AbstractDto(String uuid, int version) {
-        this.uuid = uuid;
+    protected AbstractDto(Long id, int version) {
+        this.id = id;
         this.version = version;
     }
 
@@ -48,49 +49,49 @@ public abstract class AbstractDto implements Serializable {
     /**
      * Returns the unique identifier of this DTO.
      *
-     * @return the UUID as a string
+     * @return the ID as a string
      */
-    public String getUuid() {
-        return uuid;
+    public Long getId() {
+        return id;
     }
 
     /**
      * Determines if this DTO represents a new entity that hasn't been persisted yet.
      *
-     * @return true if this is a new entity (uuid is null), false otherwise
+     * @return true if this is a new entity (id is null), false otherwise
      */
     public boolean isNew() {
-        return uuid == null;
+        return id == null;
     }
 
     /**
-     * Generates a hash code for this DTO based on its UUID.
+     * Generates a hash code for this DTO based on its ID.
      *
      * @return the hash code
-     * @throws IllegalStateException if the UUID is not set
+     * @throws IllegalStateException if the ID is not set
      */
     @Override
     public int hashCode() {
-        if (uuid == null) {
-            throw new IllegalStateException("uuid not set");
+        if (id == null) {
+            throw new IllegalStateException("id not set");
         }
         int hash = 7;
-        hash = 31 * hash + Objects.hashCode(this.uuid);
+        hash = 31 * hash + Objects.hashCode(this.id);
         return hash;
     }
 
     /**
      * Compares this DTO to another object for equality.
-     * Two DTOs are considered equal if they have the same UUID.
+     * Two DTOs are considered equal if they have the same ID.
      *
      * @param obj the object to compare with
      * @return true if the objects are equal, false otherwise
-     * @throws IllegalStateException if the UUID is not set
+     * @throws IllegalStateException if the ID is not set
      */
     @Override
     public boolean equals(Object obj) {
-        if (uuid == null) {
-            throw new IllegalStateException("uuid not set");
+        if (id == null) {
+            throw new IllegalStateException("id not set");
         }
         if (this == obj) {
             return true;
@@ -102,6 +103,6 @@ public abstract class AbstractDto implements Serializable {
             return false;
         }
         final AbstractDto other = (AbstractDto) obj;
-        return Objects.equals(this.uuid, other.uuid);
+        return Objects.equals(this.id, other.id);
     }
 }
