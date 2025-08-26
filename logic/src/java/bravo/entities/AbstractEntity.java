@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package bravo.entities;
 
 import jakarta.persistence.Column;
@@ -15,18 +11,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- *
- * @author Женіч
- */
+
 @MappedSuperclass
 public class AbstractEntity implements Serializable  {
-    // likewise AbstractDTO
-    // it's not really necessary, it provides integrity during tranfer between beans or for remote interfaces
-    // basicaly it abstracts id field for every entity
-    // it's up to us whether to implement this or not
     
-    // i add this only to root classes that have its own table and are sort of independant requiring own unique identifier 
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

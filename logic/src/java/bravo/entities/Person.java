@@ -7,7 +7,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "Person")
-public class Person extends AbstractEntity { // abstract Person caused runtime issues with no-arg public constructor, it couldnt see it or whatever
+public class Person extends AbstractEntity {
 
     @NotBlank
     private String firstName;
@@ -22,7 +22,6 @@ public class Person extends AbstractEntity { // abstract Person caused runtime i
     private LocalDate dateOfBirth; 
     private boolean consent;  
     
-    //
    @OneToMany(mappedBy = "person", orphanRemoval = false)
     private Set<Role> roles = new HashSet<>();
 

@@ -1,24 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package bravo.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import bravo.enums.ReportType;
 import jakarta.xml.bind.annotation.XmlRootElement;
-/**
- *
- * @author Женіч
- */
+
 @XmlRootElement
 public class TimesheetEntryDTO extends AbstractDTO {
-    // I basically copied AbstractDTO from Contacts example
-    // but i think it's a good practice to use such template
-    // should we add AbstactEntity for all entities like AbstractDTO?
     
-    private String timesheetUUID; // shouldn't it be a timesheetID instead of ID? perhaps, since i use AbstractDTO where uuid is present already
+    private String timesheetUUID; 
     
     private LocalDate entryDate;
     private LocalTime startTime;
