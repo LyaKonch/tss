@@ -7,11 +7,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "Person")
-public abstract class Person {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Person extends AbstractEntity {
 
     @NotBlank
     private String firstName;
@@ -26,18 +22,16 @@ public abstract class Person {
     private LocalDate dateOfBirth; 
     private boolean consent;  
     
-    //
    @OneToMany(mappedBy = "person", orphanRemoval = false)
     private Set<Role> roles = new HashSet<>();
 
     //Getter&Setter
-    public Long getId() { 
-        return id; 
+    public Person() {
+        super();
     }
-    public void setId(Long id) { 
-        this.id = id; 
+    public Person(boolean NewEntity) {
+        super(NewEntity);
     }
-
     public String getFirstName() { 
         return firstName; 
     }

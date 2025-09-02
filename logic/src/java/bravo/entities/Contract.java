@@ -1,6 +1,7 @@
 package bravo.entities;
 
 import bravo.enums.*;
+import bravo.logic.TimesheetLogic;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -11,15 +12,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "contract")
-public class Contract {
+public class Contract extends AbstractEntity{
 
-    
     private int WORKINGDAYSPERWEEK = 5;
     private int VACATIONDAYSPERYEAR = 20;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Enumerated(EnumType.STRING)
     private ContractStatus status = ContractStatus.PREPARED;
@@ -84,8 +80,8 @@ public class Contract {
     }
 
     @Transient
-    public double getHoursDue() {
-        return timesheets.stream().mapToDouble(Timesheet::getHoursDue).sum();
+    public double getHoursDue(TimesheetLogic timesheetLogic) {
+        return timesheets.stream().mapToDouble(timesheet->timesheetLogic.getHoursDue(timesheet)).sum();
     }
 
     //Hilfsmethode
@@ -113,13 +109,15 @@ public class Contract {
     }
 
     // Getter&Setter
-    public Long getId() { 
-        return id; 
+    
+    public Contract() {
+        super();
     }
-    public void setId(Long id) { 
-        this.id = id; 
+    
+    public Contract(boolean newEntity) {
+        super(newEntity);
     }
-
+    
     public ContractStatus getStatus() { 
         return status; 
     }
