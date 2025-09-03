@@ -9,6 +9,18 @@ import java.util.List;
 
 @Entity
 @Table(name = "timesheet")
+@NamedQueries({
+    @NamedQuery(name = "Timesheet.findByUuid",
+                query = "SELECT e FROM Timesheet e WHERE e.uuid = :uuid"),
+    @NamedQuery(name = "Timesheet.findAll",
+                query = "SELECT e FROM Timesheet e"),
+    @NamedQuery(name = "Timesheet.findByContract",
+                query = "SELECT e FROM Timesheet e WHERE e.contract = :contract"),
+    @NamedQuery(name = "Timesheet.findByStatus",
+                query = "SELECT e FROM Timesheet e WHERE e.status = :status"),
+    @NamedQuery(name = "Timesheet.findBetweenDates",
+                query = "SELECT e FROM Timesheet e WHERE e.startDate >= :startDate AND e.endDate <= :endDate")
+})
 public class Timesheet extends AbstractEntity{
 
     @ManyToOne(optional = false) @JoinColumn(name = "contract_id")

@@ -7,6 +7,18 @@ import java.util.*;
 
 @Entity
 @Table(name = "Person")
+@NamedQueries({
+    @NamedQuery(name = "Person.findByUuid",
+                query = "SELECT e FROM Person e WHERE e.uuid = :uuid"),
+    @NamedQuery(name = "Timesheet.findAll",
+                query = "SELECT e FROM Person e"),
+    @NamedQuery(name = "Person.findByEmail",
+                query = "SELECT e FROM Person e WHERE e.emailAddress = :emailAddress"),
+    @NamedQuery(name = "Person.findByFullName",
+                query = "SELECT e FROM Person e WHERE e.firstName = :firstName AND e.lastName = :lastName"),
+    @NamedQuery(name = "Person.findByRoleType",
+                query = "SELECT e FROM Person e JOIN e.roles r WHERE TYPE(r) = :roleType")
+})
 public class Person extends AbstractEntity {
 
     @NotBlank
