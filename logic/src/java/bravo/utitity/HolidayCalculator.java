@@ -14,7 +14,7 @@ public class HolidayCalculator {
         this.holidayChecker = holidayChecker;
     }
     
-    @RolesAllowed("Employee")
+    //@RolesAllowed("Employee")
     public int countWorkingDays(LocalDate start, LocalDate end) {
         int count = 0;
         for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
