@@ -6,9 +6,14 @@ import bravo.dao.TimesheetEntryDAO;
 import bravo.dto.TimesheetEntryDTO;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
+import bravo.enums.FederalState;
+
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
+
 import bravo.enums.TimesheetStatus;
 import bravo.logic.TimesheetLogic;
-import bravo.utitity.HolidayCalculator;
+import bravo.utitity.PublicHolidayService;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import java.time.DayOfWeek;
@@ -17,24 +22,55 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
+
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
-    
+
     //@EJB
     //private PersonDAO personDAO;
     
     @EJB
     private TimesheetEntryDAO entryDAO;
-    
+
     @EJB
     private TimesheetDAO timesheetDAO;
     
-    private final HolidayCalculator holidayCalculator = new HolidayCalculator(HolidayCalculator::isGermanHoliday);
-    
-    public void createNewEntry(TimesheetEntryDTO entryDto){
+    // state should be chosen by user.
+    FederalState state = RHINELAND_PALATINATE;
+
+    @EJB
+    private PublicHolidayService holidayChecker;
+
+    public int countWorkingDays(LocalDate start, LocalDate end) {
+        int count = 0;
+        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
+            DayOfWeek w = dat.getDayOfWeek();
+            if (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end) {
+        if (holidayChecker == null) {
+            return 0;
+        }
+        int count = 0;
+        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
+            DayOfWeek w = dat.getDayOfWeek();
+            boolean workday = (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY);
+            if (workday && holidayChecker.isHoliday(dat, state)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUUID(entryDto.getUuid());
-        if(timesheet==null){
-            throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid()+ "is not found");
+        if (timesheet == null) {
+            throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid() + "is not found");
         }
         // we need timesheetDAO to link entry to timesheet
         TimesheetEntry newEntry = new TimesheetEntry(true);// true means new object, it's supposed to generate new UUID for new objects;
@@ -44,28 +80,36 @@ public class TimesheetLogicBean implements TimesheetLogic {
         newEntry.setType(entryDto.getType());
         newEntry.setDescription(entryDto.getDescription());
         addEntry(timesheet, newEntry);
-        
+
     }
-    
+
     public boolean isSignedByEmployee(Timesheet timesheet) {
         return timesheet.getSignedByEmployee() != null;
     }
-    
+
     @Override
-    public void addEntry(Timesheet timesheet, TimesheetEntry e){
+    public void addEntry(Timesheet timesheet, TimesheetEntry e) {
         requireEditable(timesheet);
-        if (e != null) { e.setTimesheet(timesheet); timesheet.getEntries().add(e); }
+        if (e != null) {
+            e.setTimesheet(timesheet);
+            timesheet.getEntries().add(e);
+        }
         entryDAO.save(e);
         timesheetDAO.save(timesheet);
     }
-    
+
     @Override
-    public void removeEntry(Timesheet timesheet, TimesheetEntry e){
+    public void removeEntry(Timesheet timesheet, TimesheetEntry e) {
         requireEditable(timesheet);
-        if (e != null) { timesheet.getEntries().remove(e); e.setTimesheet(null); }
+        if (e != null) {
+            timesheet.getEntries().remove(e);
+            e.setTimesheet(null);
+        }
         entryDAO.save(e);
         timesheetDAO.save(timesheet);
-    };
+    }
+
+    ;
     
     @Override
     public void signByEmployee(Timesheet timesheet, LocalDate date) {
@@ -74,7 +118,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
         timesheet.setStatus(TimesheetStatus.SIGNED_BY_EMPLOYEE);
         timesheetDAO.save(timesheet);
     }
-    
+
     @Override
     public void revokeEmployeeSignature(Timesheet timesheet) {
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_EMPLOYEE);
@@ -98,21 +142,23 @@ public class TimesheetLogicBean implements TimesheetLogic {
         timesheet.setStatus(TimesheetStatus.ARCHIVED);
         timesheetDAO.save(timesheet);
     }
+
     @Override
     public double getHoursDue(Timesheet timesheet) {
-        if (timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) return 0.0;
-        int working = holidayCalculator.countWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
-        int holidays = holidayCalculator.countHolidaysOnWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
+        if (timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
+            return 0.0;
+        }
+        int working = countWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
+        int holidays = countHolidaysOnWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
         int effectiveDays = Math.max(0, working - holidays);
         return effectiveDays * (timesheet.getContract().getHoursPerWeek() / timesheet.getContract().getWorkingDaysPerWeek());
     }
-    
-    
+
     @Override
     public double getReportedHours(Timesheet timesheet) {
         return timesheet.getEntries().stream().mapToDouble(TimesheetEntry::getHours).sum();
     }
-    
+
     @Override
     public List<TimesheetEntry> getEntries(Timesheet timesheet) {
         return Collections.unmodifiableList(timesheet.getEntries());
@@ -130,20 +176,17 @@ public class TimesheetLogicBean implements TimesheetLogic {
         }
         timesheetDAO.save(timesheet);
     }
-    
-    
-    
-    private void requireStatus(Timesheet timesheet,TimesheetStatus expected) {
+
+    private void requireStatus(Timesheet timesheet, TimesheetStatus expected) {
         if (timesheet.getStatus() != expected) {
             throw new IllegalStateException("Aktion nur im Status " + expected + " erlaubt.");
         }
     }
-    
+
     private void requireEditable(Timesheet timesheet) {
         if (timesheet.getStatus() != TimesheetStatus.IN_PROGRESS) {
             throw new IllegalStateException("Einträge nur im Status IN_PROGRESS änderbar.");
         }
     }
 
-    
 }

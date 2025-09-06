@@ -4,6 +4,7 @@ import org.itsallcode.holidays.calculator.logic.variants.Holiday;
 import org.itsallcode.holidays.calculator.logic.parser.HolidaysFileParser;
 
 import bravo.enums.FederalState;
+import jakarta.ejb.Singleton;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+@Singleton
 public class PublicHolidayService {
 
     private static final Logger LOGGER = Logger.getLogger(PublicHolidayService.class.getName());
@@ -26,13 +28,13 @@ public class PublicHolidayService {
         try (InputStream deStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(GERMAN_HOLIDAYS_FILE)) {
             if (deStream != null) {
                 allHolidays.addAll(parser.parse(deStream));
+                cachedHolidays.put("de", allHolidays);
             } else {
                 LOGGER.severe("German holiday file not found: " + GERMAN_HOLIDAYS_FILE);
             }
         } catch (Exception e) {
             LOGGER.severe("Error loading German holiday configuration: " + e.getMessage());
         }
-        cachedHolidays.put("de", allHolidays);
     }
 
     private List<Holiday> getHolidaysForState(FederalState federalState) {
