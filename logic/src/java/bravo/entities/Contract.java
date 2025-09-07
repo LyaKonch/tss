@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "contracts")
+@Table(name = "contract")
 @NamedQueries({
         @NamedQuery(name = "Contract.findByName",
                 query = "SELECT c FROM Contract c WHERE c.name = :name"),

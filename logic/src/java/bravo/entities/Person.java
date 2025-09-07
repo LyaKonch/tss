@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "persons")
+@Table(name = "person")
 @NamedQueries({
         @NamedQuery(name = "Person.findByEmail",
                 query = "SELECT p FROM Person p WHERE p.emailAddress = :email"),

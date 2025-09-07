@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "timesheet_entries")
+@Table(name = "timesheet_entry")
 @NamedQueries({
         @NamedQuery(name = "TimesheetEntry.findByUuid",
                 query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"),

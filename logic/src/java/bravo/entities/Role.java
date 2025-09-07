@@ -3,7 +3,7 @@ package bravo.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "role")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "role_type")
 @NamedQueries({

@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Entity
-@Table(name = "timesheets")
+@Table(name = "timesheet")
 public class Timesheet extends AbstractEntity {
 
     @ManyToOne(optional = false)
