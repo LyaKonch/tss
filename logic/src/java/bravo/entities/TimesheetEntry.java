@@ -2,27 +2,31 @@ package bravo.entities;
 
 import bravo.enums.ReportType;
 import jakarta.persistence.*;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "timesheet_entry")
+@Table(name = "timesheet_entries")
 @NamedQueries({
-    @NamedQuery(name = "TimesheetEntry.findByUuid",
+        @NamedQuery(name = "TimesheetEntry.findByUuid",
                 query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"),
-    @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid",
+        @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid",
                 query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid"),
-    @NamedQuery(name = "TimesheetEntry.findAll",
+        @NamedQuery(name = "TimesheetEntry.findAll",
                 query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")
 })
 public class TimesheetEntry extends AbstractEntity {
 
-    @ManyToOne(optional = false) @JoinColumn(name = "timesheet_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "timesheet_id")
     private Timesheet timesheet;
 
     private LocalDate entryDate;
+
     private LocalTime startTime;
+
     private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
@@ -37,55 +41,61 @@ public class TimesheetEntry extends AbstractEntity {
         long minutes = Duration.between(startTime, endTime).toMinutes();
         return Math.max(0, minutes) / 60.0;
     }
-    
-    public TimesheetEntry(){
+
+    public TimesheetEntry() {
         super();
     }
-    
-    public TimesheetEntry(boolean NewEntity){
+
+    public TimesheetEntry(boolean NewEntity) {
         super(NewEntity);
     }
     //Getter&Setter
-    
-    public Timesheet getTimesheet() { 
-        return timesheet; 
-    }
-    public void setTimesheet(Timesheet timesheet) { 
-        this.timesheet = timesheet; 
+
+    public Timesheet getTimesheet() {
+        return timesheet;
     }
 
-    public LocalDate getEntryDate() { 
-        return entryDate; 
-    }
-    public void setEntryDate(LocalDate entryDate) { 
-        this.entryDate = entryDate; 
+    public void setTimesheet(Timesheet timesheet) {
+        this.timesheet = timesheet;
     }
 
-    public LocalTime getStartTime() { 
-        return startTime; 
-    }
-    public void setStartTime(LocalTime startTime) { 
-        this.startTime = startTime; 
+    public LocalDate getEntryDate() {
+        return entryDate;
     }
 
-    public LocalTime getEndTime() { 
-        return endTime; 
-    }
-    public void setEndTime(LocalTime endTime) { 
-        this.endTime = endTime; 
+    public void setEntryDate(LocalDate entryDate) {
+        this.entryDate = entryDate;
     }
 
-    public ReportType getType() { 
-        return type; 
-    }
-    public void setType(ReportType type) { 
-        this.type = type; 
+    public LocalTime getStartTime() {
+        return startTime;
     }
 
-    public String getDescription() { 
-        return description; 
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
     }
-    public void setDescription(String description) { 
-        this.description = description; 
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public ReportType getType() {
+        return type;
+    }
+
+    public void setType(ReportType type) {
+        this.type = type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
