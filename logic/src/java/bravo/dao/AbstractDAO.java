@@ -34,12 +34,13 @@ public class AbstractDAO<T extends AbstractEntity> {
                     .getSingleResult();
     }
     
-    public void save(T entry) { 
+    public T save(T entry) { 
         if (entry.getId() == null) { 
             em.persist(entry);
         } else { 
             em.merge(entry);
         }
+        return entry;
     }
     
     public List<T> findAll(){

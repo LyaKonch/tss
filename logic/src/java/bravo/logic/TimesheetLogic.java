@@ -1,5 +1,6 @@
 package bravo.logic;
 
+import bravo.entities.Contract;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
 import java.time.LocalDate;
@@ -26,4 +27,14 @@ public interface TimesheetLogic {
     void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries);
 
     List<TimesheetEntry> getEntries(Timesheet timesheet);
+
+    int countHolidaysOnWorkingDays(LocalDate start, LocalDate end);
+
+    int countWorkingDays(LocalDate start, LocalDate end);
+    
+    public void createTimesheetsForContract(Contract contract);
+    
+    public void archiveTimesheetsForContract(Contract contract);
+    
+    public void deleteTimesheetsInProgressForContract(Contract contract);
 }

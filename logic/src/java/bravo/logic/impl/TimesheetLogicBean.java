@@ -4,11 +4,13 @@ package bravo.logic.impl;
 import bravo.dao.TimesheetDAO;
 import bravo.dao.TimesheetEntryDAO;
 import bravo.dto.TimesheetEntryDTO;
+import bravo.entities.Contract;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
 import bravo.enums.FederalState;
 
 import static bravo.enums.FederalState.RHINELAND_PALATINATE;
+import bravo.enums.TimesheetFrequency;
 
 import bravo.enums.TimesheetStatus;
 import bravo.logic.TimesheetLogic;
@@ -22,25 +24,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
 
     //@EJB
     //private PersonDAO personDAO;
-    
     @EJB
     private TimesheetEntryDAO entryDAO;
 
     @EJB
     private TimesheetDAO timesheetDAO;
-    
+
     // state should be chosen by user.
     FederalState state = RHINELAND_PALATINATE;
 
     @EJB
     private PublicHolidayService holidayChecker;
 
+    @Override
     public int countWorkingDays(LocalDate start, LocalDate end) {
         int count = 0;
         for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
@@ -52,6 +53,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
         return count;
     }
 
+    @Override
     public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end) {
         if (holidayChecker == null) {
             return 0;
@@ -189,4 +191,68 @@ public class TimesheetLogicBean implements TimesheetLogic {
         }
     }
 
+    public void archiveTimesheetsForContract(Contract contract) {
+        List<Timesheet> timesheets = timesheetDAO.findByContract(contract);
+        for (Timesheet ts : timesheets) {
+            archive(ts);
+        }
+    }
+    
+    private void deleteTimesheet(Timesheet timesheet){
+        timesheetDAO.delete(timesheet);
+    }
+    
+    public void deleteTimesheetsInProgressForContract(Contract contract) {
+        List<Timesheet> timesheets = timesheetDAO.findByContract(contract);
+        for (Timesheet ts : timesheets) {
+            requireStatus(ts, TimesheetStatus.IN_PROGRESS);
+            deleteTimesheet(ts);
+        }
+    }
+
+    public void createTimesheetsForContract(Contract contract) {
+        if (contract.getFrequency() == TimesheetFrequency.MONTHLY) {
+            createMonthlyTimesheets(contract);
+        } else if (contract.getFrequency() == TimesheetFrequency.WEEKLY) {
+            createWeeklyTimesheets(contract);
+        }
+    }
+    
+    private void createMonthlyTimesheets(Contract contract) {
+        LocalDate currentPeriodStart = contract.getStartDate();
+        while (!currentPeriodStart.isAfter(contract.getEndDate())) {
+            LocalDate currentPeriodEnd = currentPeriodStart.withDayOfMonth(currentPeriodStart.lengthOfMonth());
+            if (currentPeriodEnd.isAfter(contract.getEndDate())) {
+                currentPeriodEnd = contract.getEndDate();
+            }
+
+            Timesheet timesheet = new Timesheet();
+            timesheet.setContract(contract);
+            timesheet.setStartDate(currentPeriodStart);
+            timesheet.setEndDate(currentPeriodEnd);
+            timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
+            timesheetDAO.save(timesheet);
+
+            currentPeriodStart = currentPeriodStart.plusMonths(1).withDayOfMonth(1);
+        }
+    }
+
+    private void createWeeklyTimesheets(Contract contract) {
+        LocalDate currentPeriodStart = contract.getStartDate();
+        while (!currentPeriodStart.isAfter(contract.getEndDate())) {
+            LocalDate currentPeriodEnd = currentPeriodStart.with(DayOfWeek.SUNDAY);
+            if (currentPeriodEnd.isAfter(contract.getEndDate())) {
+                currentPeriodEnd = contract.getEndDate();
+            }
+            
+            Timesheet timesheet = new Timesheet();
+            timesheet.setContract(contract);
+            timesheet.setStartDate(currentPeriodStart);
+            timesheet.setEndDate(currentPeriodEnd);
+            timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
+            timesheetDAO.save(timesheet);
+
+            currentPeriodStart = currentPeriodEnd.plusDays(1);
+        }
+    }
 }

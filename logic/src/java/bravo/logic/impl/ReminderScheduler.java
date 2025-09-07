@@ -1,8 +1,10 @@
 package bravo.logic.impl;
 
+import bravo.dao.ContractDAO;
 import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.entities.Assistant;
+import bravo.entities.Contract;
 import bravo.entities.Person;
 import bravo.entities.Secretary;
 import bravo.entities.Timesheet;
@@ -13,7 +15,9 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +39,9 @@ import java.util.stream.Collectors;
 public class ReminderScheduler {
 
     private static final Logger LOGGER = Logger.getLogger(ReminderScheduler.class);
+
+    @EJB
+    private ContractDAO contractDAO;
 
     @EJB
     private TimesheetDAO timesheetDAO;
@@ -134,5 +141,34 @@ public class ReminderScheduler {
                 emailService.sendEmail(recipientEmail, subject, fullBody);
             }
         }
+    }
+
+    @Schedule(hour = "2", minute = "0", persistent = false)
+    @Transactional
+    public void cleanupOldArchivedData() {
+        System.out.println("ReminderScheduler: Checking for timesheets archived for more thant two years...");
+
+        LocalDate twoYearsAgo = LocalDate.now().minus(2, ChronoUnit.YEARS);
+
+        List<Timesheet> timesheetsToDelete = timesheetDAO.findArchivedBefore(twoYearsAgo);
+        
+        System.out.println("Deleting of  " + timesheetsToDelete.size() + " stored for more than two years.");
+        for (Timesheet timesheet : timesheetsToDelete) {
+            timesheetDAO.delete(timesheet);
+        }
+        
+        List<Contract> allContracts = contractDAO.getAllContracts();
+        
+        for (Contract contract : allContracts) {
+            List<Timesheet> remainingTimesheets = timesheetDAO.findByContract(contract);
+            
+            // if contract doesn't have any timesheets, it gets deleted.
+            if (remainingTimesheets.isEmpty()) {
+                System.out.println("Deleting contract with UUID: " + contract.getUuid() + ", since there is no more timesheets related to it.");
+                contractDAO.delete(contract);
+            }
+        }
+        
+        System.out.println("Finishing deleting task.");
     }
 }
