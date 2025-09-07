@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class Employee extends Role {
 
     @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_contract_id", unique = true)
+    @JoinColumn(name = "contract_id", nullable = false, unique = true)
     private Contract contract;
 
     public Contract getContract() {

@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 public class Secretary extends Role {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "secretary_contract_id")
+    @JoinColumn(name = "contract_id", nullable = false)
     private Contract contract;
 
     public Contract getContract() {

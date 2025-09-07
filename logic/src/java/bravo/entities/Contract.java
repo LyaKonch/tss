@@ -25,10 +25,7 @@ import java.util.List;
 public class Contract extends AbstractEntity {
 
     // Assistants 0..*
-    @OneToMany
-    @JoinTable(name = "contract_assistant",
-            joinColumns = @JoinColumn(name = "contract_id"),
-            inverseJoinColumns = @JoinColumn(name = "assistant_id"))
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.PERSIST)
     private List<Assistant> assistants = new ArrayList<>();
 
     private int WORKINGDAYSPERWEEK = 5;
@@ -54,21 +51,16 @@ public class Contract extends AbstractEntity {
     private Double hoursPerWeek;
 
     // Genau 1
-    @OneToOne(optional = false)
-    @JoinColumn(name = "employee_id")
+    @OneToOne(mappedBy = "contract", optional = false)
     private Employee employee;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "supervisor_id")
+    @OneToOne(mappedBy = "contract", optional = false)
     private Supervisor supervisor;
 
     // mindestens 1
     @NotNull
-    @Size(min = 1, message = "Mindestens eine Secretary erforderlich")
-    @OneToMany
-    @JoinTable(name = "contract_secretary",
-            joinColumns = @JoinColumn(name = "contract_id"),
-            inverseJoinColumns = @JoinColumn(name = "secretary_id"))
+    @Size(min = 1, message = "Every Contract needs at least one Secretary.")
+    @OneToMany(mappedBy = "contract")
     private List<Secretary> secretaries = new ArrayList<>();
 
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)

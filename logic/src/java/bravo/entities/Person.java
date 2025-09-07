@@ -32,7 +32,7 @@ public class Person extends AbstractEntity {
 
     private boolean consent;
 
-    @OneToMany(mappedBy = "person", orphanRemoval = false)
+    @OneToMany(mappedBy = "person")
     private Set<Role> roles = new HashSet<>();
 
     //Getter&Setter
