@@ -1,6 +1,6 @@
 package bravo.web;
 
-import bravo.dto.ContractDto;
+import bravo.dto.ContractDTO;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.ContractLogic;
@@ -32,7 +32,7 @@ public class ContractListBean implements Serializable {
 
     private String searchText;
 
-    private List<ContractDto> contractList;
+    private List<ContractDTO> contractList;
 
     /**
      * Initializes the bean.
@@ -71,10 +71,10 @@ public class ContractListBean implements Serializable {
                 loadContracts();
             } else {
                 // Simple implementation: filter contracts by name containing the search text
-                List<ContractDto> allContracts = contractLogic.getAllContracts();
+                List<ContractDTO> allContracts = contractLogic.getAllContracts();
                 contractList = new ArrayList<>();
 
-                for (ContractDto c : allContracts) {
+                for (ContractDTO c : allContracts) {
                     if (c.getName() != null && c.getName().toLowerCase().contains(searchText.toLowerCase())) {
                         contractList.add(c);
                     }
@@ -93,7 +93,7 @@ public class ContractListBean implements Serializable {
     public void createTestData() {
         try {
             // Create a few sample contracts
-            ContractDto contract1 = new ContractDto();
+            ContractDTO contract1 = new ContractDTO();
             contract1.setName("Sample Contract 1");
             contract1.setStartDate(java.time.LocalDate.parse("2025-01-01"));
             contract1.setEndDate(java.time.LocalDate.parse("2025-01-31").plusMonths(6));
@@ -104,7 +104,7 @@ public class ContractListBean implements Serializable {
             contract1.setStatus(ContractStatus.STARTED);
             contractLogic.createContract(contract1);
 
-            ContractDto contract2 = new ContractDto();
+            ContractDTO contract2 = new ContractDTO();
             contract2.setName("Sample Contract 2");
             contract2.setStartDate(java.time.LocalDate.parse("2025-01-01").minusMonths(1));
             contract2.setEndDate(java.time.LocalDate.parse("2025-01-31").plusMonths(12));
@@ -115,7 +115,7 @@ public class ContractListBean implements Serializable {
             contract2.setStatus(ContractStatus.STARTED);
             contractLogic.createContract(contract2);
 
-            ContractDto contract3 = new ContractDto();
+            ContractDTO contract3 = new ContractDTO();
             contract3.setName("Sample Contract 3");
             contract3.setStartDate(java.time.LocalDate.parse("2025-01-01").minusMonths(3));
             contract3.setEndDate(java.time.LocalDate.parse("2025-01-31").plusMonths(3));
@@ -147,14 +147,14 @@ public class ContractListBean implements Serializable {
         this.searchText = searchText;
     }
 
-    public List<ContractDto> getContractList() {
+    public List<ContractDTO> getContractList() {
         if (contractList == null) {
             loadContracts();
         }
         return contractList;
     }
 
-    public void setContractList(List<ContractDto> contractList) {
+    public void setContractList(List<ContractDTO> contractList) {
         this.contractList = contractList;
     }
 }

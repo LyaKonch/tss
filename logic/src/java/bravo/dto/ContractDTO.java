@@ -10,7 +10,7 @@ import java.time.LocalDate;
  * Data Transfer Object (DTO) for Contract information.
  * This class extends AbstractDTO to inherit common DTO functionality.
  */
-public class ContractDto extends AbstractDto {
+public class ContractDTO extends AbstractDTO {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -36,18 +36,18 @@ public class ContractDto extends AbstractDto {
     /**
      * Default constructor.
      */
-    public ContractDto() {
+    public ContractDTO() {
         super();
     }
 
     /**
      * Constructor with ID and JPA version.
      *
-     * @param id      the unique identifier
+     * @param uuid    the unique identifier
      * @param version the JPA version
      */
-    public ContractDto(Long id, int version) {
-        super(id, version);
+    public ContractDTO(String uuid, int version) {
+        super(uuid, version);
     }
 
 

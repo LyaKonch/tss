@@ -1,7 +1,7 @@
 package bravo.logic.impl;
 
 import bravo.dao.ContractsAccess;
-import bravo.dto.ContractDto;
+import bravo.dto.ContractDTO;
 import bravo.entities.Contract;
 import bravo.enums.ContractStatus;
 import bravo.logic.ContractLogic;
@@ -19,7 +19,7 @@ public class ContractLogicBean implements ContractLogic {
     private ContractsAccess contractsAccess;
 
     @Override
-    public ContractDto createContract(ContractDto contractDto) {
+    public ContractDTO createContract(ContractDTO contractDto) {
         // Convert DTO to entity
         bravo.entities.Contract entity = convertToEntity(contractDto);
 
@@ -31,7 +31,7 @@ public class ContractLogicBean implements ContractLogic {
     }
 
     @Override
-    public ContractDto updateContract(ContractDto contractDto) {
+    public ContractDTO updateContract(ContractDTO contractDto) {
         // Convert DTO to entity
         bravo.entities.Contract entity = convertToEntity(contractDto);
 
@@ -43,15 +43,15 @@ public class ContractLogicBean implements ContractLogic {
     }
 
     @Override
-    public ContractDto getContractByUuid(String uuid) {
+    public ContractDTO getContractByUuid(String uuid) {
         bravo.entities.Contract entity = contractsAccess.findContractByUuid(uuid);
         return entity != null ? convertToDto(entity) : null;
     }
 
     @Override
-    public List<ContractDto> getAllContracts() {
+    public List<ContractDTO> getAllContracts() {
         List<bravo.entities.Contract> entities = contractsAccess.getAllContracts();
-        List<ContractDto> dtos = new ArrayList<>(entities.size());
+        List<ContractDTO> dtos = new ArrayList<>(entities.size());
 
         for (bravo.entities.Contract entity : entities) {
             dtos.add(convertToDto(entity));
@@ -61,9 +61,9 @@ public class ContractLogicBean implements ContractLogic {
     }
 
     @Override
-    public List<ContractDto> getActiveContracts() {
+    public List<ContractDTO> getActiveContracts() {
         List<bravo.entities.Contract> entities = contractsAccess.getActiveContracts();
-        List<ContractDto> dtos = new ArrayList<>(entities.size());
+        List<ContractDTO> dtos = new ArrayList<>(entities.size());
 
         for (bravo.entities.Contract entity : entities) {
             dtos.add(convertToDto(entity));
@@ -73,7 +73,7 @@ public class ContractLogicBean implements ContractLogic {
     }
 
     @Override
-    public ContractDto terminateContract(String uuid, LocalDate terminationDate) {
+    public ContractDTO terminateContract(String uuid, LocalDate terminationDate) {
         bravo.entities.Contract entity = contractsAccess.findContractByUuid(uuid);
 
         if (entity != null) {
@@ -87,13 +87,13 @@ public class ContractLogicBean implements ContractLogic {
     }
 
     @Override
-    public double calculateHoursDue(ContractDto contract) {
+    public double calculateHoursDue(ContractDTO contract) {
         // Logic for calculating hours due
         return contract.getWorkingDaysPerWeek() * (contract.getHoursPerWeek() / 5.0);
     }
 
     @Override
-    public double calculateVacationHours(ContractDto contract) {
+    public double calculateVacationHours(ContractDTO contract) {
         // Logic for calculating vacation hours
         return contract.getVacationDaysPerYear() * (contract.getHoursPerWeek() / 5.0);
     }
@@ -101,13 +101,13 @@ public class ContractLogicBean implements ContractLogic {
     /**
      * Converts a Contract DTO to a Contract entity.
      */
-    private bravo.entities.Contract convertToEntity(ContractDto dto) {
+    private bravo.entities.Contract convertToEntity(ContractDTO dto) {
         bravo.entities.Contract entity = new bravo.entities.Contract();
 
         // Set the UUID only if it's not a new contract
-        if (dto.getId() != null) {
-            entity.setId(dto.getId());
-            entity.setVersion(dto.getVersion());
+        if (dto.getUuid() != null) {
+            entity.setUuid(dto.getUuid());
+            entity.setVersion(dto.getJpaVersion());
         }
 
         //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
@@ -127,8 +127,8 @@ public class ContractLogicBean implements ContractLogic {
     /**
      * Converts a Contract entity to a Contract DTO.
      */
-    private ContractDto convertToDto(Contract entity) {
-        ContractDto dto = new ContractDto(entity.getId(), entity.getVersion());
+    private ContractDTO convertToDto(Contract entity) {
+        ContractDTO dto = new ContractDTO(entity.getUuid(), entity.getVersion());
 
         //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
         dto.setName(entity.getName());

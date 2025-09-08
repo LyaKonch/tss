@@ -1,6 +1,6 @@
 package bravo.logic;
 
-import bravo.dto.ContractDto;
+import bravo.dto.ContractDTO;
 import jakarta.ejb.Local;
 
 import java.time.LocalDate;
@@ -15,7 +15,7 @@ public interface ContractLogic {
      * @param contract the contract DTO with the data
      * @return the created contract with generated ID
      */
-    ContractDto createContract(ContractDto contract);
+    ContractDTO createContract(ContractDTO contract);
 
     /**
      * Updates an existing contract.
@@ -23,7 +23,7 @@ public interface ContractLogic {
      * @param contract the contract DTO with updated data
      * @return the updated contract
      */
-    ContractDto updateContract(ContractDto contract);
+    ContractDTO updateContract(ContractDTO contract);
 
     /**
      * Retrieves a contract by its UUID.
@@ -31,21 +31,21 @@ public interface ContractLogic {
      * @param uuid the UUID of the contract
      * @return the found contract or null if not found
      */
-    ContractDto getContractByUuid(String uuid);
+    ContractDTO getContractByUuid(String uuid);
 
     /**
      * Retrieves all contracts.
      *
      * @return a list of all contracts
      */
-    List<ContractDto> getAllContracts();
+    List<ContractDTO> getAllContracts();
 
     /**
      * Retrieves all active contracts.
      *
      * @return a list of all active contracts
      */
-    List<ContractDto> getActiveContracts();
+    List<ContractDTO> getActiveContracts();
 
     /**
      * Terminates a contract by setting its status to TERMINATED and recording the termination date.
@@ -54,7 +54,7 @@ public interface ContractLogic {
      * @param terminationDate the date when the contract is terminated
      * @return the updated contract
      */
-    ContractDto terminateContract(String uuid, LocalDate terminationDate);
+    ContractDTO terminateContract(String uuid, LocalDate terminationDate);
 
     /**
      * Calculates the hours due for a contract based on working days per week and hours per week.
@@ -62,7 +62,7 @@ public interface ContractLogic {
      * @param contract the contract to calculate hours for
      * @return the calculated hours due
      */
-    double calculateHoursDue(ContractDto contract);
+    double calculateHoursDue(ContractDTO contract);
 
     /**
      * Calculates the vacation hours for a contract based on vacation days per year and hours per week.
@@ -70,5 +70,5 @@ public interface ContractLogic {
      * @param contract the contract to calculate vacation hours for
      * @return the calculated vacation hours
      */
-    double calculateVacationHours(ContractDto contract);
+    double calculateVacationHours(ContractDTO contract);
 }

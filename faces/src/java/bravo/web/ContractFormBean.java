@@ -1,6 +1,6 @@
 package bravo.web;
 
-import bravo.dto.ContractDto;
+import bravo.dto.ContractDTO;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.ContractLogic;
@@ -34,8 +34,10 @@ public class ContractFormBean implements Serializable {
     @EJB
     private ContractLogic contractLogic;
 
-    private ContractDto contract;
+    private ContractDTO contract;
+
     private List<ContractStatus> statuses;
+
     private List<TimesheetFrequency> frequencies;
 
     /**
@@ -59,7 +61,7 @@ public class ContractFormBean implements Serializable {
      * @return the navigation outcome
      */
     public String prepareCreate() {
-        contract = new ContractDto();
+        contract = new ContractDTO();
         contract.setStatus(ContractStatus.PREPARED);
         contract.setStartDate(LocalDate.now());
         return "contractForm?faces-redirect=true";
@@ -117,14 +119,14 @@ public class ContractFormBean implements Serializable {
 
     // Getters and setters
 
-    public ContractDto getContract() {
+    public ContractDTO getContract() {
         if (contract == null) {
-            contract = new ContractDto();
+            contract = new ContractDTO();
         }
         return contract;
     }
 
-    public void setContract(ContractDto contract) {
+    public void setContract(ContractDTO contract) {
         this.contract = contract;
     }
 

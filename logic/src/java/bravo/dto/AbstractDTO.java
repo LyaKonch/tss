@@ -4,6 +4,7 @@
  */
 package bravo.dto;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -12,9 +13,11 @@ import java.util.Objects;
  */
 public abstract class AbstractDTO implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 5231885890948093876L;
 
     private String uuid;
+
     private int jpaVersion;
 
     protected AbstractDTO() {
