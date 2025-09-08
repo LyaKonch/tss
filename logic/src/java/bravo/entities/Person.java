@@ -9,12 +9,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "persons")
-public class Person {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Table(name = "person")
+@NamedQueries({@NamedQuery(name = "Person.findByEmail", query = "SELECT p FROM Person p WHERE p.emailAddress = :email"), @NamedQuery(name = "Person.findAll", query = "SELECT p FROM Person p ORDER BY p.lastName ASC")})
+public class Person extends AbstractEntity {
 
     @NotBlank
     private String firstName;
@@ -22,28 +19,27 @@ public class Person {
     @NotBlank
     private String lastName;
 
+    private LocalDate dateOfBirth;
+
     @Email
     @NotBlank
     private String emailAddress;
 
-    private LocalDate dateOfBirth;
-
     private boolean consent;
 
-    @OneToMany(mappedBy = "person", orphanRemoval = false)
+    // Person 1 < --- > 0..* Role
+    @OneToMany(mappedBy = "person")
     private Set<Role> roles = new HashSet<>();
 
+
     public Person() {
+        super();
     }
 
-    //Getter&Setter
-    public Long getId() {
-        return id;
+    public Person(boolean NewEntity) {
+        super(NewEntity);
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getFirstName() {
         return firstName;
@@ -61,20 +57,20 @@ public class Person {
         this.lastName = lastName;
     }
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 
     public boolean isConsent() {
@@ -85,13 +81,21 @@ public class Person {
         this.consent = consent;
     }
 
-
     public Set<Role> getRoles() {
         return roles;
     }
 
     public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+        this.roles.forEach(role -> role.setPerson(null));
+        this.roles.clear();
+        if (roles == null) return;
+        this.roles.addAll(roles);
+        roles.forEach(role -> role.setPerson(this));
+    }
+
+    public void addRole(Role role) {
+        role.setPerson(this);
+        roles.add(role);
     }
 
 
