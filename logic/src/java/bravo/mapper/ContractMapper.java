@@ -4,6 +4,8 @@ import bravo.dto.ContractDTO;
 import bravo.entities.Contract;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.UUID;
+
 @ApplicationScoped
 public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
 
@@ -15,7 +17,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         Contract entity = new Contract();
 
         if (dto.getId() != null) entity.setId(dto.getId());
-        if (dto.getUuid() != null) entity.setUuid(dto.getUuid());
+        if (dto.getUuid() != null) entity.setUuid(UUID.fromString(dto.getUuid()));
 
         //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
         entity.setStatus(dto.getStatus());
@@ -41,7 +43,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         ContractDTO dto = new ContractDTO();
 
         dto.setId(entity.getId());
-        dto.setUuid(entity.getUuid());
+        dto.setUuid(entity.getUuid().toString());
 
         //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
         dto.setStatus(entity.getStatus());
