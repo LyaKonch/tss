@@ -10,12 +10,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "person")
-@NamedQueries({
-        @NamedQuery(name = "Person.findByEmail",
-                query = "SELECT p FROM Person p WHERE p.emailAddress = :email"),
-        @NamedQuery(name = "Person.findAll",
-                query = "SELECT p FROM Person p ORDER BY p.lastName ASC")
-})
+@NamedQueries({@NamedQuery(name = "Person.findByEmail", query = "SELECT p FROM Person p WHERE p.emailAddress = :email"), @NamedQuery(name = "Person.findAll", query = "SELECT p FROM Person p ORDER BY p.lastName ASC")})
 public class Person extends AbstractEntity {
 
     @NotBlank
@@ -24,18 +19,19 @@ public class Person extends AbstractEntity {
     @NotBlank
     private String lastName;
 
+    private LocalDate dateOfBirth;
+
     @Email
     @NotBlank
     private String emailAddress;
 
-    private LocalDate dateOfBirth;
-
     private boolean consent;
 
+    // Person 1 < --- > 0..* Role
     @OneToMany(mappedBy = "person")
     private Set<Role> roles = new HashSet<>();
 
-    //Getter&Setter
+
     public Person() {
         super();
     }
@@ -43,6 +39,7 @@ public class Person extends AbstractEntity {
     public Person(boolean NewEntity) {
         super(NewEntity);
     }
+
 
     public String getFirstName() {
         return firstName;
@@ -60,20 +57,20 @@ public class Person extends AbstractEntity {
         this.lastName = lastName;
     }
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 
     public boolean isConsent() {
@@ -83,7 +80,6 @@ public class Person extends AbstractEntity {
     public void setConsent(boolean consent) {
         this.consent = consent;
     }
-
 
     public Set<Role> getRoles() {
         return roles;

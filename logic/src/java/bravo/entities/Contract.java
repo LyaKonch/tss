@@ -4,34 +4,18 @@ import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.TimesheetLogic;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
 @Table(name = "contract")
-@NamedQueries({
-        @NamedQuery(name = "Contract.findByName",
-                query = "SELECT c FROM Contract c WHERE c.name = :name"),
-        @NamedQuery(name = "Contract.findAll",
-                query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")
-})
+@NamedQueries({@NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"), @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")})
 public class Contract extends AbstractEntity {
-
-    // Assistants 0..*
-    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Assistant> assistants = new ArrayList<>();
-
-    private int WORKINGDAYSPERWEEK = 5;
-
-    private int VACATIONDAYSPERYEAR = 20;
-
     @Enumerated(EnumType.STRING)
     private ContractStatus status = ContractStatus.PREPARED;
 
@@ -42,6 +26,7 @@ public class Contract extends AbstractEntity {
 
     private LocalDate endDate;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TimesheetFrequency frequency = TimesheetFrequency.MONTHLY;
 
@@ -50,21 +35,39 @@ public class Contract extends AbstractEntity {
     @Positive
     private Double hoursPerWeek;
 
-    // Genau 1
+    @Column(nullable = false)
+    @Min(1)
+    @Max(7)
+    private int workingDaysPerWeek = 5;
+
+    @Column(nullable = false)
+    @Min(0)
+    @Max(365)
+    private int vacationDaysPerYear = 20;
+
+
+    // Contract 1 < --- > 1 Employee
     @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private Employee employee;
 
+    // Contract 1 < --- > 1 Supervisor
     @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private Supervisor supervisor;
 
-    // mindestens 1
+    // Contract 1 < --- > 1..* Secretary
     @NotNull
     @Size(min = 1, message = "Every Contract needs at least one Secretary.")
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Secretary> secretaries = new ArrayList<>();
 
+    // Contract 1 < --- > 0..* Assistant
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Assistant> assistants = new ArrayList<>();
+
+    // Contract 1 < --- > * Timesheet
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Timesheet> timesheets = new ArrayList<>();
+
 
     public Contract() {
         super();
@@ -74,37 +77,24 @@ public class Contract extends AbstractEntity {
         super(newEntity);
     }
 
-    public int getWorkingDaysPerWeek() {
-        return WORKINGDAYSPERWEEK;
-    }
 
-    public int getVacationDaysPerYear() {
-        return VACATIONDAYSPERYEAR;
-    }
-
-    // Berechnet
     @Transient
-    public double getVacationHours() {
+    private double vacationHours() {
         int months = getDurationInWholeMonths();
         if (months <= 0 || hoursPerWeek <= 0) return 0.0;
-        return VACATIONDAYSPERYEAR * (months / 12.0) * (hoursPerWeek / WORKINGDAYSPERWEEK);
+        return vacationDaysPerYear * (months / 12.0) * (hoursPerWeek / workingDaysPerWeek);
     }
 
     @Transient
-    public double getHoursDue(TimesheetLogic timesheetLogic) {
-        return timesheets.stream().mapToDouble(timesheet -> timesheetLogic.getHoursDue(timesheet)).sum();
+    private double hoursDue(TimesheetLogic timesheetLogic) {
+        return timesheets.stream().mapToDouble(timesheetLogic::getHoursDue).sum();
     }
 
-    //Hilfsmethode
     private int getDurationInWholeMonths() {
         if (startDate == null || endDate == null) return 0;
-        return (int) ChronoUnit.MONTHS.between(
-                startDate.withDayOfMonth(1),
-                endDate.withDayOfMonth(1)
-        ) + 1;
+        return (int) ChronoUnit.MONTHS.between(startDate.withDayOfMonth(1), endDate.withDayOfMonth(1)) + 1;
     }
 
-    // Getter&Setter
 
     public ContractStatus getStatus() {
         return status;
@@ -126,7 +116,6 @@ public class Contract extends AbstractEntity {
         return startDate;
     }
 
-    //
     public void setStartDate(LocalDate d) {
         this.startDate = d;
         if (d != null && d.getDayOfMonth() != 1)
@@ -169,6 +158,22 @@ public class Contract extends AbstractEntity {
         this.hoursPerWeek = hoursPerWeek;
     }
 
+    public int getWorkingDaysPerWeek() {
+        return workingDaysPerWeek;
+    }
+
+    public void setWorkingDaysPerWeek(int workingDaysPerWeek) {
+        this.workingDaysPerWeek = workingDaysPerWeek;
+    }
+
+    public int getVacationDaysPerYear() {
+        return vacationDaysPerYear;
+    }
+
+    public void setVacationDaysPerYear(int vacationDaysPerYear) {
+        this.vacationDaysPerYear = vacationDaysPerYear;
+    }
+
     public Employee getEmployee() {
         return employee;
     }
@@ -192,7 +197,7 @@ public class Contract extends AbstractEntity {
     }
 
     public List<Secretary> getSecretaries() {
-        return java.util.Collections.unmodifiableList(secretaries);
+        return Collections.unmodifiableList(secretaries);
     }
 
     public void setSecretaries(List<Secretary> secretaries) {
@@ -242,7 +247,7 @@ public class Contract extends AbstractEntity {
     }
 
     public List<Timesheet> getTimesheets() {
-        return timesheets;
+        return Collections.unmodifiableList(timesheets);
     }
 
     public void setTimesheets(List<Timesheet> timesheets) {
@@ -257,5 +262,13 @@ public class Contract extends AbstractEntity {
             timesheets.add(timesheet);
             timesheet.setContract(this);
         }
+    }
+
+    public double getVacationHours() {
+        return vacationHours();
+    }
+
+    public double getHoursDue(TimesheetLogic timesheetLogic) {
+        return hoursDue(timesheetLogic);
     }
 }

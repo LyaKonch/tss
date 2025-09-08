@@ -12,25 +12,26 @@ import java.util.List;
 @Table(name = "timesheet")
 public class Timesheet extends AbstractEntity {
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "contract_id")
-    private Contract contract;
+    @Enumerated(EnumType.STRING)
+    private TimesheetStatus status = TimesheetStatus.IN_PROGRESS;
 
     private LocalDate startDate;
 
     private LocalDate endDate;
 
-    @Enumerated(EnumType.STRING)
-    private TimesheetStatus status = TimesheetStatus.IN_PROGRESS;
-
     private LocalDate signedByEmployee;
 
     private LocalDate signedBySupervisor;
 
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "contract_id")
+    private Contract contract;
+
     @OneToMany(mappedBy = "timesheet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimesheetEntry> entries = new ArrayList<>();
 
-    //Getter&Setter
+
     public Timesheet() {
         super();
     }
@@ -39,12 +40,13 @@ public class Timesheet extends AbstractEntity {
         super(NewEntity);
     }
 
-    public Contract getContract() {
-        return contract;
+
+    public TimesheetStatus getStatus() {
+        return status;
     }
 
-    public void setContract(Contract contract) {
-        this.contract = contract;
+    public void setStatus(TimesheetStatus status) {
+        this.status = status;
     }
 
     public LocalDate getStartDate() {
@@ -63,14 +65,6 @@ public class Timesheet extends AbstractEntity {
         this.endDate = endDate;
     }
 
-    public TimesheetStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TimesheetStatus status) {
-        this.status = status;
-    }
-
     public LocalDate getSignedByEmployee() {
         return signedByEmployee;
     }
@@ -85,6 +79,14 @@ public class Timesheet extends AbstractEntity {
 
     public void setSignedBySupervisor(LocalDate signedBySupervisor) {
         this.signedBySupervisor = signedBySupervisor;
+    }
+
+    public Contract getContract() {
+        return contract;
+    }
+
+    public void setContract(Contract contract) {
+        this.contract = contract;
     }
 
     public List<TimesheetEntry> getEntries() {

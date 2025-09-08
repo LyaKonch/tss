@@ -9,38 +9,26 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "timesheet_entry")
-@NamedQueries({
-        @NamedQuery(name = "TimesheetEntry.findByUuid",
-                query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"),
-        @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid",
-                query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid"),
-        @NamedQuery(name = "TimesheetEntry.findAll",
-                query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")
-})
+@NamedQueries({@NamedQuery(name = "TimesheetEntry.findByUuid", query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"), @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid", query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid"), @NamedQuery(name = "TimesheetEntry.findAll", query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")})
 public class TimesheetEntry extends AbstractEntity {
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "timesheet_id")
-    private Timesheet timesheet;
+    @Enumerated(EnumType.STRING)
+    private ReportType type = ReportType.WORK;
 
-    private LocalDate entryDate;
+    @Column(length = 500)
+    private String description;
 
     private LocalTime startTime;
 
     private LocalTime endTime;
 
-    @Enumerated(EnumType.STRING)
-    private ReportType type = ReportType.WORK;  // WORK, VACATION, SICK_LEAVE
+    private LocalDate entryDate;
 
-    @Column(length = 500)
-    private String description;
 
-    @Transient
-    public double getHours() {
-        if (startTime == null || endTime == null) return 0.0;
-        long minutes = Duration.between(startTime, endTime).toMinutes();
-        return Math.max(0, minutes) / 60.0;
-    }
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "timesheet_id")
+    private Timesheet timesheet;
+
 
     public TimesheetEntry() {
         super();
@@ -49,22 +37,30 @@ public class TimesheetEntry extends AbstractEntity {
     public TimesheetEntry(boolean NewEntity) {
         super(NewEntity);
     }
-    //Getter&Setter
 
-    public Timesheet getTimesheet() {
-        return timesheet;
+
+    @Transient
+    private double hours() {
+        if (startTime == null || endTime == null) return 0.0;
+        long minutes = Duration.between(startTime, endTime).toMinutes();
+        return Math.max(0, minutes) / 60.0;
     }
 
-    public void setTimesheet(Timesheet timesheet) {
-        this.timesheet = timesheet;
+
+    public ReportType getType() {
+        return type;
     }
 
-    public LocalDate getEntryDate() {
-        return entryDate;
+    public void setType(ReportType type) {
+        this.type = type;
     }
 
-    public void setEntryDate(LocalDate entryDate) {
-        this.entryDate = entryDate;
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public LocalTime getStartTime() {
@@ -83,19 +79,24 @@ public class TimesheetEntry extends AbstractEntity {
         this.endTime = endTime;
     }
 
-    public ReportType getType() {
-        return type;
+    public LocalDate getEntryDate() {
+        return entryDate;
     }
 
-    public void setType(ReportType type) {
-        this.type = type;
+    public void setEntryDate(LocalDate entryDate) {
+        this.entryDate = entryDate;
     }
 
-    public String getDescription() {
-        return description;
+    public Timesheet getTimesheet() {
+        return timesheet;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTimesheet(Timesheet timesheet) {
+        this.timesheet = timesheet;
     }
+
+    public double getHours() {
+        return hours();
+    }
+
 }
