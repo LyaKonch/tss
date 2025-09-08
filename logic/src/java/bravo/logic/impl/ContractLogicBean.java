@@ -5,8 +5,10 @@ import bravo.dto.ContractDTO;
 import bravo.entities.Contract;
 import bravo.enums.ContractStatus;
 import bravo.logic.ContractLogic;
+import bravo.mapper.ContractMapper;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,43 +20,46 @@ public class ContractLogicBean implements ContractLogic {
     @EJB
     private ContractDAO contractDAO;
 
+    @Inject
+    private ContractMapper ContractMapper;
+
     @Override
     public ContractDTO createContract(ContractDTO contractDto) {
         // Convert DTO to entity
-        bravo.entities.Contract entity = convertToEntity(contractDto);
+        Contract entity = ContractMapper.toEntity(contractDto);
 
         // Persist entity
-        entity = contractDAO.createContract(entity);
+        contractDAO.save(entity);
 
         // Convert back to DTO and return
-        return convertToDto(entity);
+        return ContractMapper.toDto(entity);
     }
 
     @Override
     public ContractDTO updateContract(ContractDTO contractDto) {
         // Convert DTO to entity
-        bravo.entities.Contract entity = convertToEntity(contractDto);
+        Contract entity = ContractMapper.toEntity(contractDto);
 
         // Update entity
         entity = contractDAO.updateContract(entity);
 
         // Convert back to DTO and return
-        return convertToDto(entity);
+        return ContractMapper.toDto(entity);
     }
 
     @Override
     public ContractDTO getContractByUuid(String uuid) {
-        bravo.entities.Contract entity = contractDAO.findContractByUuid(uuid);
-        return entity != null ? convertToDto(entity) : null;
+        Contract entity = contractDAO.findContractByUuid(uuid);
+        return entity != null ? ContractMapper.toDto(entity) : null;
     }
 
     @Override
     public List<ContractDTO> getAllContracts() {
-        List<bravo.entities.Contract> entities = contractDAO.getAllContracts();
+        List<Contract> entities = contractDAO.getAllContracts();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
 
-        for (bravo.entities.Contract entity : entities) {
-            dtos.add(convertToDto(entity));
+        for (Contract entity : entities) {
+            dtos.add(ContractMapper.toDto(entity));
         }
 
         return dtos;
@@ -62,11 +67,11 @@ public class ContractLogicBean implements ContractLogic {
 
     @Override
     public List<ContractDTO> getActiveContracts() {
-        List<bravo.entities.Contract> entities = contractDAO.getActiveContracts();
+        List<Contract> entities = contractDAO.getActiveContracts();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
 
-        for (bravo.entities.Contract entity : entities) {
-            dtos.add(convertToDto(entity));
+        for (Contract entity : entities) {
+            dtos.add(ContractMapper.toDto(entity));
         }
 
         return dtos;
@@ -74,13 +79,13 @@ public class ContractLogicBean implements ContractLogic {
 
     @Override
     public ContractDTO terminateContract(String uuid, LocalDate terminationDate) {
-        bravo.entities.Contract entity = contractDAO.findContractByUuid(uuid);
+        Contract entity = contractDAO.findContractByUuid(uuid);
 
         if (entity != null) {
             entity.setStatus(ContractStatus.TERMINATED);
             entity.setTerminationDate(terminationDate);
             entity = contractDAO.updateContract(entity);
-            return convertToDto(entity);
+            return ContractMapper.toDto(entity);
         }
 
         return null;
@@ -98,49 +103,5 @@ public class ContractLogicBean implements ContractLogic {
         return contract.getVacationDaysPerYear() * (contract.getHoursPerWeek() / 5.0);
     }
 
-    /**
-     * Converts a Contract DTO to a Contract entity.
-     */
-    private bravo.entities.Contract convertToEntity(ContractDTO dto) {
-        bravo.entities.Contract entity = new bravo.entities.Contract();
 
-        // Set the UUID only if it's not a new contract
-        if (dto.getUuid() != null) {
-            entity.setUuid(dto.getUuid());
-            entity.setVersion(dto.getJpaVersion());
-        }
-
-        //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
-        entity.setName(dto.getName());
-        entity.setStartDate(dto.getStartDate());
-        entity.setEndDate(dto.getEndDate());
-        entity.setFrequency(dto.getFrequency());
-        entity.setTerminationDate(dto.getTerminationDate());
-        entity.setHoursPerWeek(dto.getHoursPerWeek());
-        entity.setWorkingDaysPerWeek(dto.getWorkingDaysPerWeek());
-        entity.setVacationDaysPerYear(dto.getVacationDaysPerYear());
-        entity.setStatus(dto.getStatus());
-
-        return entity;
-    }
-
-    /**
-     * Converts a Contract entity to a Contract DTO.
-     */
-    private ContractDTO convertToDto(Contract entity) {
-        ContractDTO dto = new ContractDTO(entity.getUuid(), entity.getVersion());
-
-        //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
-        dto.setName(entity.getName());
-        dto.setStartDate(entity.getStartDate());
-        dto.setEndDate(entity.getEndDate());
-        dto.setFrequency(entity.getFrequency());
-        dto.setTerminationDate(entity.getTerminationDate());
-        dto.setHoursPerWeek(entity.getHoursPerWeek());
-        dto.setWorkingDaysPerWeek(entity.getWorkingDaysPerWeek());
-        dto.setVacationDaysPerYear(entity.getVacationDaysPerYear());
-        dto.setStatus(entity.getStatus());
-
-        return dto;
-    }
 }

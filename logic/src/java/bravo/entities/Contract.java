@@ -16,6 +16,7 @@ import java.util.List;
 @Table(name = "contract")
 @NamedQueries({@NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"), @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")})
 public class Contract extends AbstractEntity {
+
     @Enumerated(EnumType.STRING)
     private ContractStatus status = ContractStatus.PREPARED;
 

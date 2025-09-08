@@ -7,26 +7,37 @@ import java.util.Objects;
 public abstract class AbstractDTO implements Serializable {
 
     @Serial
-    private static final long serialVersionUID = 5231885890948093876L;
+    private static final long serialVersionUID = 1L;
+
+    private Long id;
 
     private String uuid;
 
     private int version;
 
+
     protected AbstractDTO() {
     }
 
-    protected AbstractDTO(String uuid, int version) {
-        this.uuid = uuid;
-        this.version = version;
+
+    public Long getId() {
+        return id;
     }
 
-    public int getVersion() {
-        return version;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getUuid() {
         return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public int getVersion() {
+        return version;
     }
 
     public boolean isNew() {
