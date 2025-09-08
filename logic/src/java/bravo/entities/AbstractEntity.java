@@ -1,39 +1,35 @@
 package bravo.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
 
 @MappedSuperclass
-public class AbstractEntity implements Serializable  {
-    
-    
+public abstract class AbstractEntity implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // database primary key identifier
 
     @Column(unique = true, length = 36) // additional info for JPA how to map this column 
     private String uuid; // program level identifier just in case 
-    
+
     @Version
     private int version;
 
+
     public AbstractEntity() {
     }
-    
+
     public AbstractEntity(boolean newEntity) {
         if (newEntity) { // if true it means new object is being created which implies new uuid need to be assigned
             uuid = UUID.randomUUID().toString();
         }
     }
+
 
     @PrePersist
     private void generateUuidOnPersist() {
@@ -41,6 +37,7 @@ public class AbstractEntity implements Serializable  {
             uuid = UUID.randomUUID().toString();
         }
     }
+
 
     public Long getId() {
         return id;
@@ -65,7 +62,7 @@ public class AbstractEntity implements Serializable  {
     public void setVersion(int version) {
         this.version = version;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 7;
