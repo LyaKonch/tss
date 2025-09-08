@@ -1,6 +1,6 @@
 package bravo.logic.impl;
 
-import bravo.dao.ContractsAccess;
+import bravo.dao.ContractDAO;
 import bravo.dto.ContractDTO;
 import bravo.entities.Contract;
 import bravo.enums.ContractStatus;
@@ -16,7 +16,7 @@ import java.util.List;
 public class ContractLogicBean implements ContractLogic {
 
     @EJB
-    private ContractsAccess contractsAccess;
+    private ContractDAO contractDAO;
 
     @Override
     public ContractDTO createContract(ContractDTO contractDto) {
@@ -24,7 +24,7 @@ public class ContractLogicBean implements ContractLogic {
         bravo.entities.Contract entity = convertToEntity(contractDto);
 
         // Persist entity
-        entity = contractsAccess.createContract(entity);
+        entity = contractDAO.createContract(entity);
 
         // Convert back to DTO and return
         return convertToDto(entity);
@@ -36,7 +36,7 @@ public class ContractLogicBean implements ContractLogic {
         bravo.entities.Contract entity = convertToEntity(contractDto);
 
         // Update entity
-        entity = contractsAccess.updateContract(entity);
+        entity = contractDAO.updateContract(entity);
 
         // Convert back to DTO and return
         return convertToDto(entity);
@@ -44,13 +44,13 @@ public class ContractLogicBean implements ContractLogic {
 
     @Override
     public ContractDTO getContractByUuid(String uuid) {
-        bravo.entities.Contract entity = contractsAccess.findContractByUuid(uuid);
+        bravo.entities.Contract entity = contractDAO.findContractByUuid(uuid);
         return entity != null ? convertToDto(entity) : null;
     }
 
     @Override
     public List<ContractDTO> getAllContracts() {
-        List<bravo.entities.Contract> entities = contractsAccess.getAllContracts();
+        List<bravo.entities.Contract> entities = contractDAO.getAllContracts();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
 
         for (bravo.entities.Contract entity : entities) {
@@ -62,7 +62,7 @@ public class ContractLogicBean implements ContractLogic {
 
     @Override
     public List<ContractDTO> getActiveContracts() {
-        List<bravo.entities.Contract> entities = contractsAccess.getActiveContracts();
+        List<bravo.entities.Contract> entities = contractDAO.getActiveContracts();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
 
         for (bravo.entities.Contract entity : entities) {
@@ -74,12 +74,12 @@ public class ContractLogicBean implements ContractLogic {
 
     @Override
     public ContractDTO terminateContract(String uuid, LocalDate terminationDate) {
-        bravo.entities.Contract entity = contractsAccess.findContractByUuid(uuid);
+        bravo.entities.Contract entity = contractDAO.findContractByUuid(uuid);
 
         if (entity != null) {
             entity.setStatus(ContractStatus.TERMINATED);
             entity.setTerminationDate(terminationDate);
-            entity = contractsAccess.updateContract(entity);
+            entity = contractDAO.updateContract(entity);
             return convertToDto(entity);
         }
 
