@@ -130,7 +130,7 @@ public class Contract extends AbstractEntity {
     public void setStartDate(LocalDate d) {
         this.startDate = d;
         if (d != null && d.getDayOfMonth() != 1)
-            throw new IllegalArgumentException("startDate muss der 1. des Monats sein");
+            throw new IllegalArgumentException("startDate has to be first of a month");
     }
 
     public LocalDate getEndDate() {
@@ -140,9 +140,9 @@ public class Contract extends AbstractEntity {
     public void setEndDate(LocalDate d) {
         this.endDate = d;
         if (d != null && d.plusDays(1).getDayOfMonth() != 1)
-            throw new IllegalArgumentException("endDate muss letzter Tag des Monats sein");
+            throw new IllegalArgumentException("endDate has to be last day of a month");
         if (startDate != null && d != null && d.isBefore(startDate))
-            throw new IllegalArgumentException("endDate darf nicht vor startDate liegen");
+            throw new IllegalArgumentException("endDate has to be after startDate");
     }
 
     public TimesheetFrequency getFrequency() {
@@ -174,7 +174,10 @@ public class Contract extends AbstractEntity {
     }
 
     public void setEmployee(Employee employee) {
+        if (employee == null) throw new IllegalArgumentException("Employee must not be null");
+        if (this.employee != null) this.employee.setContract(null);
         this.employee = employee;
+        employee.setContract(this);
     }
 
     public Supervisor getSupervisor() {
@@ -182,7 +185,10 @@ public class Contract extends AbstractEntity {
     }
 
     public void setSupervisor(Supervisor supervisor) {
+        if (supervisor == null) throw new IllegalArgumentException("Supervisor must not be null");
+        if (this.supervisor != null) this.supervisor.setContract(null);
         this.supervisor = supervisor;
+        supervisor.setContract(this);
     }
 
     public List<Secretary> getSecretaries() {
@@ -190,16 +196,25 @@ public class Contract extends AbstractEntity {
     }
 
     public void setSecretaries(List<Secretary> secretaries) {
+        this.secretaries.forEach(s -> s.setContract(null));
         this.secretaries.clear();
-        if (secretaries != null) this.secretaries.addAll(secretaries);
+        if (secretaries != null) {
+            this.secretaries.addAll(secretaries);
+            secretaries.forEach(s -> s.setContract(this));
+        }
     }
 
-    public void addSecretary(Secretary s) {
-        if (s != null) secretaries.add(s);
+    public void addSecretary(Secretary secretary) {
+        if (secretary != null) {
+            secretaries.add(secretary);
+            secretary.setContract(this);
+        }
     }
 
-    public void removeSecretary(Secretary s) {
-        secretaries.remove(s);
+    public void removeSecretary(Secretary secretary) {
+        if (secretary == null) return;
+        secretaries.remove(secretary);
+        secretary.setContract(null);
     }
 
     public List<Assistant> getAssistants() {
@@ -207,16 +222,23 @@ public class Contract extends AbstractEntity {
     }
 
     public void setAssistants(List<Assistant> assistants) {
+        this.assistants.forEach(a -> a.setContract(null));
         this.assistants.clear();
-        if (assistants != null) this.assistants.addAll(assistants);
+        if (assistants == null) return;
+        this.assistants.addAll(assistants);
+        assistants.forEach(a -> a.setContract(this));
     }
 
-    public void addAssistant(Assistant a) {
-        if (a != null) assistants.add(a);
+    public void addAssistant(Assistant assistant) {
+        if (assistant == null) return;
+        assistants.add(assistant);
+        assistant.setContract(this);
     }
 
-    public void removeAssistant(Assistant a) {
-        assistants.remove(a);
+    public void removeAssistant(Assistant assistant) {
+        if (assistant == null) return;
+        assistants.remove(assistant);
+        assistant.setContract(null);
     }
 
     public List<Timesheet> getTimesheets() {
@@ -224,6 +246,16 @@ public class Contract extends AbstractEntity {
     }
 
     public void setTimesheets(List<Timesheet> timesheets) {
-        this.timesheets = timesheets;
+        this.timesheets.forEach(t -> t.setContract(null));
+        this.timesheets.clear();
+        this.timesheets.addAll(timesheets);
+        timesheets.forEach(t -> t.setContract(this));
+    }
+
+    public void addTimesheet(Timesheet timesheet) {
+        if (timesheet != null) {
+            timesheets.add(timesheet);
+            timesheet.setContract(this);
+        }
     }
 }

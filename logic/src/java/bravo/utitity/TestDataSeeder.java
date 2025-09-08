@@ -5,13 +5,16 @@ import bravo.dao.PersonDAO;
 import bravo.dao.RoleDAO;
 import bravo.entities.*;
 import bravo.enums.ContractStatus;
+import bravo.enums.ReportType;
 import bravo.enums.TimesheetFrequency;
+import bravo.enums.TimesheetStatus;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Singleton
 @Startup
@@ -57,30 +60,68 @@ public class TestDataSeeder {
         Contract contractA = createContract(ContractStatus.STARTED, "Alice Employee Contract", LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31), TimesheetFrequency.WEEKLY, null, 40.0);
         Contract contractB = createContract(ContractStatus.PREPARED, "Bob Employee Contract", LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31), TimesheetFrequency.MONTHLY, null, 38.0);
 
-        // Link Roles to Persons
+        // Roles (and links)
         Secretary secC = new Secretary();
-        linkPersonAndRole(chef, secC);
+        chef.addRole(secC);
         Supervisor supC = new Supervisor();
-        linkPersonAndRole(chef, supC);
-
+        chef.addRole(supC);
         Employee empA = new Employee();
-        linkPersonAndRole(alice, empA);
-        Secretary secA = new Secretary();
-        linkPersonAndRole(alice, secA);
+        alice.addRole(empA);
 
+        contractA.addSecretary(secC);
+        contractA.setSupervisor(supC);
+        contractA.setEmployee(empA);
+
+
+        Secretary secA = new Secretary();
+        alice.addRole(secA);
         Employee empB = new Employee();
-        linkPersonAndRole(bob, empB);
+        bob.addRole(empB);
+
+        contractB.addSecretary(secA);
+        contractB.setSupervisor(supC);
+        contractB.setEmployee(empB);
+
 
         personDAO.save(chef);
         personDAO.save(alice);
         personDAO.save(bob);
 
-        // Link Contracts to Roles
-        // - Contracts need at least one Secretary
-        // - Contracts have exactly one Employee and Supervisor
-        linkContractAndRoles(contractA, supC, secC, empA, null);
-        linkContractAndRoles(contractB, supC, secA, empB, null);
+        // Timesheets
+        Timesheet timesheetAA = createTimesheet(contractA, TimesheetStatus.ARCHIVED, LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31), true, true);
+        Timesheet timesheetAB = createTimesheet(contractA, TimesheetStatus.SIGNED_BY_SUPERVISOR, LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 28), true, true);
+        Timesheet timesheetAC = createTimesheet(contractA, TimesheetStatus.IN_PROGRESS, LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31), false, false);
 
+        Timesheet timesheetBA = createTimesheet(contractB, TimesheetStatus.ARCHIVED, LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31), true, true);
+        Timesheet timesheetBB = createTimesheet(contractB, TimesheetStatus.SIGNED_BY_SUPERVISOR, LocalDate.of(2021, 2, 1), LocalDate.of(2021, 2, 28), true, true);
+        Timesheet timesheetBC = createTimesheet(contractB, TimesheetStatus.IN_PROGRESS, LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31), false, false);
+
+        // Timesheet Entries
+        createTimesheetEntry(timesheetAA, ReportType.WORK, "Worked on project XYZ", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2020, 1, 1));
+        createTimesheetEntry(timesheetAA, ReportType.WORK, "Worked later on project XYZ", LocalTime.of(10, 0), LocalTime.of(18, 0), LocalDate.of(2020, 1, 5));
+        createTimesheetEntry(timesheetAA, ReportType.WORK, "Worked early on project XYZ", LocalTime.of(7, 0), LocalTime.of(12, 0), LocalDate.of(2020, 1, 15));
+
+        createTimesheetEntry(timesheetAB, ReportType.SICK_LEAVE, "Sick", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2020, 2, 1));
+        createTimesheetEntry(timesheetAB, ReportType.SICK_LEAVE, "More sick", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2020, 2, 2));
+        createTimesheetEntry(timesheetAB, ReportType.WORK, "Team meeting about project XYZ", LocalTime.of(7, 30), LocalTime.of(12, 0), LocalDate.of(2020, 2, 3));
+
+        createTimesheetEntry(timesheetAC, ReportType.VACATION, "2 week vacation", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2020, 3, 1));
+        createTimesheetEntry(timesheetAC, ReportType.VACATION, "2 week vacation", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2020, 3, 14));
+        createTimesheetEntry(timesheetAC, ReportType.WORK, "Back to coffee", LocalTime.of(7, 0), LocalTime.of(12, 0), LocalDate.of(2020, 3, 15));
+
+        createTimesheetEntry(timesheetBA, ReportType.WORK, "Starting new job", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2021, 1, 1));
+        createTimesheetEntry(timesheetBA, ReportType.WORK, "Getting used to the job", LocalTime.of(10, 0), LocalTime.of(18, 0), LocalDate.of(2021, 1, 5));
+        createTimesheetEntry(timesheetBA, ReportType.SICK_LEAVE, "Sick (of) the new job", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2021, 1, 15));
+
+        createTimesheetEntry(timesheetBB, ReportType.WORK, "Worked on project XYZ", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2021, 2, 1));
+        createTimesheetEntry(timesheetBB, ReportType.WORK, "Worked later on project XYZ", LocalTime.of(10, 0), LocalTime.of(18, 0), LocalDate.of(2021, 2, 5));
+        createTimesheetEntry(timesheetBB, ReportType.WORK, "Worked early on project XYZ", LocalTime.of(7, 0), LocalTime.of(12, 0), LocalDate.of(2021, 2, 15));
+
+        createTimesheetEntry(timesheetBC, ReportType.VACATION, "Long sleep week", LocalTime.of(8, 0), LocalTime.of(17, 0), LocalDate.of(2021, 3, 1));
+        createTimesheetEntry(timesheetBC, ReportType.VACATION, "Last day of long sleep week", LocalTime.of(10, 0), LocalTime.of(18, 0), LocalDate.of(2021, 3, 5));
+        createTimesheetEntry(timesheetBC, ReportType.WORK, "Finishing up project XYZ", LocalTime.of(7, 0), LocalTime.of(16, 0), LocalDate.of(2021, 3, 25));
+
+        // Persist contracts (cascades to roles, timesheets and entries)
         contractDAO.save(contractA);
         contractDAO.save(contractB);
     }
@@ -89,67 +130,62 @@ public class TestDataSeeder {
      * Helper for one-line creation of a person.
      */
     private Person createPerson(String first, String last, String email, LocalDate dob, boolean consent) {
-        Person p = new Person(true);
-        p.setFirstName(first);
-        p.setLastName(last);
-        p.setEmailAddress(email);
-        p.setDateOfBirth(dob);
-        p.setConsent(consent);
-        return p;
+        Person person = new Person(true);
+        person.setFirstName(first);
+        person.setLastName(last);
+        person.setEmailAddress(email);
+        person.setDateOfBirth(dob);
+        person.setConsent(consent);
+        return person;
     }
 
     /**
      * Helper for one-line creation of a contract.
      */
     private Contract createContract(ContractStatus status, String name, LocalDate startDate, LocalDate endDate, TimesheetFrequency frequency, LocalDate terminationDate, double hoursPerWeek) {
-        Contract c = new Contract(true);
-        c.setStatus(status);
-        c.setName(name);
-        c.setStartDate(startDate);
-        c.setEndDate(endDate);
-        c.setFrequency(frequency);
-        c.setTerminationDate(terminationDate);
-        c.setHoursPerWeek(hoursPerWeek);
-        return c;
+        Contract contract = new Contract(true);
+        contract.setStatus(status);
+        contract.setName(name);
+        contract.setStartDate(startDate);
+        contract.setEndDate(endDate);
+        contract.setFrequency(frequency);
+        contract.setTerminationDate(terminationDate);
+        contract.setHoursPerWeek(hoursPerWeek);
+        return contract;
     }
 
     /**
-     * Links a role to a person by setting both sides of the relationship.
-     *
-     * @param person the person to be added to the role
-     * @param role   the role to be added to the person
+     * Helper for one-line creation of a timesheet.
+     * Links contract and timesheet.
      */
-    private void linkPersonAndRole(Person person, Role role) {
-        role.setPerson(person);
-        person.getRoles().add(role);
+    private Timesheet createTimesheet(Contract contract, TimesheetStatus status, LocalDate startDate, LocalDate endDate, boolean signedByEmp, boolean signedBySup) {
+        Timesheet sheet = new Timesheet(true);
+        sheet.setContract(contract);
+        sheet.setStatus(status);
+        sheet.setStartDate(startDate);
+        sheet.setEndDate(endDate);
+        sheet.setSignedByEmployee(signedByEmp ? endDate : null);
+        sheet.setSignedBySupervisor(signedBySup ? endDate.plusDays(3) : null);
+
+        contract.addTimesheet(sheet);
+        return sheet;
     }
 
     /**
-     * Links a contract to a role by setting both sides of the relationship.
-     * Currently only supports adding one secretary and assistant at once.
-     *
-     * @param contract   the contract to be added to the role
-     * @param supervisor the supervisor to be added to the contract (can be null)
-     * @param secretary  the secretary to be added to the contract (can be null)
-     * @param employee   the employee to be added to the contract (can be null)
-     * @param assistant  the assistant to be added to the contract (can be null)
+     * Helper for one-line creation of a timesheet entry.
+     * Links timesheet and entry.
      */
-    private void linkContractAndRoles(Contract contract, Supervisor supervisor, Secretary secretary, Employee employee, Assistant assistant) {
-        if (supervisor != null) {
-            supervisor.setContract(contract);
-            contract.setSupervisor(supervisor);
-        }
-        if (secretary != null) {
-            secretary.setContract(contract);
-            contract.addSecretary(secretary);
-        }
-        if (employee != null) {
-            employee.setContract(contract);
-            contract.setEmployee(employee);
-        }
-        if (assistant != null) {
-            assistant.setContract(contract);
-            contract.addAssistant(assistant);
-        }
+    private TimesheetEntry createTimesheetEntry(Timesheet timesheet, ReportType type, String description, LocalTime startTime, LocalTime endTime, LocalDate entryDate) {
+        TimesheetEntry entry = new TimesheetEntry(true);
+        entry.setTimesheet(timesheet);
+        entry.setType(type);
+        entry.setDescription(description);
+        entry.setStartTime(startTime);
+        entry.setEndTime(endTime);
+        entry.setEntryDate(entryDate);
+
+        timesheet.addEntry(entry);
+
+        return entry;
     }
 }

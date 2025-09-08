@@ -90,7 +90,16 @@ public class Person extends AbstractEntity {
     }
 
     public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+        this.roles.forEach(role -> role.setPerson(null));
+        this.roles.clear();
+        if (roles == null) return;
+        this.roles.addAll(roles);
+        roles.forEach(role -> role.setPerson(this));
+    }
+
+    public void addRole(Role role) {
+        role.setPerson(this);
+        roles.add(role);
     }
 
 

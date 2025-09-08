@@ -90,4 +90,18 @@ public class Timesheet extends AbstractEntity {
     public List<TimesheetEntry> getEntries() {
         return Collections.unmodifiableList(entries);
     }
+
+    public void setEntries(List<TimesheetEntry> entries) {
+        this.entries.forEach(e -> e.setTimesheet(null));
+        this.entries.clear();
+        if (entries == null) return;
+        this.entries.addAll(entries);
+        entries.forEach(e -> e.setTimesheet(this));
+    }
+
+    public void addEntry(TimesheetEntry entry) {
+        if (entry == null) return;
+        entries.add(entry);
+        entry.setTimesheet(this);
+    }
 }
