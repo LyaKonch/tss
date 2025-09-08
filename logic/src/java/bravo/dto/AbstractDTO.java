@@ -11,18 +11,18 @@ public abstract class AbstractDTO implements Serializable {
 
     private String uuid;
 
-    private int jpaVersion;
+    private int version;
 
     protected AbstractDTO() {
     }
 
-    protected AbstractDTO(String uuid, int jpaVersion) {
+    protected AbstractDTO(String uuid, int version) {
         this.uuid = uuid;
-        this.jpaVersion = jpaVersion;
+        this.version = version;
     }
 
-    public int getJpaVersion() {
-        return jpaVersion;
+    public int getVersion() {
+        return version;
     }
 
     public String getUuid() {
