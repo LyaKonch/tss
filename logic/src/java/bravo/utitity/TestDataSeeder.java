@@ -2,7 +2,6 @@ package bravo.utitity;
 
 import bravo.dao.ContractDAO;
 import bravo.dao.PersonDAO;
-import bravo.dao.RoleDAO;
 import bravo.entities.*;
 import bravo.enums.ContractStatus;
 import bravo.enums.ReportType;
@@ -24,33 +23,26 @@ public class TestDataSeeder {
     private PersonDAO personDAO;
 
     @Inject
-    private RoleDAO roleDAO;
-
-    @Inject
     private ContractDAO contractDAO;
+
 
     public TestDataSeeder() {
     }
 
-    @PostConstruct
-    public void seedAll() {
-        if (!shouldSeed()) {
-            return;
-        }
-
-        seed();
-    }
 
     /**
      * Determine if seeding is necessary by counting the number of persons.
      *
-     * @return true if no persons are present, false otherwise
+     * @return true if persons are present, false otherwise
      */
-    private boolean shouldSeed() {
-        return personDAO.count() == 0;
+    private boolean preventSeeding() {
+        return personDAO.count() != 0;
     }
 
+    @PostConstruct
     private void seed() {
+        if (preventSeeding()) return;
+
         // Persons
         Person chef = createPerson("Chef", "Zero", "chef@example.com", LocalDate.of(1995, 9, 5), true);
         Person alice = createPerson("Alice", "Anderson", "alice@example.com", LocalDate.of(2001, 1, 1), true);
