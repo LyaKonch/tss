@@ -2,12 +2,12 @@ package bravo.entities;
 
 import jakarta.persistence.*;
 
-
 @Entity
 @DiscriminatorValue("Assistant")
 public class Assistant extends Role {
-      @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "assistant_contract_id", nullable = true,unique=true)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")
     private Contract contract;
 
     public Contract getContract() {
@@ -17,6 +17,5 @@ public class Assistant extends Role {
     public void setContract(Contract contract) {
         this.contract = contract;
     }
-    
-}
 
+}

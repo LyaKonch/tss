@@ -1,4 +1,3 @@
-
 package bravo.dao;
 
 import bravo.entities.Contract;
@@ -14,11 +13,11 @@ import java.util.Optional;
 @LocalBean
 @Stateless
 public class ContractDAO extends AbstractDAO<Contract> {
-    
-    public ContractDAO(){
+
+    public ContractDAO() {
         super(Contract.class);
     }
-    
+
     /**
      * Persists a new contract in the database.
      *
@@ -39,7 +38,6 @@ public class ContractDAO extends AbstractDAO<Contract> {
         return save(contract);
     }
 
-    
     /**
      * Retrieves all contracts from the database.
      *
@@ -63,6 +61,10 @@ public class ContractDAO extends AbstractDAO<Contract> {
         return query.getResultList();
     }
 
-
+    public Contract findByName(String name) {
+        return em.createNamedQuery("Contract.findByName", Contract.class)
+                .setParameter("name", name)
+                .getSingleResult();
+    }
 
 }

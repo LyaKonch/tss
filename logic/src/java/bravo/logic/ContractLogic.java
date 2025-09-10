@@ -1,6 +1,7 @@
 package bravo.logic;
 
 import bravo.dto.ContractDTO;
+import bravo.entities.Contract;
 import jakarta.ejb.Local;
 import java.time.LocalDate;
 import java.util.List;
@@ -54,20 +55,6 @@ public interface ContractLogic {
      */
     ContractDTO terminateContract(String uuid, LocalDate terminationDate);
 
-    /**
-     * Calculates the hours due for a contract based on working days per week and hours per week.
-     *
-     * @param contract the contract to calculate hours for
-     * @return the calculated hours due
-     */
-    double calculateHoursDue(ContractDTO contract);
-
-    /**
-     * Calculates the vacation hours for a contract based on vacation days per year and hours per week.
-     *
-     * @param contract the contract to calculate vacation hours for
-     * @return the calculated vacation hours
-     */
-    double calculateVacationHours(ContractDTO contract);
+    
 
 }

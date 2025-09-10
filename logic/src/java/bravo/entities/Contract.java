@@ -1,6 +1,9 @@
 package bravo.entities;
 
-import bravo.enums.*;
+import bravo.enums.ContractStatus;
+import bravo.enums.FederalState;
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
+import bravo.enums.TimesheetFrequency;
 import bravo.logic.TimesheetLogic;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -8,15 +11,13 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
 @Table(name = "contract")
-public class Contract extends AbstractEntity{
-
-    private int WORKINGDAYSPERWEEK = 5;
-    private int VACATIONDAYSPERYEAR = 20;
-
+@NamedQueries({@NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"), @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")})
+public class Contract extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     private ContractStatus status = ContractStatus.PREPARED;
 
@@ -24,184 +25,260 @@ public class Contract extends AbstractEntity{
     private String name;
 
     private LocalDate startDate;
+
     private LocalDate endDate;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TimesheetFrequency frequency = TimesheetFrequency.MONTHLY;
 
     private LocalDate terminationDate;
 
     @Positive
-    private double hoursPerWeek;
+    private Double hoursPerWeek;
 
-    // Genau 1 
-    @OneToOne(optional = false)//korrigiert
-    @JoinColumn(name = "employee_id")
+    @Column(nullable = false)
+    @Min(1)
+    @Max(7)
+    private int workingDaysPerWeek = 5;
+
+    @Column(nullable = false)
+    @Min(0)
+    @Max(365)
+    private int vacationDaysPerYear = 20;
+
+    // state should be chosen by user.
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    public FederalState state = RHINELAND_PALATINATE;
+
+    // Contract 1 < --- > 1 Employee
+    @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private Employee employee;
 
-    @OneToOne(optional = false)//Korrigiert
-    @JoinColumn(name = "supervisor_id")
+    // Contract 1 < --- > 1 Supervisor
+    @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private Supervisor supervisor;
 
-    // mindestens 1
+    // Contract 1 < --- > 1..* Secretary
     @NotNull
-    @Size(min = 1, message = "Mindestens eine Secretary erforderlich")
-    @OneToMany//KOrrigiert
-    @JoinTable(name = "contract_secretary",
-            joinColumns = @JoinColumn(name = "contract_id"),
-            inverseJoinColumns = @JoinColumn(name = "secretary_id"))
+    @Size(min = 1, message = "Every Contract needs at least one Secretary.")
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Secretary> secretaries = new ArrayList<>();
 
-    // Assistants 0..*
-    @OneToMany
-    @JoinTable(name = "contract_assistant",
-            joinColumns = @JoinColumn(name = "contract_id"),
-            inverseJoinColumns = @JoinColumn(name = "assistant_id"))
-    private final List<Assistant> assistants = new ArrayList<>();
+    // Contract 1 < --- > 0..* Assistant
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Assistant> assistants = new ArrayList<>();
 
+    // Contract 1 < --- > * Timesheet
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Timesheet> timesheets = new ArrayList<>();
 
-    public int getWorkingDaysPerWeek() {
-        return WORKINGDAYSPERWEEK;
+
+    public Contract() {
+        super();
     }
 
-   
-    public int getVacationDaysPerYear() {
-        return VACATIONDAYSPERYEAR;
+    public Contract(boolean newEntity) {
+        super(newEntity);
     }
 
-    // Berechnet
+
     @Transient
-    public double getVacationHours() {
+    private double vacationHours() {
         int months = getDurationInWholeMonths();
         if (months <= 0 || hoursPerWeek <= 0) return 0.0;
-        return VACATIONDAYSPERYEAR * (months / 12.0) * (hoursPerWeek / WORKINGDAYSPERWEEK);
+        return vacationDaysPerYear * (months / 12.0) * (hoursPerWeek / workingDaysPerWeek);
     }
 
-    @Transient
-    public double getHoursDue(TimesheetLogic timesheetLogic) {
-        return timesheets.stream().mapToDouble(timesheet->timesheetLogic.getHoursDue(timesheet)).sum();
-    }
+    //@Transient
+    //private double hoursDue() {
+    //    return timesheets.stream().mapToDouble(ts->ts.getHoursDue()).sum();
+    //}
 
-    //Hilfsmethode
     private int getDurationInWholeMonths() {
         if (startDate == null || endDate == null) return 0;
-        return (int) ChronoUnit.MONTHS.between(
-                startDate.withDayOfMonth(1),
-                endDate.withDayOfMonth(1)
-        ) + 1;
+        return (int) ChronoUnit.MONTHS.between(startDate.withDayOfMonth(1), endDate.withDayOfMonth(1)) + 1;
     }
 
-    // 
+
+    public ContractStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ContractStatus status) {
+        this.status = status;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
     public void setStartDate(LocalDate d) {
         this.startDate = d;
         if (d != null && d.getDayOfMonth() != 1)
-            throw new IllegalArgumentException("startDate muss der 1. des Monats sein");
+            throw new IllegalArgumentException("startDate has to be first of a month");
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
     }
 
     public void setEndDate(LocalDate d) {
         this.endDate = d;
         if (d != null && d.plusDays(1).getDayOfMonth() != 1)
-            throw new IllegalArgumentException("endDate muss letzter Tag des Monats sein");
+            throw new IllegalArgumentException("endDate has to be last day of a month");
         if (startDate != null && d != null && d.isBefore(startDate))
-            throw new IllegalArgumentException("endDate darf nicht vor startDate liegen");
+            throw new IllegalArgumentException("endDate has to be after startDate");
     }
 
-    // Getter&Setter
-    
-    public Contract() {
-        super();
-    }
-    
-    public Contract(boolean newEntity) {
-        super(newEntity);
-    }
-    
-    public ContractStatus getStatus() { 
-        return status; 
-    }
-    public void setStatus(ContractStatus status) { 
-        this.status = status; 
+    public TimesheetFrequency getFrequency() {
+        return frequency;
     }
 
-    public String getName() { 
-        return name; 
-    }
-    public void setName(String name) { 
-        this.name = name; 
+    public void setFrequency(TimesheetFrequency frequency) {
+        this.frequency = frequency;
     }
 
-    public LocalDate getStartDate() { 
-        return startDate; 
-    }
-    public LocalDate getEndDate() { 
-        return endDate; 
+    public LocalDate getTerminationDate() {
+        return terminationDate;
     }
 
-    public TimesheetFrequency getFrequency() { 
-        return frequency; 
-    }
-    public void setFrequency(TimesheetFrequency frequency) { 
-        this.frequency = frequency; 
+    public void setTerminationDate(LocalDate terminationDate) {
+        this.terminationDate = terminationDate;
     }
 
-    public LocalDate getTerminationDate() { 
-        return terminationDate; 
-    }
-    public void setTerminationDate(LocalDate terminationDate) { 
-        this.terminationDate = terminationDate; 
+    public double getHoursPerWeek() {
+        return hoursPerWeek;
     }
 
-    public double getHoursPerWeek() { 
-        return hoursPerWeek; 
-    }
-    public void setHoursPerWeek(double hoursPerWeek) { 
-        this.hoursPerWeek = hoursPerWeek; 
+    public void setHoursPerWeek(double hoursPerWeek) {
+        this.hoursPerWeek = hoursPerWeek;
     }
 
-    public Employee getEmployee() { 
-        return employee; 
-    }
-    public void setEmployee(Employee employee) { 
-        this.employee = employee; 
+    public int getWorkingDaysPerWeek() {
+        return workingDaysPerWeek;
     }
 
-    public Supervisor getSupervisor() { 
-        return supervisor; 
+    public void setWorkingDaysPerWeek(int workingDaysPerWeek) {
+        this.workingDaysPerWeek = workingDaysPerWeek;
     }
-    public void setSupervisor(Supervisor supervisor) { 
-        this.supervisor = supervisor; 
+
+    public int getVacationDaysPerYear() {
+        return vacationDaysPerYear;
+    }
+
+    public void setVacationDaysPerYear(int vacationDaysPerYear) {
+        this.vacationDaysPerYear = vacationDaysPerYear;
+    }
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        if (employee == null) throw new IllegalArgumentException("Employee must not be null");
+        if (this.employee != null) this.employee.setContract(null);
+        this.employee = employee;
+        employee.setContract(this);
+    }
+
+    public Supervisor getSupervisor() {
+        return supervisor;
+    }
+
+    public void setSupervisor(Supervisor supervisor) {
+        if (supervisor == null) throw new IllegalArgumentException("Supervisor must not be null");
+        if (this.supervisor != null) this.supervisor.setContract(null);
+        this.supervisor = supervisor;
+        supervisor.setContract(this);
     }
 
     public List<Secretary> getSecretaries() {
-        return java.util.Collections.unmodifiableList(secretaries);
+        return Collections.unmodifiableList(secretaries);
     }
+
     public void setSecretaries(List<Secretary> secretaries) {
+        this.secretaries.forEach(s -> s.setContract(null));
         this.secretaries.clear();
-        if (secretaries != null) this.secretaries.addAll(secretaries);
+        if (secretaries != null) {
+            this.secretaries.addAll(secretaries);
+            secretaries.forEach(s -> s.setContract(this));
+        }
     }
-    public void addSecretary(Secretary s) { if (s != null) secretaries.add(s); }
-    public void removeSecretary(Secretary s) { secretaries.remove(s); }
+
+    public void addSecretary(Secretary secretary) {
+        if (secretary != null) {
+            secretaries.add(secretary);
+            secretary.setContract(this);
+        }
+    }
+
+    public void removeSecretary(Secretary secretary) {
+        if (secretary == null) return;
+        secretaries.remove(secretary);
+        secretary.setContract(null);
+    }
 
     public List<Assistant> getAssistants() {
         return java.util.Collections.unmodifiableList(assistants);
     }
+
     public void setAssistants(List<Assistant> assistants) {
+        this.assistants.forEach(a -> a.setContract(null));
         this.assistants.clear();
-        if (assistants != null) this.assistants.addAll(assistants);
-    }
-    public void addAssistant(Assistant a) { 
-        if (a != null) assistants.add(a); 
-    }
-    public void removeAssistant(Assistant a) { 
-        assistants.remove(a); 
+        if (assistants == null) return;
+        this.assistants.addAll(assistants);
+        assistants.forEach(a -> a.setContract(this));
     }
 
-    public List<Timesheet> getTimesheets() { 
-        return timesheets; 
+    public void addAssistant(Assistant assistant) {
+        if (assistant == null) return;
+        assistants.add(assistant);
+        assistant.setContract(this);
     }
-    public void setTimesheets(List<Timesheet> timesheets) { 
-        this.timesheets = timesheets; 
+
+    public void removeAssistant(Assistant assistant) {
+        if (assistant == null) return;
+        assistants.remove(assistant);
+        assistant.setContract(null);
     }
+
+    public List<Timesheet> getTimesheets() {
+        return Collections.unmodifiableList(timesheets);
+    }
+
+    public void setTimesheets(List<Timesheet> timesheets) {
+        this.timesheets.forEach(t -> t.setContract(null));
+        this.timesheets.clear();
+        this.timesheets.addAll(timesheets);
+        timesheets.forEach(t -> t.setContract(this));
+    }
+
+    public void addTimesheet(Timesheet timesheet) {
+        if (timesheet != null) {
+            timesheets.add(timesheet);
+            timesheet.setContract(this);
+        }
+    }
+    
+    public void removeTimesheet(Timesheet timesheet) {
+        if (timesheet != null) {
+            timesheets.remove(timesheet);
+            timesheet.setContract(null); // this removes the reference  
+        }
+    }
+    
+    public double getVacationHours() {
+        return vacationHours();
+    }
+    
 }

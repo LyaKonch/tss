@@ -3,25 +3,30 @@ package bravo.logic.impl;
 import bravo.dao.ContractDAO;
 import bravo.dto.ContractDTO;
 import bravo.entities.Contract;
+import bravo.entities.Timesheet;
 import bravo.enums.ContractStatus;
+import bravo.enums.FederalState;
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
+import bravo.enums.TimesheetFrequency;
+import bravo.enums.TimesheetStatus;
 import bravo.logic.ContractLogic;
 import bravo.logic.TimesheetLogic;
+import bravo.utitity.PublicHolidayService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Stateless
-public class ContractLogicBean implements ContractLogic  {
+public class ContractLogicBean implements ContractLogic {
+
     @EJB
     private ContractDAO contractDAO;
 
-    @EJB
-    private TimesheetLogic timesheetLogic;
-    
     /**
      * Creates a new contract.
      *
@@ -39,7 +44,7 @@ public class ContractLogicBean implements ContractLogic  {
         Contract savedContract = contractDAO.save(contract);
         return mapEntityToDto(savedContract);
     }
-    
+
     public ContractDTO startContract(String uuid) {
         if (uuid == null) {
             throw new IllegalArgumentException("UUID cannot be null.");
@@ -51,19 +56,21 @@ public class ContractLogicBean implements ContractLogic  {
             }
             contract.setStatus(ContractStatus.STARTED);
 
-            timesheetLogic.createTimesheetsForContract(contract);
+            createTimesheetsForContract(contract);
+
             Contract updatedContract = contractDAO.save(contract);
             return mapEntityToDto(updatedContract);
         } catch (NoResultException e) {
             throw new IllegalArgumentException("Contract with UUID " + uuid + " not found.");
         }
     }
-    
+
     /**
-     * Terminates a contract by setting its status to TERMINATED and recording the termination date.
-     * This action is triggered by a Supervisor or Assistant. All IN_PROGRESS timesheets are deleted.
+     * Terminates a contract by setting its status to TERMINATED and recording
+     * the termination date. This action is triggered by a Supervisor or
+     * Assistant. All IN_PROGRESS timesheets are deleted.
      *
-     * @param uuid            the UUID of the contract to terminate
+     * @param uuid the UUID of the contract to terminate
      * @param terminationDate the date when the contract is terminated
      * @return the updated contract
      */
@@ -79,18 +86,20 @@ public class ContractLogicBean implements ContractLogic  {
             }
             contract.setStatus(ContractStatus.TERMINATED);
             contract.setTerminationDate(terminationDate);
-            // All Timesheets with status IN_PROGRESS get deleted
-            timesheetLogic.deleteTimesheetsInProgressForContract(contract);
+
+            contract.getTimesheets().removeIf(ts -> ts.getStatus() == TimesheetStatus.IN_PROGRESS);
+
             Contract updatedContract = contractDAO.save(contract);
             return mapEntityToDto(updatedContract);
         } catch (NoResultException e) {
             throw new IllegalArgumentException("Contract with UUID " + uuid + " not found.");
         }
     }
-    
+
     /**
      * Archives a contract. Transitions from STARTED or TERMINATED to ARCHIVED.
      * All timesheets for the contract are archived.
+     *
      * @param uuid the UUID of the contract to archive
      * @return the updated contract
      */
@@ -103,12 +112,15 @@ public class ContractLogicBean implements ContractLogic  {
             if (contract.getStatus() != ContractStatus.STARTED && contract.getStatus() != ContractStatus.TERMINATED) {
                 throw new IllegalStateException("Can only archive a STARTED or TERMINATED contract.");
             }
-            
-            // All Timesheets archived if it has SIGNED_BY_SUPERVISOR status, if not the exception is thrown
-            timesheetLogic.archiveTimesheetsForContract(contract);
-            
+
+            contract.getTimesheets().forEach(ts -> {
+                if (ts.getStatus() == TimesheetStatus.SIGNED_BY_SUPERVISOR) {
+                    ts.setStatus(TimesheetStatus.ARCHIVED);
+                }
+            });
+
             contract.setStatus(ContractStatus.ARCHIVED);
-            
+
             Contract updatedContract = contractDAO.save(contract);
             return mapEntityToDto(updatedContract);
         } catch (NoResultException e) {
@@ -117,8 +129,9 @@ public class ContractLogicBean implements ContractLogic  {
     }
 
     /**
-     * Deletes a contract from the database.
-     * This is the final step in the contract lifecycle.
+     * Deletes a contract from the database. This is the final step in the
+     * contract lifecycle.
+     *
      * @param uuid the UUID of the contract to delete
      */
     public void deleteContract(String uuid) {
@@ -127,16 +140,19 @@ public class ContractLogicBean implements ContractLogic  {
         }
         try {
             Contract contract = contractDAO.findByUUID(uuid);
-            if (contract.getStatus() != ContractStatus.PREPARED) {
-                 throw new IllegalStateException("Can only delete an ARCHIVED or PREPARED contract.");
+            if (contract.getStatus() != ContractStatus.PREPARED || contract.getStatus() != ContractStatus.ARCHIVED ) {
+                throw new IllegalStateException("Can only delete an ARCHIVED or PREPARED contract.");
             }
-            // does EntityManager handle cascade deleting? or i need to prematurely delete all timesheets
+            if(!contract.getTimesheets().isEmpty()){
+                throw new IllegalStateException("Contract still has some related to it archived timesheets.");
+            }
             contractDAO.delete(contract);
+            
         } catch (NoResultException e) {
             throw new IllegalArgumentException("Contract with UUID " + uuid + " not found.");
         }
     }
-    
+
     /**
      * Updates an existing contract.
      *
@@ -201,60 +217,9 @@ public class ContractLogicBean implements ContractLogic  {
                 .collect(Collectors.toList());
     }
 
-
-    /**
-     * Calculates the hours due for a contract based on working days per week and hours per week.
-     * This calculation is performed for the full duration of the contract.
-     *
-     * @param contractDto the contract DTO to calculate hours for
-     * @return the calculated hours due
-     */
-    @Override
-    public double calculateHoursDue(ContractDTO contractDto) {
-        if (contractDto.getStartDate() == null || contractDto.getEndDate() == null) {
-            return 0.0;
-        }
-        LocalDate start = contractDto.getStartDate();
-        LocalDate end = contractDto.getEndDate();
-        
-        int workingDays = timesheetLogic.countWorkingDays(start, end);
-        int holidays = timesheetLogic.countHolidaysOnWorkingDays(start, end); // NOTE: Using default state
-        
-        int effectiveDays = workingDays - holidays;
-        
-        if (contractDto.getWorkingDaysPerWeek() <= 0) {
-            return 0.0;
-        }
-        
-        double hoursPerDay = contractDto.getHoursPerWeek() / contractDto.getWorkingDaysPerWeek();
-        return effectiveDays * hoursPerDay;
-    }
-
-    /**
-     * Calculates the vacation hours for a contract based on vacation days per year and hours per week.
-     *
-     * @param contractDto the contract DTO to calculate vacation hours for
-     * @return the calculated vacation hours
-     */
-    @Override
-    public double calculateVacationHours(ContractDTO contractDto) {
-        if (contractDto.getStartDate() == null || contractDto.getEndDate() == null) {
-            return 0.0;
-        }
-
-        long months = ChronoUnit.MONTHS.between(contractDto.getStartDate(), contractDto.getEndDate());
-        double monthsFactor = (double) months / 12.0;
-
-        if (contractDto.getWorkingDaysPerWeek() <= 0) {
-            return 0.0;
-        }
-
-        double hoursPerDay = contractDto.getHoursPerWeek() / contractDto.getWorkingDaysPerWeek();
-        return contractDto.getVacationDaysPerYear() * monthsFactor * hoursPerDay;
-    }
-
     /**
      * Helper method to map a Contract entity to a ContractDTO.
+     *
      * @param entity The Contract entity to map.
      * @return A new ContractDTO populated with the entity's data.
      */
@@ -274,6 +239,7 @@ public class ContractLogicBean implements ContractLogic  {
 
     /**
      * Helper method to map a ContractDTO to an existing Contract entity.
+     *
      * @param dto The ContractDTO to map from.
      * @param entity The existing Contract entity to update.
      */
@@ -283,5 +249,55 @@ public class ContractLogicBean implements ContractLogic  {
         entity.setEndDate(dto.getEndDate());
         entity.setFrequency(dto.getFrequency());
         entity.setHoursPerWeek(dto.getHoursPerWeek());
+    }
+
+    public void createTimesheetsForContract(Contract contract) {
+        if (contract.getFrequency() == TimesheetFrequency.MONTHLY) {
+            createMonthlyTimesheets(contract);
+        } else if (contract.getFrequency() == TimesheetFrequency.WEEKLY) {
+            createWeeklyTimesheets(contract);
+        }
+    }
+
+    // these entirely relies on CascadeType.ALL in OneToMany relation to timesheets
+    // jpa with this option propagates the effect of an operation to associated entities., timesheet in this case.
+    // thus means when i add timesheet to ListArray<Timesheet> timesheets, it is automatically persisted.
+    // previously it was handled by TimesheetDAO in TimesheetLogicBean
+    private void createMonthlyTimesheets(Contract contract) {
+        LocalDate currentPeriodStart = contract.getStartDate();
+        while (!currentPeriodStart.isAfter(contract.getEndDate())) {
+            LocalDate currentPeriodEnd = currentPeriodStart.withDayOfMonth(currentPeriodStart.lengthOfMonth());
+            if (currentPeriodEnd.isAfter(contract.getEndDate())) {
+                currentPeriodEnd = contract.getEndDate();
+            }
+
+            Timesheet timesheet = new Timesheet();
+            timesheet.setContract(contract);
+            timesheet.setStartDate(currentPeriodStart);
+            timesheet.setEndDate(currentPeriodEnd);
+            timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
+            contract.addTimesheet(timesheet); // ensuring bidirectional associations
+
+            currentPeriodStart = currentPeriodStart.plusMonths(1).withDayOfMonth(1);
+        }
+    }
+
+    private void createWeeklyTimesheets(Contract contract) {
+        LocalDate currentPeriodStart = contract.getStartDate();
+        while (!currentPeriodStart.isAfter(contract.getEndDate())) {
+            LocalDate currentPeriodEnd = currentPeriodStart.with(DayOfWeek.SUNDAY);
+            if (currentPeriodEnd.isAfter(contract.getEndDate())) {
+                currentPeriodEnd = contract.getEndDate();
+            }
+
+            Timesheet timesheet = new Timesheet();
+            timesheet.setContract(contract);
+            timesheet.setStartDate(currentPeriodStart);
+            timesheet.setEndDate(currentPeriodEnd);
+            timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
+            contract.addTimesheet(timesheet); // ensuring bidirectional associations
+
+            currentPeriodStart = currentPeriodEnd.plusDays(1);
+        }
     }
 }
