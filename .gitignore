@@ -37,6 +37,10 @@ logs/
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+.idea/dataSources.xml
+.idea/resourceBundles.xml
+.idea/webContexts.xml
+
 # Generated files
 .idea/**/contentModel.xml
 
@@ -55,3 +59,4 @@ tmp/
 __MACOSX/
 Thumbs.db
 [Dd]esktop.ini
+

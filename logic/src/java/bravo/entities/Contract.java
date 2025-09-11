@@ -269,6 +269,32 @@ public class Contract extends AbstractEntity {
             timesheet.setContract(this);
         }
     }
+
+    public double getVacationHours() {
+        return vacationHours();
+    }
+
+    public double getHoursDue(TimesheetLogic timesheetLogic) {
+        return hoursDue(timesheetLogic);
+    }
+
+    public List<Timesheet> getTimesheets() {
+        return Collections.unmodifiableList(timesheets);
+    }
+
+    public void setTimesheets(List<Timesheet> timesheets) {
+        this.timesheets.forEach(t -> t.setContract(null));
+        this.timesheets.clear();
+        this.timesheets.addAll(timesheets);
+        timesheets.forEach(t -> t.setContract(this));
+    }
+
+    public void addTimesheet(Timesheet timesheet) {
+        if (timesheet != null) {
+            timesheets.add(timesheet);
+            timesheet.setContract(this);
+        }
+    }
     
     public void removeTimesheet(Timesheet timesheet) {
         if (timesheet != null) {
