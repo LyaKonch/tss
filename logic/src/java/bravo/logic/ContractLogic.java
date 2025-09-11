@@ -10,12 +10,11 @@ import java.util.List;
 public interface ContractLogic {
 
     /**
-     * Creates a new contract.
+     * Creates a new contract entity from the given DTO.
      *
-     * @param contract the contract DTO with the data
-     * @return the created contract with generated ID
+     * @return the created ContractDTO with generated ID
      */
-    ContractDTO createContract(ContractDTO contract);
+    ContractDTO create(ContractDTO contractDto);
 
     /**
      * Updates an existing contract.
@@ -23,7 +22,7 @@ public interface ContractLogic {
      * @param contract the contract DTO with updated data
      * @return the updated contract
      */
-    ContractDTO updateContract(ContractDTO contract);
+    ContractDTO update(ContractDTO contract);
 
     /**
      * Retrieves a contract by its UUID.
@@ -31,21 +30,21 @@ public interface ContractLogic {
      * @param uuid the UUID of the contract
      * @return the found contract or null if not found
      */
-    ContractDTO getContractByUuid(String uuid);
+    ContractDTO findByUuid(String uuid);
 
     /**
      * Retrieves all contracts.
      *
      * @return a list of all contracts
      */
-    List<ContractDTO> getAllContracts();
+    List<ContractDTO> findAll();
 
     /**
      * Retrieves all active contracts.
      *
      * @return a list of all active contracts
      */
-    List<ContractDTO> getActiveContracts();
+    List<ContractDTO> getActive();
 
     /**
      * Terminates a contract by setting its status to TERMINATED and recording the termination date.
@@ -54,7 +53,7 @@ public interface ContractLogic {
      * @param terminationDate the date when the contract is terminated
      * @return the updated contract
      */
-    ContractDTO terminateContract(String uuid, LocalDate terminationDate);
+    ContractDTO terminate(String uuid, LocalDate terminationDate);
 
     /**
      * Calculates the hours due for a contract based on working days per week and hours per week.

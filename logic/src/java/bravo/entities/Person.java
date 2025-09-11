@@ -10,7 +10,13 @@ import java.util.Set;
 
 @Entity
 @Table(name = "person")
-@NamedQueries({@NamedQuery(name = "Person.findByEmail", query = "SELECT p FROM Person p WHERE p.emailAddress = :email"), @NamedQuery(name = "Person.findAll", query = "SELECT p FROM Person p ORDER BY p.lastName ASC")})
+@NamedQueries({
+        @NamedQuery(name = "Person.findByEmail",
+                query = "SELECT p FROM Person p WHERE p.emailAddress = :email"),
+        @NamedQuery(name = "Person.findAll",
+                query = "SELECT p FROM Person p ORDER BY p.lastName ASC"),
+        @NamedQuery(name = "Person.findByUuid",
+                query = "SELECT p FROM Person p WHERE p.uuid = :uuid")})
 public class Person extends AbstractEntity {
 
     @NotBlank

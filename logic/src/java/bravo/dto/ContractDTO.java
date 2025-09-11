@@ -35,7 +35,7 @@ public class ContractDTO extends AbstractDTO {
 
     private String supervisorUuid;
 
-    private List<String> secretariesUuids = new ArrayList<>();
+    private List<String> secretaryUuids = new ArrayList<>();
 
     private List<String> assistantUuids = new ArrayList<>();
 
@@ -156,12 +156,12 @@ public class ContractDTO extends AbstractDTO {
         this.supervisorUuid = supervisorUuid;
     }
 
-    public List<String> getSecretariesUuids() {
-        return secretariesUuids;
+    public List<String> getSecretaryUuids() {
+        return secretaryUuids;
     }
 
-    public void setSecretariesUuids(List<String> secretariesUuids) {
-        this.secretariesUuids = secretariesUuids;
+    public void setSecretaryUuids(List<String> secretaryUuids) {
+        this.secretaryUuids = secretaryUuids;
     }
 
     public List<String> getAssistantUuids() {

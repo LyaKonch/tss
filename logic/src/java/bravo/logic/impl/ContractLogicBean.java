@@ -24,49 +24,35 @@ public class ContractLogicBean implements ContractLogic {
     private ContractMapper ContractMapper;
 
     @Override
-    public ContractDTO createContract(ContractDTO contractDto) {
-        // Convert DTO to entity
+    public ContractDTO create(ContractDTO contractDto) {
         Contract entity = ContractMapper.toEntity(contractDto);
-
-        // Persist entity
         contractDAO.save(entity);
-
-        // Convert back to DTO and return
         return ContractMapper.toDto(entity);
     }
 
     @Override
-    public ContractDTO updateContract(ContractDTO contractDto) {
-        // Convert DTO to entity
+    public ContractDTO update(ContractDTO contractDto) {
         Contract entity = ContractMapper.toEntity(contractDto);
-
-        // Update entity
-        entity = contractDAO.updateContract(entity);
-
-        // Convert back to DTO and return
+        contractDAO.save(entity);
         return ContractMapper.toDto(entity);
     }
 
     @Override
-    public ContractDTO getContractByUuid(String uuid) {
-        Contract entity = contractDAO.findContractByUuid(uuid);
+    public ContractDTO findByUuid(String uuid) {
+        Contract entity = contractDAO.findByUuid(uuid);
         return entity != null ? ContractMapper.toDto(entity) : null;
     }
 
     @Override
-    public List<ContractDTO> getAllContracts() {
-        List<Contract> entities = contractDAO.getAllContracts();
+    public List<ContractDTO> findAll() {
+        List<Contract> entities = contractDAO.findAll();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
-
-        for (Contract entity : entities) {
-            dtos.add(ContractMapper.toDto(entity));
-        }
-
+        for (Contract entity : entities) dtos.add(ContractMapper.toDto(entity));
         return dtos;
     }
 
     @Override
-    public List<ContractDTO> getActiveContracts() {
+    public List<ContractDTO> getActive() {
         List<Contract> entities = contractDAO.getActiveContracts();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
 
@@ -78,13 +64,13 @@ public class ContractLogicBean implements ContractLogic {
     }
 
     @Override
-    public ContractDTO terminateContract(String uuid, LocalDate terminationDate) {
-        Contract entity = contractDAO.findContractByUuid(uuid);
+    public ContractDTO terminate(String uuid, LocalDate terminationDate) {
+        Contract entity = contractDAO.findByUuid(uuid);
 
         if (entity != null) {
-            entity.setStatus(ContractStatus.TERMINATED);
+            if (terminationDate.isBefore(LocalDate.now())) entity.setStatus(ContractStatus.TERMINATED);
             entity.setTerminationDate(terminationDate);
-            entity = contractDAO.updateContract(entity);
+            contractDAO.save(entity);
             return ContractMapper.toDto(entity);
         }
 

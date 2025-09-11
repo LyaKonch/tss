@@ -3,9 +3,13 @@ package bravo.dao;
 import bravo.entities.AbstractEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 
 public class AbstractDAO<T extends AbstractEntity> {
@@ -13,6 +17,7 @@ public class AbstractDAO<T extends AbstractEntity> {
     @PersistenceContext(unitName = "BravoTSSPU")
     protected EntityManager em;
 
+    private static final Logger logger = Logger.getLogger(AbstractDAO.class.getName());
 
     private Class<T> entityClass;
 
@@ -29,17 +34,27 @@ public class AbstractDAO<T extends AbstractEntity> {
         return em.find(entityClass, id);
     }
 
-    public T findByUUID(String uuid) {
+    public T findByUuid(String uuid) {
         return em.createNamedQuery(entityClass.getSimpleName() + ".findByUuid", entityClass)
-                .setParameter("uuid", uuid)
+                .setParameter("uuid", UUID.fromString(uuid))
                 .getSingleResult();
     }
 
     public void save(T entry) {
-        if (entry.getId() == null) {
-            em.persist(entry);
-        } else {
-            em.merge(entry);
+        try {
+            if (entry.getId() == null) {
+                em.persist(entry);
+            } else {
+                em.merge(entry);
+            }
+        } catch (ConstraintViolationException exc) {
+            for (ConstraintViolation<?> violation : exc.getConstraintViolations()) {
+                logger.severe("Validation failed: " +
+                        "Property=" + violation.getPropertyPath() +
+                        ", Invalid value=" + violation.getInvalidValue() +
+                        ", Message=" + violation.getMessage());
+            }
+            throw exc;
         }
     }
 
@@ -47,7 +62,7 @@ public class AbstractDAO<T extends AbstractEntity> {
         return em.createNamedQuery(entityClass.getSimpleName() + ".findAll", entityClass).getResultList();
     }
 
-    public void delete(T entry) { // delete
+    public void delete(T entry) {
         em.remove(em.merge(entry));
     }
 

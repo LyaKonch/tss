@@ -5,14 +5,14 @@
                 xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui">
-    <ui:param name="pageHeadline" value="${msg.contractListHeadline}" />
+    <ui:param name="pageHeadline" value="${msg.contractListHeadline}"/>
     <ui:define name="content">
         <h:form id="searchForm">
             <p:panel>
                 <p:inputText id="searchText" value="#{contractListBean.searchText}"
-                             placeholder="Search contracts..." />
+                             placeholder="Search contracts..."/>
                 <p:commandButton value="Search" update="tableForm:contractTable"
-                                 actionListener="#{contractListBean.search}" icon="pi pi-search" />
+                                 actionListener="#{contractListBean.search}" icon="pi pi-search"/>
             </p:panel>
         </h:form>
         <h:form id="tableForm">
@@ -24,8 +24,8 @@
                     </p:column>
                     <p:column field="name" headerText="${msg.contractNameLabel}">
                         <p:link outcome="contractForm" value="${contract.name}">
-                            <f:param name="uuid" value="${contract.id}" />
-                            <f:param name="action" value="edit" />
+                            <f:param name="uuid" value="${contract.id}"/>
+                            <f:param name="action" value="edit"/>
                         </p:link>
                     </p:column>
                     <p:column field="startDate" headerText="${msg.contractStartDateLabel}">
@@ -45,13 +45,8 @@
                 <p:commandButton id="createContractButton"
                                  icon="pi pi-plus"
                                  action="#{contractFormBean.prepareCreate}"
-                                 value="${msg.contractEditNew}" />
-                <span class="hspace" />
-                <p:commandButton id="createTestDataButton"
-                                 styleClass="ui-button-outlined ui-button-secondary"
-                                 actionListener="#{contractListBean.createTestData}"
-                                 value="${msg.contractListCreateTestdataButtonLabel}"
-                                 update="tableForm:contractTable" />
+                                 value="${msg.contractEditNew}"/>
+                <span class="hspace"/>
             </p:panel>
         </h:form>
     </ui:define>

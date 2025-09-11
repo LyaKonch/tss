@@ -1,9 +1,11 @@
 package bravo.web;
 
 import bravo.dto.ContractDTO;
+import bravo.dto.PersonDTO;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.ContractLogic;
+import bravo.logic.PersonLogic;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -15,10 +17,13 @@ import jakarta.inject.Named;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-// TODO: Restructure to follow layers properly
 
 /**
  * Backing bean for contract edit view.
@@ -30,9 +35,14 @@ public class ContractFormBean implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = Logger.getLogger(ContractFormBean.class.getName());
+
 
     @EJB
     private ContractLogic contractLogic;
+
+    @EJB
+    private PersonLogic personLogic;
 
     private ContractDTO contract;
 
@@ -40,15 +50,22 @@ public class ContractFormBean implements Serializable {
 
     private List<TimesheetFrequency> frequencies;
 
-    /**
-     * Initializes the bean.
-     */
+    private PersonDTO employee;
+
+    private PersonDTO supervisor;
+
+    private List<PersonDTO> secretaries;
+
+    private List<PersonDTO> assistants;
+
     @PostConstruct
     public void init() {
         try {
-            // Initialize the statuses and frequencies lists
+            logger.info("Logger initialized");
+
             statuses = Arrays.asList(ContractStatus.values());
             frequencies = Arrays.asList(TimesheetFrequency.values());
+
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error initializing bean: " + e.getMessage(), null));
@@ -61,9 +78,15 @@ public class ContractFormBean implements Serializable {
      * @return the navigation outcome
      */
     public String prepareCreate() {
+        // Include required and sensible defaults
         contract = new ContractDTO();
         contract.setStatus(ContractStatus.PREPARED);
-        contract.setStartDate(LocalDate.now());
+        contract.setFrequency(TimesheetFrequency.WEEKLY);
+        contract.setStartDate(LocalDate.now().withDayOfMonth(1));
+        contract.setEndDate(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()));
+        contract.setHoursPerWeek(40.0);
+        contract.setWorkingDaysPerWeek(5);
+        contract.setVacationDaysPerYear(20);
         return "contractForm?faces-redirect=true";
     }
 
@@ -78,7 +101,7 @@ public class ContractFormBean implements Serializable {
             return prepareCreate();
         }
 
-        contract = contractLogic.getContractByUuid(uuid);
+        contract = contractLogic.findByUuid(uuid);
         if (contract == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
@@ -94,13 +117,14 @@ public class ContractFormBean implements Serializable {
      * @return the navigation outcome
      */
     public String save() {
+        logger.warning("Saving contract: " + contract);
         try {
             if (contract.isNew()) {
-                contractLogic.createContract(contract);
+                contractLogic.create(contract);
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_INFO, "Contract created successfully", null));
             } else {
-                contractLogic.updateContract(contract);
+                contractLogic.update(contract);
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_INFO, "Contract updated successfully", null));
             }
@@ -117,7 +141,19 @@ public class ContractFormBean implements Serializable {
         }
     }
 
-    // Getters and setters
+    public String getFullName(PersonDTO person) {
+        if (person == null) return "";
+        return (person.getFirstName() + " " + person.getLastName()).trim();
+    }
+
+    public List<PersonDTO> completeText(String query) {
+        List<PersonDTO> persons = personLogic.findAll();
+
+        return persons.stream()
+                .filter(name -> (name.getFirstName() + " " + name.getLastName()).toLowerCase().contains(query.toLowerCase()))
+                .sorted(Comparator.comparing(PersonDTO::getFirstName).thenComparing(PersonDTO::getLastName))
+                .collect(Collectors.toList());
+    }
 
     public ContractDTO getContract() {
         if (contract == null) {
@@ -142,5 +178,43 @@ public class ContractFormBean implements Serializable {
             frequencies = Arrays.asList(TimesheetFrequency.values());
         }
         return frequencies;
+    }
+
+    public PersonDTO getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(PersonDTO employee) {
+        if (employee != null) this.contract.setEmployeeUuid(employee.getUuid());
+        this.employee = employee;
+    }
+
+    public PersonDTO getSupervisor() {
+        return supervisor;
+    }
+
+    public void setSupervisor(PersonDTO supervisor) {
+        if (supervisor != null) this.contract.setSupervisorUuid(supervisor.getUuid());
+        this.supervisor = supervisor;
+    }
+
+    public List<PersonDTO> getSecretaries() {
+        return secretaries;
+    }
+
+    public void setSecretaries(List<PersonDTO> secretaries) {
+        if (secretaries != null)
+            this.contract.setSecretaryUuids(secretaries.stream().map(PersonDTO::getUuid).collect(Collectors.toList()));
+        this.secretaries = secretaries;
+    }
+
+    public List<PersonDTO> getAssistants() {
+        return assistants;
+    }
+
+    public void setAssistants(List<PersonDTO> assistants) {
+        if (assistants != null)
+            this.contract.setAssistantUuids(assistants.stream().map(PersonDTO::getUuid).collect(Collectors.toList()));
+        this.assistants = assistants;
     }
 }

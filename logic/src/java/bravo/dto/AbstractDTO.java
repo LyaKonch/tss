@@ -50,29 +50,14 @@ public abstract class AbstractDTO implements Serializable {
 
     @Override
     public int hashCode() {
-        if (uuid == null) {
-            throw new IllegalStateException("uuid not set");
-        }
-        int hash = 7;
-        hash = 31 * hash + Objects.hashCode(this.uuid);
-        return hash;
+        return Objects.hashCode(uuid);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (uuid == null) {
-            throw new IllegalStateException("uuid not set");
-        }
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AbstractDTO other = (AbstractDTO) obj;
-        return Objects.equals(this.uuid, other.uuid);
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        PersonDTO other = (PersonDTO) obj;
+        return Objects.equals(this.uuid, other.getUuid());
     }
 }

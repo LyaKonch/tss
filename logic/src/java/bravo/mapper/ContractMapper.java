@@ -1,13 +1,26 @@
 package bravo.mapper;
 
 import bravo.dto.ContractDTO;
-import bravo.entities.Contract;
+import bravo.entities.*;
+import bravo.logic.PersonLogic;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
+
+    @Inject
+    private PersonLogic personLogic;
+
+    @Inject
+    private PersonMapper personMapper;
+
+    private static final Logger logger = Logger.getLogger(ContractMapper.class.getName());
 
     /**
      * Converts a Contract DTO to a Contract entity.
@@ -30,7 +43,33 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         entity.setWorkingDaysPerWeek(dto.getWorkingDaysPerWeek());
         entity.setVacationDaysPerYear(dto.getVacationDaysPerYear());
 
-//        entity.setEmployee(dto.getEmployeeUuid());
+        Person employeeEntity = personMapper.toEntity(personLogic.findByUuid(dto.getEmployeeUuid()));
+        Employee employee = new Employee();
+        employeeEntity.addRole(employee);
+        entity.setEmployee(employee);
+
+        Person supervisorEntity = personMapper.toEntity(personLogic.findByUuid(dto.getSupervisorUuid()));
+        Supervisor supervisor = new Supervisor();
+        supervisorEntity.addRole(supervisor);
+        entity.setSupervisor(supervisor);
+
+        List<Secretary> secretaries = new ArrayList<>();
+        for (String secretaryUuid : dto.getSecretaryUuids()) {
+            Person secretaryEntity = personMapper.toEntity(personLogic.findByUuid(secretaryUuid));
+            Secretary secretary = new Secretary();
+            secretaryEntity.addRole(secretary);
+            secretaries.add(secretary);
+        }
+        entity.setSecretaries(secretaries);
+
+        List<Assistant> assistants = new ArrayList<>();
+        for (String assistantUuid : dto.getAssistantUuids()) {
+            Person assistantEntity = personMapper.toEntity(personLogic.findByUuid(assistantUuid));
+            Assistant assistant = new Assistant();
+            assistantEntity.addRole(assistant);
+            assistants.add(assistant);
+        }
+        entity.setAssistants(assistants);
 
         return entity;
     }
@@ -55,6 +94,26 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         dto.setHoursPerWeek(entity.getHoursPerWeek());
         dto.setWorkingDaysPerWeek(entity.getWorkingDaysPerWeek());
         dto.setVacationDaysPerYear(entity.getVacationDaysPerYear());
+
+        if (entity.getEmployee() != null) dto.setEmployeeUuid(entity.getEmployee().getPerson().getUuid().toString());
+        else logger.warning("Contract without Employee: " + entity.getName());
+
+
+        if (entity.getSupervisor() != null)
+            dto.setSupervisorUuid(entity.getSupervisor().getPerson().getUuid().toString());
+        else logger.warning("Contract without Supervisor: " + entity.getName());
+
+
+        if (entity.getSecretaries() != null) dto.setSecretaryUuids(entity.getSecretaries().stream()
+                .map(secretary -> secretary.getPerson().getUuid().toString())
+                .toList());
+        else logger.warning("Contract without Secretary: " + entity.getName());
+
+
+        if (entity.getAssistants() != null) dto.setAssistantUuids(entity.getAssistants().stream()
+                .map(assistant -> assistant.getPerson().getUuid().toString())
+                .toList());
+        else logger.warning("Contract without Assistant (can be null): " + entity.getName());
 
         return dto;
     }
