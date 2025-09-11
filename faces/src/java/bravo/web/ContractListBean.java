@@ -59,12 +59,6 @@ public class ContractListBean implements Serializable {
         }
     }
 
-    // TODO: Work Contracts page top down.
-    // Adjust UI if needed a bit
-    // use DTO in faces
-    // be able to create a new contract and retrieve a list of contracts from DB
-    // keep in mind if we have to adjust some constraints or if we can already assign people to contracts from the start
-
     /**
      * Searches for contracts based on the search text.
      * If the search text is empty, all contracts are loaded.
