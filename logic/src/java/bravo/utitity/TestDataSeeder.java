@@ -55,23 +55,25 @@ public class TestDataSeeder {
         // Roles (and links)
         Secretary secC = new Secretary();
         chef.addRole(secC);
-        Supervisor supC = new Supervisor();
-        chef.addRole(supC);
+        Supervisor supCA = new Supervisor();
+        chef.addRole(supCA);
         Employee empA = new Employee();
         alice.addRole(empA);
 
         contractA.addSecretary(secC);
-        contractA.setSupervisor(supC);
+        contractA.setSupervisor(supCA);
         contractA.setEmployee(empA);
 
 
         Secretary secA = new Secretary();
         alice.addRole(secA);
+        Supervisor supCB = new Supervisor();
+        chef.addRole(supCB);
         Employee empB = new Employee();
         bob.addRole(empB);
 
         contractB.addSecretary(secA);
-        contractB.setSupervisor(supC);
+        contractB.setSupervisor(supCB);
         contractB.setEmployee(empB);
 
 
