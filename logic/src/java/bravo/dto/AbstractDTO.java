@@ -40,6 +40,10 @@ public abstract class AbstractDTO implements Serializable {
         return version;
     }
 
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
     public boolean isNew() {
         return uuid == null;
     }
