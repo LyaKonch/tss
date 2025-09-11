@@ -19,6 +19,7 @@ public abstract class AbstractEntity implements Serializable {
     @Version
     private int version;
 
+
     public AbstractEntity() {
     }
 
@@ -28,12 +29,14 @@ public abstract class AbstractEntity implements Serializable {
         }
     }
 
+
     @PrePersist
     private void generateUuidOnPersist() {
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();
         }
     }
+
 
     public Long getId() {
         return id;
