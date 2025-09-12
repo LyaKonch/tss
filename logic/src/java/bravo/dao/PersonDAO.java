@@ -42,4 +42,14 @@ public class PersonDAO extends AbstractDAO<Person> {
         return em.createNamedQuery("Person.findByRoleType", Person.class).
         setParameter("roleType", roleTypeName).getResultList();
     }
+    
+    public List<Person> findBy(Class<? extends Role> roleClass) {
+        String roleTypeName = roleClass.getSimpleName();
+        // this one is tricky
+        // roleClass parameter  represents the specific Role type
+        //but in our discriminator column it would store as the string. eg name of the class like "Employee"
+        // so i need the name of the class, not the class itself
+        return em.createNamedQuery("Person.findByRoleType", Person.class).
+        setParameter("roleType", roleTypeName).getResultList();
+    }
 }

@@ -47,10 +47,7 @@ public class Contract extends AbstractEntity {
     @Max(365)
     private int vacationDaysPerYear = 20;
 
-    // state should be chosen by user.
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    public FederalState state = RHINELAND_PALATINATE;
+    
 
     // Contract 1 < --- > 1 Employee
     @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -90,11 +87,6 @@ public class Contract extends AbstractEntity {
         if (months <= 0 || hoursPerWeek <= 0) return 0.0;
         return vacationDaysPerYear * (months / 12.0) * (hoursPerWeek / workingDaysPerWeek);
     }
-
-    //@Transient
-    //private double hoursDue() {
-    //    return timesheets.stream().mapToDouble(ts->ts.getHoursDue()).sum();
-    //}
 
     private int getDurationInWholeMonths() {
         if (startDate == null || endDate == null) return 0;
@@ -274,27 +266,6 @@ public class Contract extends AbstractEntity {
         return vacationHours();
     }
 
-    public double getHoursDue(TimesheetLogic timesheetLogic) {
-        return hoursDue(timesheetLogic);
-    }
-
-    public List<Timesheet> getTimesheets() {
-        return Collections.unmodifiableList(timesheets);
-    }
-
-    public void setTimesheets(List<Timesheet> timesheets) {
-        this.timesheets.forEach(t -> t.setContract(null));
-        this.timesheets.clear();
-        this.timesheets.addAll(timesheets);
-        timesheets.forEach(t -> t.setContract(this));
-    }
-
-    public void addTimesheet(Timesheet timesheet) {
-        if (timesheet != null) {
-            timesheets.add(timesheet);
-            timesheet.setContract(this);
-        }
-    }
     
     public void removeTimesheet(Timesheet timesheet) {
         if (timesheet != null) {
@@ -303,8 +274,5 @@ public class Contract extends AbstractEntity {
         }
     }
     
-    public double getVacationHours() {
-        return vacationHours();
-    }
     
 }

@@ -1,5 +1,7 @@
 package bravo.entities;
 
+import bravo.enums.FederalState;
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -38,6 +40,11 @@ public class Person extends AbstractEntity {
 
     private boolean consent;
 
+    // state should be chosen by user.
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private FederalState state = RHINELAND_PALATINATE;
+
     // Person 1 < --- > 0..* Role
     @OneToMany(mappedBy = "person")
     private Set<Role> roles = new HashSet<>();
@@ -49,7 +56,15 @@ public class Person extends AbstractEntity {
     public Person(boolean NewEntity) {
         super(NewEntity);
     }
+    
+    public FederalState getState(){
+        return state;
+    }
 
+    public void setState(FederalState state){
+        this.state = state;
+    }
+    
     public String getFirstName() {
         return firstName;
     }

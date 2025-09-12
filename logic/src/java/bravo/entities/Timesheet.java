@@ -25,15 +25,7 @@ import java.util.List;
             query = "SELECT e FROM Timesheet e WHERE e.startDate >= :startDate AND e.endDate <= :endDate")
 })
 public class Timesheet extends AbstractEntity {
-    
-    
-    
-    // it's a questionable choice, but i need to access holidays checker somehow and it creates static reference to it
-    // it needs to be initialized by ejb exemplar of PublicHolidayService at startup
-    // it was previously in timesheetLogicBean, but the issue was the Contract entity transient field used method to calculate it's hoursDue using method in TimesheetLogicBean
-    // static fields are persisted by definition by JPA as far as i understand
-    private static PublicHolidayService holidayChecker;
-    
+
     @Enumerated(EnumType.STRING)
     private TimesheetStatus status = TimesheetStatus.IN_PROGRESS;
 
@@ -51,18 +43,7 @@ public class Timesheet extends AbstractEntity {
 
     @OneToMany(mappedBy = "timesheet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimesheetEntry> entries = new ArrayList<>();
-    
-    @Transient
-    private double hoursDue() {
-        if (this.contract == null || this.startDate == null || this.endDate == null) {
-            return 0.0;
-        }
-        int working = countWorkingDays(this.getStartDate(), this.getEndDate());
-        int holidays = countHolidaysOnWorkingDays(this.getStartDate(), this.getEndDate());
-        int effectiveDays = Math.max(0, working - holidays);
-        return effectiveDays * (contract.getHoursPerWeek() / contract.getWorkingDaysPerWeek());
-    }
-    
+
     public Timesheet() {
         super();
     }
@@ -140,30 +121,5 @@ public class Timesheet extends AbstractEntity {
         entries.add(entry);
         entry.setTimesheet(this);
     }
-    
-    public int countWorkingDays(LocalDate start, LocalDate end) {
-        int count = 0;
-        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
-            DayOfWeek w = dat.getDayOfWeek();
-            if (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY) {
-                count++;
-            }
-        }
-        return count;
-    }
 
-    public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end) {
-        if (holidayChecker == null) {
-            return 0;
-        }
-        int count = 0;
-        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
-            DayOfWeek w = dat.getDayOfWeek();
-            boolean workday = (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY);
-            if (workday && holidayChecker.isHoliday(dat, this.contract.state)) {
-                count++;
-            }
-        }
-        return count;
-    }
 }

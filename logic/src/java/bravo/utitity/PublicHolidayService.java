@@ -5,7 +5,6 @@ import org.itsallcode.holidays.calculator.logic.parser.HolidaysFileParser;
 
 import bravo.enums.FederalState;
 import jakarta.ejb.Singleton;
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import java.util.logging.Logger;
 
 @Singleton
 public class PublicHolidayService {
-
+    
     private static final Logger LOGGER = Logger.getLogger(PublicHolidayService.class.getName());
     private static final String GERMAN_HOLIDAYS_FILE = "/resources/holiday_cfgs/holidays-de.cfg";
     private static final String STATE_HOLIDAYS_BASE_PATH = "/resources/holiday_cfgs/holidays-";

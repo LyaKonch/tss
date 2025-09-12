@@ -56,5 +56,5 @@ public interface ContractLogic {
     ContractDTO terminateContract(String uuid, LocalDate terminationDate);
 
     
-
+    Double getHoursDue(Contract contract);
 }

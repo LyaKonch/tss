@@ -26,7 +26,10 @@ public class ContractLogicBean implements ContractLogic {
 
     @EJB
     private ContractDAO contractDAO;
-
+    
+    @EJB
+    private TimesheetLogic tmshtlBean;
+    
     /**
      * Creates a new contract.
      *
@@ -299,5 +302,11 @@ public class ContractLogicBean implements ContractLogic {
 
             currentPeriodStart = currentPeriodEnd.plusDays(1);
         }
+    }
+    
+    @Override
+    public Double getHoursDue(Contract contract){
+        return contract.getTimesheets().stream().
+                map(ts -> tmshtlBean.hoursDue(ts.getUuid())).mapToDouble(Double::doubleValue).sum();
     }
 }

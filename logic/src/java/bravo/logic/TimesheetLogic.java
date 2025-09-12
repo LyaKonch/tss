@@ -25,5 +25,6 @@ public interface TimesheetLogic {
     void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries);
 
     List<TimesheetEntry> getEntries(Timesheet timesheet);
-
+    
+    double hoursDue(String uuid); 
 }

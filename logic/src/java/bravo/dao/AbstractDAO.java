@@ -7,15 +7,12 @@ import jakarta.persistence.PersistenceContext;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-
 public class AbstractDAO<T extends AbstractEntity> {
 
     @PersistenceContext(unitName = "BravoTSSPU")
     protected EntityManager em;
 
-
     private Class<T> entityClass;
-
 
     public AbstractDAO() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
@@ -34,12 +31,12 @@ public class AbstractDAO<T extends AbstractEntity> {
                 .setParameter("uuid", uuid)
                 .getSingleResult();
     }
-    
-    public T save(T entry) { 
-        if (entry.getId() == null) { 
+
+    public T save(T entry) {
+        if (entry.getId() == null) {
             em.persist(entry);
         } else {
-            em.merge(entry);
+            entry = em.merge(entry);
         }
         return entry;
     }

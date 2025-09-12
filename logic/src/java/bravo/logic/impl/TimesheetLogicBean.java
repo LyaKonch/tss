@@ -1,6 +1,7 @@
 package bravo.logic.impl;
 
 //import bravo.dao.PersonDAO;
+import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dao.TimesheetEntryDAO;
 import bravo.dto.TimesheetEntryDTO;
@@ -27,8 +28,10 @@ import java.util.function.Predicate;
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
 
-    //@EJB
-    //private PersonDAO personDAO;
+    @EJB
+    private PersonDAO personDAO;
+    
+    private PublicHolidayService holidayChecker = new PublicHolidayService();
     
     @EJB
     private TimesheetEntryDAO entryDAO;
@@ -148,10 +151,45 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     private void deleteTimesheet(Timesheet timesheet) {
         timesheetDAO.delete(timesheet);
-        // does entity manager automatically delete link in contract to this timesheet?
-        // does CascadeType.ALL take care of that?
+        timesheet.getContract().removeTimesheet(timesheet);
     }
     
+    public double hoursDue(String uuid) {
+        Timesheet timesheet = timesheetDAO.findByUUID(uuid);
+        FederalState state = timesheet.getContract().getEmployee().getPerson().getState();
+        if ( timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
+            return 0.0;
+        }
+        int working = countWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
+        int holidays = countHolidaysOnWorkingDays(timesheet.getStartDate(), timesheet.getEndDate(), state);
+        int effectiveDays = Math.max(0, working - holidays);
+        return effectiveDays * (timesheet.getContract().getHoursPerWeek() / timesheet.getContract().getWorkingDaysPerWeek());
+    }
     
+     public int countWorkingDays(LocalDate start, LocalDate end) {
+        int count = 0;
+        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
+            DayOfWeek w = dat.getDayOfWeek();
+            if (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end, FederalState state) {
+        if (holidayChecker == null) {
+            return 0;
+        }
+        int count = 0;
+        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
+            DayOfWeek w = dat.getDayOfWeek();
+            boolean workday = (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY);
+            if (workday && holidayChecker.isHoliday(dat, state)) {
+                count++;
+            }
+        }
+        return count;
+    }
     
 }
