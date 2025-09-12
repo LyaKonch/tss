@@ -1,12 +1,34 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html">
-<h:head>
-    <title>TimeSheet Tracking</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</h:head>
-<h:body>
-    <div>Our TimeSheet Tracking System is now at the start of dev!</div>
-    <h:outputText value="#{statusBean.statuses}" />
-</h:body>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+  <f:view locale="#{userSessionBean.locale}">
+    <h:head>
+      <title>TimeSheet Tracking</title>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </h:head>
+
+    <h:body>
+      
+      <f:loadBundle basename="bravo.web.i18n.messages" var="msg"/>
+
+      
+      <h:form id="langSwitch">
+        <h:commandLink value="DE" action="#{userSessionBean.changeLang('de')}">
+          <f:ajax render="@all"/>
+        </h:commandLink>
+        |
+        <h:commandLink value="EN" action="#{userSessionBean.changeLang('en')}">
+          <f:ajax render="@all"/>
+        </h:commandLink>
+      </h:form>
+
+      <h:outputText value="#{statusBean.statuses}" />
+
+      <ui:include src="/fragments/timesheet-entry.xhtml"/>
+    </h:body>
+  </f:view>
 </html>

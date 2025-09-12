@@ -1,0 +1,102 @@
+<ui:composition 
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+  <h:form id="tsEntry">
+    <h:messages globalOnly="false" layout="table"/>
+
+    <h3 style="margin-top:0">
+  Zeitraum: #{entryBlockBean.periodLabel}
+  · Status: #{entryBlockBean.statusLabel}
+  · Ist: #{entryBlockBean.hoursActual}
+    </h3>
+
+    <h:panelGrid columns="3" columnClasses="w-10rem,w-auto,w-10rem" cellpadding="4">
+      <h:outputLabel for="date" value="#{msg['label.date']}" />
+      <h:inputText id="date"
+                   value="#{entryBlockBean.form.entryDateStr}"
+                   required="true"
+                   requiredMessage="Bitte Datum angeben (yyyy-MM-dd)"
+                   disabled="#{!entryBlockBean.editable}"/>
+      <h:message for="date"/>
+
+      <h:outputLabel for="start" value="#{msg['label.start']}" />
+      <h:inputText id="start"
+                   value="#{entryBlockBean.form.startTimeStr}"
+                   required="true"
+                   requiredMessage="Bitte Startzeit angeben (HH:mm, z. B. 09:00)"
+                   disabled="#{!entryBlockBean.editable}"/>
+      <h:message for="start"/>
+
+      <h:outputLabel for="end" value="#{msg['label.end']}" />
+      <h:inputText id="end"
+                   value="#{entryBlockBean.form.endTimeStr}"
+                   required="true"
+                   requiredMessage="Bitte Endzeit angeben (HH:mm, z. B. 17:30)"
+                   disabled="#{!entryBlockBean.editable}"/>
+      <h:message for="end"/>
+
+      <h:outputLabel for="type" value="#{msg['label.type']}" />
+      <h:selectOneMenu id="type"
+                       value="#{entryBlockBean.form.type}"
+                       disabled="#{!entryBlockBean.editable}">
+        <f:selectItem itemValue="WORK" itemLabel="WORK" />
+        <f:selectItem itemValue="VACATION" itemLabel="VACATION" />
+        <f:selectItem itemValue="SICK_LEAVE" itemLabel="SICK_LEAVE" />
+      </h:selectOneMenu>
+      <h:outputText/>
+
+      <h:outputLabel for="desc" value="#{msg['label.desc']}" />
+      <h:inputTextarea id="desc"
+                       value="#{entryBlockBean.form.description}"
+                       rows="3"
+                       disabled="#{!entryBlockBean.editable}"/>
+      <h:outputText/>
+    </h:panelGrid>
+
+    <h:panelGroup layout="block" style="margin:12px 0">
+      <h:commandButton value="#{msg['btn.save']}" action="#{entryBlockBean.save}">
+        <f:ajax execute="@form" render="tsEntry"/>
+      </h:commandButton>
+
+      <h:commandButton value="#{msg['btn.sign']}"
+                       action="#{entryBlockBean.signAsEmployee}"
+                       rendered="#{entryBlockBean.canSign}">
+        <f:ajax execute="@this" render="tsEntry"/>
+      </h:commandButton>
+
+      <h:commandButton value="#{msg['btn.revoke']}"
+                       action="#{entryBlockBean.revokeSignature}"
+                       rendered="#{entryBlockBean.canRevoke}">
+        <f:ajax execute="@this" render="tsEntry"/>
+      </h:commandButton>
+    </h:panelGroup>
+
+    <!-- Tabelle -->
+    <h:dataTable value="#{entryBlockBean.entries}" var="e" border="1" cellpadding="4" style="width:100%">
+      <h:column><f:facet name="header">#{msg['col.date']}</f:facet>#{e.entryDate}</h:column>
+      <h:column><f:facet name="header">#{msg['col.start']}</f:facet>#{e.startTime}</h:column>
+      <h:column><f:facet name="header">#{msg['col.end']}</f:facet>#{e.endTime}</h:column>
+      <h:column><f:facet name="header">#{msg['col.type']}</f:facet>#{e.type}</h:column>
+      <h:column><f:facet name="header">#{msg['col.hours']}</f:facet>#{e.hours}</h:column>
+      <h:column><f:facet name="header">#{msg['col.desc']}</f:facet>#{e.description}</h:column>
+
+      <h:column rendered="#{entryBlockBean.editable}">
+        <f:facet name="header">#{msg['col.actions']}</f:facet>
+
+        <h:commandLink value="#{msg['link.edit']}" action="#{entryBlockBean.prepareEdit}">
+          <f:setPropertyActionListener target="#{entryBlockBean.selected}" value="#{e}" />
+          <f:ajax execute="@this" render="tsEntry" />
+        </h:commandLink>
+        |
+        <h:commandLink value="#{msg['link.delete']}" action="#{entryBlockBean.deleteSelected}">
+          <f:setPropertyActionListener target="#{entryBlockBean.selected}" value="#{e}" />
+          <f:ajax execute="@this" render="tsEntry" />
+        </h:commandLink>
+      </h:column>
+    </h:dataTable>
+
+  </h:form>
+</ui:composition>
