@@ -33,4 +33,17 @@
         <extension>ttf</extension>
         <mime-type>application/x-font-ttf</mime-type>
     </mime-mapping>
+    
+    <security-role>
+        <role-name>Employee</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Supervisor</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Assistant</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Secretary</role-name>
+    </security-role>
 </web-app>
