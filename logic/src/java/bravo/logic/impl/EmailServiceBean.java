@@ -4,11 +4,8 @@ import bravo.logic.EmailService;
 import com.sun.istack.logging.Logger;
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
-
-import java.util.Properties;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
@@ -19,7 +16,7 @@ public class EmailServiceBean implements EmailService {
 
     private static final Logger LOGGER = Logger.getLogger(EmailServiceBean.class);
 
-    @Resource(name = "mail/TSSMailSession")
+    @Resource(lookup = "mail/TSSMailSession")
     private Session mailSession;
 
     @Override
