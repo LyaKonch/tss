@@ -14,8 +14,12 @@ import java.util.List;
 
 @Entity
 @Table(name = "contract")
-@NamedQueries({@NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"), @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")})
+@NamedQueries({
+        @NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"),
+        @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")
+})
 public class Contract extends AbstractEntity {
+
     @Enumerated(EnumType.STRING)
     private ContractStatus status = ContractStatus.PREPARED;
 
@@ -223,7 +227,7 @@ public class Contract extends AbstractEntity {
     }
 
     public List<Assistant> getAssistants() {
-        return java.util.Collections.unmodifiableList(assistants);
+        return Collections.unmodifiableList(assistants);
     }
 
     public void setAssistants(List<Assistant> assistants) {
