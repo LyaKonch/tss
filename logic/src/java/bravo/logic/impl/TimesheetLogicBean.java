@@ -1,60 +1,54 @@
 package bravo.logic.impl;
 
-//import bravo.dao.PersonDAO;
+
 import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dao.TimesheetEntryDAO;
 import bravo.dto.TimesheetEntryDTO;
-import bravo.entities.Contract;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
 import bravo.enums.ContractStatus;
 import bravo.enums.FederalState;
-import static bravo.enums.FederalState.RHINELAND_PALATINATE;
-
 import bravo.enums.TimesheetStatus;
 import bravo.logic.TimesheetLogic;
 import bravo.utitity.PublicHolidayService;
-
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.transaction.Transactional;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
 
     @EJB
     private PersonDAO personDAO;
-    
+
     @EJB
     private PublicHolidayService holidayChecker;
-    
+
     @EJB
     private TimesheetEntryDAO entryDAO;
 
     @EJB
     private TimesheetDAO timesheetDAO;
-    
-    
+
+
     public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUUID(entryDto.getUuid());
         if (timesheet == null) {
             throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid() + "is not found");
         }
-        
+
         TimesheetEntry newEntry = new TimesheetEntry(true);// true means new object, it's supposed to generate new UUID for new objects;
-        if(entryDto.getEntryDate().isBefore(timesheet.getEndDate()) 
-                ||  entryDto.getEntryDate().equals(timesheet.getEndDate()) 
-                ||  entryDto.getEntryDate().isAfter(timesheet.getStartDate())
-                || entryDto.getEntryDate().equals(timesheet.getStartDate())){
+        if (entryDto.getEntryDate().isBefore(timesheet.getEndDate())
+                || entryDto.getEntryDate().equals(timesheet.getEndDate())
+                || entryDto.getEntryDate().isAfter(timesheet.getStartDate())
+                || entryDto.getEntryDate().equals(timesheet.getStartDate())) {
             newEntry.setEntryDate(entryDto.getEntryDate());
-        }else{
+        } else {
             throw new IllegalArgumentException("Entry Date for the Timesheet with" + entryDto.getUuid() + " should be in within the start and end time of the timesheet");
         }
         newEntry.setStartTime(entryDto.getStartTime());
@@ -163,11 +157,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
         timesheetDAO.delete(timesheet);
         timesheet.getContract().removeTimesheet(timesheet);
     }
-    
+
     public double hoursDue(String uuid) {
         Timesheet timesheet = timesheetDAO.findByUUID(uuid);
         FederalState state = timesheet.getContract().getEmployee().getPerson().getState();
-        if ( timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
+        if (timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
             return 0.0;
         }
         int working = countWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
@@ -175,8 +169,8 @@ public class TimesheetLogicBean implements TimesheetLogic {
         int effectiveDays = Math.max(0, working - holidays);
         return effectiveDays * (timesheet.getContract().getHoursPerWeek() / timesheet.getContract().getWorkingDaysPerWeek());
     }
-    
-     public int countWorkingDays(LocalDate start, LocalDate end) {
+
+    public int countWorkingDays(LocalDate start, LocalDate end) {
         int count = 0;
         for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
             DayOfWeek w = dat.getDayOfWeek();
@@ -201,5 +195,5 @@ public class TimesheetLogicBean implements TimesheetLogic {
         }
         return count;
     }
-    
+
 }
