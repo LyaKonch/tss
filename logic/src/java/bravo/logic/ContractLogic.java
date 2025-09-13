@@ -8,6 +8,7 @@ import java.util.List;
 
 @Local
 public interface ContractLogic {
+
     /**
      * Creates a new contract.
      *
@@ -47,14 +48,20 @@ public interface ContractLogic {
     List<ContractDTO> getActiveContracts();
 
     /**
-     * Terminates a contract by setting its status to TERMINATED and recording the termination date.
+     * Terminates a contract by setting its status to TERMINATED and recording
+     * the termination date.
      *
-     * @param uuid            the UUID of the contract to terminate
+     * @param uuid the UUID of the contract to terminate
      * @param terminationDate the date when the contract is terminated
      * @return the updated contract
      */
     ContractDTO terminateContract(String uuid, LocalDate terminationDate);
 
-    
     Double getHoursDue(Contract contract);
+    
+    void deleteContract(String uuid);
+    
+    ContractDTO startContract(String uuid); 
+    
+    ContractDTO archiveContract(String uuid);
 }

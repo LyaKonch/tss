@@ -1,8 +1,16 @@
 package bravo.logic.impl;
 
 import bravo.dao.ContractDAO;
+import bravo.dao.PersonDAO;
+import bravo.dao.RoleDAO;
 import bravo.dto.ContractDTO;
+import bravo.entities.Assistant;
 import bravo.entities.Contract;
+import bravo.entities.Employee;
+import bravo.entities.Person;
+import bravo.entities.Role;
+import bravo.entities.Secretary;
+import bravo.entities.Supervisor;
 import bravo.entities.Timesheet;
 import bravo.enums.ContractStatus;
 import bravo.enums.FederalState;
@@ -18,18 +26,25 @@ import jakarta.persistence.NoResultException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Stateless
 public class ContractLogicBean implements ContractLogic {
 
     @EJB
+    private PersonDAO personDAO;
+
+    @EJB
     private ContractDAO contractDAO;
-    
+
     @EJB
     private TimesheetLogic tmshtlBean;
-    
+
     /**
      * Creates a new contract.
      *
@@ -43,6 +58,50 @@ public class ContractLogicBean implements ContractLogic {
         }
         Contract contract = new Contract();
         mapDtoToEntity(contractDto, contract);
+
+        Person employeePerson = personDAO.findByUUID(contractDto.getEmployeeUuid());
+        Employee newEmployee = new Employee();
+        employeePerson.addRole(newEmployee);
+        personDAO.save(employeePerson);
+
+        contract.setEmployee(newEmployee);
+
+        Person chefPerson = personDAO.findByUUID(contractDto.getSupervisorUuid());
+        Supervisor newSupervisor = new Supervisor();
+        chefPerson.addRole(newSupervisor);
+        contract.setSupervisor(newSupervisor);
+        personDAO.save(chefPerson);
+
+        List<Secretary> secretaries = contractDto.getSecretaryUuids().stream()
+                .map(uuid -> {
+                    Person p = personDAO.findByUUID(uuid);
+                    if (p == null) {
+                       throw new IllegalArgumentException("Person with uuid " + uuid + " wasn't found to be secretary.");
+                    }
+                    Secretary newSecretary = new Secretary();
+                    p.addRole(newSecretary);
+                    personDAO.save(p);
+                    return newSecretary;
+                })
+                .collect(Collectors.toList());
+        
+        contract.setSecretaries(secretaries);
+        
+        List<Assistant> assistants = contractDto.getAssistantUuids().stream()
+                .map(uuid -> {
+                    Person p = personDAO.findByUUID(uuid);
+                    if (p == null) {
+                        throw new IllegalArgumentException("Person with uuid " + uuid + " wasn't found to be assistant.");
+                    }
+                    Assistant newAssistant = new Assistant();
+                    p.addRole(newAssistant);
+                    personDAO.save(p); 
+                    return newAssistant;
+                })
+                .collect(Collectors.toList());
+        
+        if(!(assistants.isEmpty())) contract.setAssistants(assistants);
+        
         contract.setStatus(ContractStatus.PREPARED);
         Contract savedContract = contractDAO.save(contract);
         return mapEntityToDto(savedContract);
@@ -137,20 +196,21 @@ public class ContractLogicBean implements ContractLogic {
      *
      * @param uuid the UUID of the contract to delete
      */
+    @Override
     public void deleteContract(String uuid) {
         if (uuid == null) {
             throw new IllegalArgumentException("UUID cannot be null.");
         }
         try {
             Contract contract = contractDAO.findByUUID(uuid);
-            if (contract.getStatus() != ContractStatus.PREPARED || contract.getStatus() != ContractStatus.ARCHIVED ) {
+            if (contract.getStatus() != ContractStatus.PREPARED || contract.getStatus() != ContractStatus.ARCHIVED) {
                 throw new IllegalStateException("Can only delete an ARCHIVED or PREPARED contract.");
             }
-            if(!contract.getTimesheets().isEmpty()){
+            if (!contract.getTimesheets().isEmpty()) {
                 throw new IllegalStateException("Contract still has some related to it archived timesheets.");
             }
             contractDAO.delete(contract);
-            
+
         } catch (NoResultException e) {
             throw new IllegalArgumentException("Contract with UUID " + uuid + " not found.");
         }
@@ -238,6 +298,7 @@ public class ContractLogicBean implements ContractLogic {
         dto.setWorkingDaysPerWeek(entity.getWorkingDaysPerWeek());
         dto.setVacationDaysPerYear(entity.getVacationDaysPerYear());
         return dto;
+
     }
 
     /**
@@ -252,6 +313,8 @@ public class ContractLogicBean implements ContractLogic {
         entity.setEndDate(dto.getEndDate());
         entity.setFrequency(dto.getFrequency());
         entity.setHoursPerWeek(dto.getHoursPerWeek());
+        entity.setVacationDaysPerYear(dto.getVacationDaysPerYear());
+
     }
 
     public void createTimesheetsForContract(Contract contract) {
@@ -303,9 +366,9 @@ public class ContractLogicBean implements ContractLogic {
             currentPeriodStart = currentPeriodEnd.plusDays(1);
         }
     }
-    
+
     @Override
-    public Double getHoursDue(Contract contract){
+    public Double getHoursDue(Contract contract) {
         return contract.getTimesheets().stream().
                 map(ts -> tmshtlBean.hoursDue(ts.getUuid())).mapToDouble(Double::doubleValue).sum();
     }

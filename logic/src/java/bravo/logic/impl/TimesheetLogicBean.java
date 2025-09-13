@@ -31,7 +31,8 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @EJB
     private PersonDAO personDAO;
     
-    private PublicHolidayService holidayChecker = new PublicHolidayService();
+    @EJB
+    private PublicHolidayService holidayChecker;
     
     @EJB
     private TimesheetEntryDAO entryDAO;

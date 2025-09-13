@@ -1,8 +1,11 @@
 package bravo.dao;
 
 import bravo.entities.AbstractEntity;
+import com.sun.istack.logging.Logger;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
@@ -11,7 +14,9 @@ public class AbstractDAO<T extends AbstractEntity> {
 
     @PersistenceContext(unitName = "BravoTSSPU")
     protected EntityManager em;
-
+    
+    private static final Logger logger = Logger.getLogger(AbstractDAO.class);
+    
     private Class<T> entityClass;
 
     public AbstractDAO() {
@@ -33,12 +38,23 @@ public class AbstractDAO<T extends AbstractEntity> {
     }
 
     public T save(T entry) {
-        if (entry.getId() == null) {
-            em.persist(entry);
-        } else {
-            entry = em.merge(entry);
+        try {
+            if (entry.getId() == null) {
+                em.persist(entry);
+            } else {
+                entry = em.merge(entry);
+            }
+            return entry;
+        } catch (ConstraintViolationException exc) {
+            for (ConstraintViolation<?> violation : exc.getConstraintViolations()) {
+                logger.severe("Validation failed: "
+                        + "Property=" + violation.getPropertyPath()
+                        + ", Invalid value=" + violation.getInvalidValue()
+                        + ", Message=" + violation.getMessage());
+            }
+            throw exc;
         }
-        return entry;
+
     }
 
     public List<T> findAll() {

@@ -1,6 +1,5 @@
 package bravo.logic;
 
-import bravo.entities.Contract;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
 import java.time.LocalDate;

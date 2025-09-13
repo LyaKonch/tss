@@ -5,6 +5,7 @@ import bravo.enums.FederalState;
 import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.TimesheetLogic;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -31,8 +32,9 @@ public class Contract extends AbstractEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TimesheetFrequency frequency = TimesheetFrequency.MONTHLY;
-
-    private LocalDate terminationDate;
+    
+    @Nullable
+    private LocalDate terminationDate = null;
 
     @Positive
     private Double hoursPerWeek;
