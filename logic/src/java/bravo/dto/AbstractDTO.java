@@ -3,6 +3,7 @@ package bravo.dto;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 public abstract class AbstractDTO implements Serializable {
 
@@ -18,7 +19,11 @@ public abstract class AbstractDTO implements Serializable {
 
     protected AbstractDTO() {
     }
-
+    protected AbstractDTO(Long id, String uuid, int version){
+        this.id=id;
+        this.uuid=uuid;
+        this.version=version;
+    }
 
     public Long getId() {
         return id;

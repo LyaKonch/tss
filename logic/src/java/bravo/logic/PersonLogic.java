@@ -5,6 +5,7 @@ import bravo.dto.PersonDTO;
 import jakarta.ejb.Local;
 
 import java.util.List;
+import java.util.UUID;
 
 @Local
 public interface PersonLogic {

@@ -30,7 +30,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         Contract entity = new Contract();
 
         if (dto.getId() != null) entity.setId(dto.getId());
-        if (dto.getUuid() != null) entity.setUuid(UUID.fromString(dto.getUuid()));
+        if (dto.getUuid() != null) entity.setUuid(dto.getUuid());
 
         //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
         entity.setStatus(dto.getStatus());

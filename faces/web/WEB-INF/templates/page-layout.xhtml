@@ -3,8 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="jakarta.faces.facelets"
       xmlns:h="jakarta.faces.html"
-      xmlns:p="http://primefaces.org/ui"
->
+      xmlns:p="http://primefaces.org/ui">
 <h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Bravo TSS - <ui:insert name="title">Default Title</ui:insert></title>
@@ -16,6 +15,14 @@
                 <p:menuitem outcome="dashboard" value="Homepage" icon="pi pi-home" />
                 <p:menuitem outcome="contractView" value="Contract List" icon="pi pi-list" />
                 <p:menuitem outcome="contractForm" value="Create Contract" icon="pi pi-list" />
+                <p:menuitem ajax="false" immediate="true"
+                                action="dashboard"
+                                actionListener="#{loginBean.invalidateSession}"
+                                rendered="${loginBean.loggedIn}"
+                                value="${msg.menuLogout}" icon="pi pi-sign-out" />
+                <p:menuitem action="login"
+                            rendered="${not loginBean.loggedIn}"
+                            value="${msg.menuLogin}" icon="pi pi-sign-in" />
             </p:menubar>
         </h:form>
     </div>
@@ -26,6 +33,9 @@
 
     <div id="footer">
         <p>Bravo Timesheet System</p>
+        <div>
+            ${loginBean.loggedIn ? loginBean.userDTO.emailAddress : msg.notLoggedIn}
+        </div>
     </div>
 </h:body>
 </html>

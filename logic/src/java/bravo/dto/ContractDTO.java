@@ -6,6 +6,7 @@ import bravo.enums.TimesheetFrequency;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) for Contracts.

@@ -36,7 +36,7 @@ public class AbstractDAO<T extends AbstractEntity> {
 
     public T findByUuid(String uuid) {
         return em.createNamedQuery(entityClass.getSimpleName() + ".findByUuid", entityClass)
-                .setParameter("uuid", UUID.fromString(uuid))
+                .setParameter("uuid", UUID.fromString(uuid).toString())
                 .getSingleResult();
     }
 
