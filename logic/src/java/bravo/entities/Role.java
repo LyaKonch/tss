@@ -9,7 +9,8 @@ import jakarta.persistence.*;
 @NamedQueries({@NamedQuery(name = "Role.findByPerson", query = "SELECT r FROM Role r WHERE r.person = :person")})
 public abstract class Role extends AbstractEntity {
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    // now Person can be created without a role, which also matchs domain model.
+    @ManyToOne(optional = true, fetch = FetchType.LAZY) 
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;
 

@@ -4,6 +4,7 @@ import bravo.entities.AbstractEntity;
 import com.sun.istack.logging.Logger;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
@@ -37,6 +38,7 @@ public class AbstractDAO<T extends AbstractEntity> {
                 .getSingleResult();
     }
 
+    @Transactional
     public T save(T entry) {
         try {
             if (entry.getId() == null) {
@@ -60,11 +62,13 @@ public class AbstractDAO<T extends AbstractEntity> {
     public List<T> findAll() {
         return em.createNamedQuery(entityClass.getSimpleName() + ".findAll", entityClass).getResultList();
     }
-
+    
+    @Transactional
     public void delete(T entry) { // delete
         em.remove(em.merge(entry));
     }
-
+    
+    @Transactional
     public void deleteById(Long id) {
         T entity = findById(id);
         if (entity != null) {

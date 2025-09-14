@@ -70,6 +70,7 @@ public class ContractLogicBean implements ContractLogic {
         Person employeePerson = personDAO.findByUUID(contractDto.getEmployeeUuid());
         Employee newEmployee = new Employee();
         employeePerson.addRole(newEmployee);
+        contract.setEmployee(newEmployee);
         personDAO.save(employeePerson);
 
         contract.setEmployee(newEmployee);
@@ -158,8 +159,8 @@ public class ContractLogicBean implements ContractLogic {
         }
         try {
             Contract contract = contractDAO.findByUUID(uuid);
-            if (contract.getStatus() == ContractStatus.TERMINATED || contract.getStatus() == ContractStatus.ARCHIVED) {
-                throw new IllegalStateException("Contract is already terminated or archived.");
+            if (contract.getStatus() != ContractStatus.STARTED) {
+                throw new IllegalStateException("Contract is allowed for termination only in STARTED state.");
             }
             contract.setStatus(ContractStatus.TERMINATED);
             contract.setTerminationDate(terminationDate);
@@ -220,6 +221,8 @@ public class ContractLogicBean implements ContractLogic {
             Contract contract = contractDAO.findByUUID(uuid);
             if (contract.getStatus() != ContractStatus.PREPARED || contract.getStatus() != ContractStatus.ARCHIVED) {
                 throw new IllegalStateException("Can only delete an ARCHIVED or PREPARED contract.");
+                // archived state is not a requirement, it just uses the same method 
+                // when checking for archived timesheets being old for more than two years and if no timesheets is related to contract by then, it uses this method
             }
             if (!contract.getTimesheets().isEmpty()) {
                 throw new IllegalStateException("Contract still has some related to it archived timesheets.");
@@ -256,7 +259,7 @@ public class ContractLogicBean implements ContractLogic {
 
             // if new superviser is differrent from current
             if (newSupervisorPerson != null && !newSupervisorPerson.equals(oldSupervisorPerson)) {
-                
+
                 Supervisor oldSupervisorRole = roleDAO.findSupervisorByContract(existingContract);
                 if (oldSupervisorRole != null) {
                     // deletes old role from db and person
@@ -406,6 +409,12 @@ public class ContractLogicBean implements ContractLogic {
                     .collect(Collectors.toList()));
         }
 
+        if (entity.getTimesheets() != null) {
+            dto.setTimesheetUuids(entity.getTimesheets().stream()
+                    .map(timesheet -> timesheet.getUuid())
+                    .collect(Collectors.toList()));
+        }
+
         return dto;
 
     }
@@ -417,6 +426,8 @@ public class ContractLogicBean implements ContractLogic {
      * @param entity The existing Contract entity to update.
      */
     private void mapDtoToEntity(ContractDTO dto, Contract entity) {
+        // i could have moved the logic of assigning  dto to entity relations( employee etc) from startContract and createContract methods
+        // but this is tedious to sit and take into account cases where it's merely the creation or modification of a contract.
         entity.setName(dto.getName());
         entity.setStartDate(dto.getStartDate());
         entity.setEndDate(dto.getEndDate());
@@ -462,7 +473,7 @@ public class ContractLogicBean implements ContractLogic {
         LocalDate currentPeriodStart = contract.getStartDate();
         while (!currentPeriodStart.isAfter(contract.getEndDate())) {
             LocalDate currentPeriodEnd = currentPeriodStart.with(DayOfWeek.SUNDAY);
-            if (currentPeriodEnd.isAfter(contract.getEndDate())) {
+            if (currentPeriodEnd.isAfter(contract.getEndDate())) { //
                 currentPeriodEnd = contract.getEndDate();
             }
 

@@ -8,6 +8,7 @@ import bravo.dto.TimesheetEntryDTO;
 import bravo.entities.Contract;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
+import bravo.enums.ContractStatus;
 import bravo.enums.FederalState;
 import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 
@@ -46,9 +47,16 @@ public class TimesheetLogicBean implements TimesheetLogic {
         if (timesheet == null) {
             throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid() + "is not found");
         }
-        // we need timesheetDAO to link entry to timesheet
+        
         TimesheetEntry newEntry = new TimesheetEntry(true);// true means new object, it's supposed to generate new UUID for new objects;
-        newEntry.setEntryDate(entryDto.getEntryDate());
+        if(entryDto.getEntryDate().isBefore(timesheet.getEndDate()) 
+                ||  entryDto.getEntryDate().equals(timesheet.getEndDate()) 
+                ||  entryDto.getEntryDate().isAfter(timesheet.getStartDate())
+                || entryDto.getEntryDate().equals(timesheet.getStartDate())){
+            newEntry.setEntryDate(entryDto.getEntryDate());
+        }else{
+            throw new IllegalArgumentException("Entry Date for the Timesheet with" + entryDto.getUuid() + " should be in within the start and end time of the timesheet");
+        }
         newEntry.setStartTime(entryDto.getStartTime());
         newEntry.setEndTime(entryDto.getEndTime());
         newEntry.setType(entryDto.getType());
@@ -145,7 +153,8 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     private void requireEditable(Timesheet timesheet) {
-        if (timesheet.getStatus() != TimesheetStatus.IN_PROGRESS) {
+        // TS2 MIN
+        if (timesheet.getStatus() != TimesheetStatus.IN_PROGRESS && timesheet.getContract().getStatus() != ContractStatus.STARTED) {
             throw new IllegalStateException("Einträge nur im Status IN_PROGRESS änderbar.");
         }
     }
