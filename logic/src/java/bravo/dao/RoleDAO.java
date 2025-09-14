@@ -2,6 +2,7 @@ package bravo.dao;
 
 import bravo.entities.Assistant;
 import bravo.entities.Contract;
+import bravo.entities.Employee;
 import bravo.entities.Person;
 import bravo.entities.Role;
 import bravo.entities.Secretary;
@@ -36,7 +37,17 @@ public class RoleDAO extends AbstractDAO<Role> {
             return null;
         }
     }
-
+    
+    public Employee findEmployeeByContract(Contract contract) {
+        try {
+            return em.createNamedQuery("Employee.findByContract", Employee.class)
+                    .setParameter("contract", contract)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+    
     // Finds all Secretary roles associated with a specific Contract 
     public List<Secretary> findSecretariesByContract(Contract contract) {
         return em.createNamedQuery("Secretary.findByContract", Secretary.class)

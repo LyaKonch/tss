@@ -59,7 +59,6 @@ public class ContractLogicBean implements ContractLogic {
      * @return the created contract with generated UUID
      */
     @Override
-    @Transactional
     public ContractDTO createContract(ContractDTO contractDto) {
         if (contractDto == null) {
             throw new IllegalArgumentException("ContractDTO cannot be null.");
@@ -71,15 +70,13 @@ public class ContractLogicBean implements ContractLogic {
         Employee newEmployee = new Employee();
         employeePerson.addRole(newEmployee);
         contract.setEmployee(newEmployee);
-        personDAO.save(employeePerson);
-
+       
         contract.setEmployee(newEmployee);
 
         Person chefPerson = personDAO.findByUUID(contractDto.getSupervisorUuid());
         Supervisor newSupervisor = new Supervisor();
         chefPerson.addRole(newSupervisor);
         contract.setSupervisor(newSupervisor);
-        personDAO.save(chefPerson); // i am not sure if i need explicitly save it, the method is transactional
 
         List<Secretary> secretaries = contractDto.getSecretaryUuids().stream()
                 .map(uuid -> {
@@ -90,7 +87,6 @@ public class ContractLogicBean implements ContractLogic {
                     }
                     Secretary newSecretary = new Secretary();
                     p.addRole(newSecretary);
-                    personDAO.save(p);
                     return newSecretary;
                 })
                 .filter(Objects::nonNull)
@@ -107,7 +103,6 @@ public class ContractLogicBean implements ContractLogic {
                     }
                     Assistant newAssistant = new Assistant();
                     p.addRole(newAssistant);
-                    personDAO.save(p);
                     return newAssistant;
                 })
                 .filter(Objects::nonNull)
@@ -116,7 +111,7 @@ public class ContractLogicBean implements ContractLogic {
         if (!(assistants.isEmpty())) {
             contract.setAssistants(assistants);
         }
-
+        
         contract.setStatus(ContractStatus.PREPARED);
         Contract savedContract = contractDAO.save(contract);
         return mapEntityToDto(savedContract);
@@ -252,7 +247,27 @@ public class ContractLogicBean implements ContractLogic {
                 throw new IllegalStateException("Update and deletion of contracts is only possible in state PREPARED. ");
             }
             mapDtoToEntity(contractDto, existingContract);
+            
+            String newEmployeeUuid = contractDto.getEmployeeUuid();
+            Person oldEmployeePerson = existingContract.getEmployee().getPerson();
+            Person newEmployeePerson = (newEmployeeUuid != null) ? personDAO.findByUUID(newEmployeeUuid) : null;
 
+            // if new superviser is differrent from current
+            if (newEmployeePerson != null && !newEmployeePerson.equals(oldEmployeePerson)) {
+
+                Employee oldEmployeeRole = roleDAO.findEmployeeByContract(existingContract);
+                if (oldEmployeeRole != null) {
+                    // deletes old role from db and person
+                    roleDAO.deleteWithPersonUpdate(oldEmployeeRole);
+                }
+
+                // creates new supervisor role for new superviser person and links it to contract
+                Employee newEmployeeRole = new Employee();
+                newEmployeePerson.addRole(newEmployeeRole);
+                roleDAO.save(newEmployeeRole);
+                existingContract.setEmployee(newEmployeeRole);
+            }
+            
             String newSupervisorUuid = contractDto.getSupervisorUuid();
             Person oldSupervisorPerson = existingContract.getSupervisor().getPerson();
             Person newSupervisorPerson = (newSupervisorUuid != null) ? personDAO.findByUUID(newSupervisorUuid) : null;
@@ -269,7 +284,6 @@ public class ContractLogicBean implements ContractLogic {
                 // creates new supervisor role for new superviser person and links it to contract
                 Supervisor newSupervisorRole = new Supervisor();
                 newSupervisorPerson.addRole(newSupervisorRole);
-                newSupervisorRole.setContract(existingContract);
                 roleDAO.save(newSupervisorRole);
                 existingContract.setSupervisor(newSupervisorRole);
             }

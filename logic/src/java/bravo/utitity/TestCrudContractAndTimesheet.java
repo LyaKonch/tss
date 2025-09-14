@@ -50,11 +50,9 @@ public class TestCrudContractAndTimesheet {
     private String supervisorUuid;
     private String secretaryUuid;
     private String assistantUuid;
-
-    @PostConstruct
+    
     public void runTests() {
         System.out.println("--- Starting Contract and Timesheet logic test suite ---");
-        shouldcreateTestPersons();
         try {
             employeeUuid = personDAO.findByFullName("Test", "Employee").getFirst().getUuid();
             supervisorUuid = personDAO.findByFullName("Test", "Supervisor").getFirst().getUuid();
@@ -78,10 +76,10 @@ public class TestCrudContractAndTimesheet {
         System.out.println("--- Contract and Timesheet logic test suite Finished ---");
     }
     
-    @Transactional
-    private void shouldcreateTestPersons() {
+    @PostConstruct
+    public void shouldcreateTestPersons() {
 
-        //if (personDAO.findByFullName("Test", "Employee").isEmpty()) {
+        if (personDAO.findByFullName("Test", "Employee").isEmpty()) {
 
             Person employeePerson = new Person(true);
             employeePerson.setFirstName("Test");
@@ -119,10 +117,11 @@ public class TestCrudContractAndTimesheet {
             assistantPerson.setConsent(true);
             personDAO.save(assistantPerson);
             this.assistantUuid = assistantPerson.getUuid();
-        //}
-
+        }
+        
+        runTests();
     }
-
+    
     /**
      * Create + Update tests.
      *
