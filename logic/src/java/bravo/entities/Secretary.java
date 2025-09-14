@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 
 @Entity
 @DiscriminatorValue("Secretary")
+@NamedQuery(name = "Secretary.findByContract",
+        query = "SELECT s FROM Secretary s WHERE s.contract = :contract")
 public class Secretary extends Role {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)

@@ -20,9 +20,11 @@ import bravo.enums.TimesheetStatus;
 import bravo.logic.ContractLogic;
 import bravo.logic.TimesheetLogic;
 import bravo.utitity.PublicHolidayService;
+import com.sun.istack.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -35,6 +37,11 @@ import java.util.stream.Collectors;
 
 @Stateless
 public class ContractLogicBean implements ContractLogic {
+
+    private static final Logger LOGGER = Logger.getLogger(ContractLogicBean.class);
+
+    @EJB
+    private RoleDAO roleDAO;
 
     @EJB
     private PersonDAO personDAO;
@@ -52,6 +59,7 @@ public class ContractLogicBean implements ContractLogic {
      * @return the created contract with generated UUID
      */
     @Override
+    @Transactional
     public ContractDTO createContract(ContractDTO contractDto) {
         if (contractDto == null) {
             throw new IllegalArgumentException("ContractDTO cannot be null.");
@@ -70,43 +78,50 @@ public class ContractLogicBean implements ContractLogic {
         Supervisor newSupervisor = new Supervisor();
         chefPerson.addRole(newSupervisor);
         contract.setSupervisor(newSupervisor);
-        personDAO.save(chefPerson);
+        personDAO.save(chefPerson); // i am not sure if i need explicitly save it, the method is transactional
 
         List<Secretary> secretaries = contractDto.getSecretaryUuids().stream()
                 .map(uuid -> {
                     Person p = personDAO.findByUUID(uuid);
                     if (p == null) {
-                       throw new IllegalArgumentException("Person with uuid " + uuid + " wasn't found to be secretary.");
+                        LOGGER.warning("Secretary with UUID " + uuid + " not found. Skipping.");
+                        return null;
                     }
                     Secretary newSecretary = new Secretary();
                     p.addRole(newSecretary);
                     personDAO.save(p);
                     return newSecretary;
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        
+
         contract.setSecretaries(secretaries);
-        
+
         List<Assistant> assistants = contractDto.getAssistantUuids().stream()
                 .map(uuid -> {
                     Person p = personDAO.findByUUID(uuid);
                     if (p == null) {
-                        throw new IllegalArgumentException("Person with uuid " + uuid + " wasn't found to be assistant.");
+                        LOGGER.warning("Assistant with UUID " + uuid + " not found. Skipping.");
+                        return null;
                     }
                     Assistant newAssistant = new Assistant();
                     p.addRole(newAssistant);
-                    personDAO.save(p); 
+                    personDAO.save(p);
                     return newAssistant;
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        
-        if(!(assistants.isEmpty())) contract.setAssistants(assistants);
-        
+
+        if (!(assistants.isEmpty())) {
+            contract.setAssistants(assistants);
+        }
+
         contract.setStatus(ContractStatus.PREPARED);
         Contract savedContract = contractDAO.save(contract);
         return mapEntityToDto(savedContract);
     }
 
+    @Transactional
     public ContractDTO startContract(String uuid) {
         if (uuid == null) {
             throw new IllegalArgumentException("UUID cannot be null.");
@@ -223,6 +238,7 @@ public class ContractLogicBean implements ContractLogic {
      * @return the updated contract
      */
     @Override
+    @Transactional
     public ContractDTO updateContract(ContractDTO contractDto) {
         if (contractDto == null || contractDto.getUuid() == null) {
             throw new IllegalArgumentException("ContractDTO and its UUID cannot be null.");
@@ -233,6 +249,80 @@ public class ContractLogicBean implements ContractLogic {
                 throw new IllegalStateException("Update and deletion of contracts is only possible in state PREPARED. ");
             }
             mapDtoToEntity(contractDto, existingContract);
+
+            String newSupervisorUuid = contractDto.getSupervisorUuid();
+            Person oldSupervisorPerson = existingContract.getSupervisor().getPerson();
+            Person newSupervisorPerson = (newSupervisorUuid != null) ? personDAO.findByUUID(newSupervisorUuid) : null;
+
+            // if new superviser is differrent from current
+            if (newSupervisorPerson != null && !newSupervisorPerson.equals(oldSupervisorPerson)) {
+                
+                Supervisor oldSupervisorRole = roleDAO.findSupervisorByContract(existingContract);
+                if (oldSupervisorRole != null) {
+                    // deletes old role from db and person
+                    roleDAO.deleteWithPersonUpdate(oldSupervisorRole);
+                }
+
+                // creates new supervisor role for new superviser person and links it to contract
+                Supervisor newSupervisorRole = new Supervisor();
+                newSupervisorPerson.addRole(newSupervisorRole);
+                newSupervisorRole.setContract(existingContract);
+                roleDAO.save(newSupervisorRole);
+                existingContract.setSupervisor(newSupervisorRole);
+            }
+
+            // updates secretary 
+            List<String> newSecretaryUuids = contractDto.getSecretaryUuids();
+            List<Secretary> oldSecretaryRoles = roleDAO.findSecretariesByContract(existingContract);
+
+            // if new secretary's uuid is already present in the list of secretaries, we dont touch then and delete only another ones
+            oldSecretaryRoles.stream()
+                    .filter(r -> newSecretaryUuids == null || !newSecretaryUuids.contains(r.getPerson().getUuid()))
+                    .forEach(r -> roleDAO.deleteWithPersonUpdate(r));
+
+            // Додавання нових ролей
+            if (newSecretaryUuids != null) {
+                List<String> currentSecretaryUuids = oldSecretaryRoles.stream()
+                        .map(r -> r.getPerson().getUuid())
+                        .collect(Collectors.toList());
+
+                newSecretaryUuids.stream()
+                        .filter(uuid -> !currentSecretaryUuids.contains(uuid))
+                        .forEach(uuid -> {
+                            Person secretaryPerson = personDAO.findByUUID(uuid);
+                            Secretary newSecretaryRole = new Secretary();
+                            secretaryPerson.addRole(newSecretaryRole);
+                            existingContract.addSecretary(newSecretaryRole);
+                            roleDAO.save(newSecretaryRole);
+                        });
+            }
+
+            // analougosly as with secretaries
+            List<String> newAssistantUuids = contractDto.getAssistantUuids();
+            List<Assistant> oldAssistantRoles = roleDAO.findAssistantsByContract(existingContract);
+
+            // deletion of old roles that aren't present in new list
+            oldAssistantRoles.stream()
+                    .filter(r -> newAssistantUuids == null || !newAssistantUuids.contains(r.getPerson().getUuid()))
+                    .forEach(r -> roleDAO.deleteWithPersonUpdate(r));
+
+            // adding new roles
+            if (newAssistantUuids != null) {
+                List<String> currentAssistantUuids = oldAssistantRoles.stream()
+                        .map(r -> r.getPerson().getUuid())
+                        .collect(Collectors.toList());
+
+                newAssistantUuids.stream()
+                        .filter(uuid -> !currentAssistantUuids.contains(uuid))
+                        .forEach(uuid -> {
+                            Person assistantPerson = personDAO.findByUUID(uuid);
+                            Assistant newAssistantRole = new Assistant();
+                            assistantPerson.addRole(newAssistantRole);
+                            existingContract.addAssistant(newAssistantRole);
+                            roleDAO.save(newAssistantRole);
+                        });
+            }
+
             Contract updatedContract = contractDAO.save(existingContract);
             return mapEntityToDto(updatedContract);
         } catch (NoResultException e) {
@@ -293,10 +383,29 @@ public class ContractLogicBean implements ContractLogic {
         dto.setStartDate(entity.getStartDate());
         dto.setEndDate(entity.getEndDate());
         dto.setFrequency(entity.getFrequency());
-        dto.setTerminationDate(entity.getTerminationDate());
         dto.setHoursPerWeek(entity.getHoursPerWeek());
         dto.setWorkingDaysPerWeek(entity.getWorkingDaysPerWeek());
         dto.setVacationDaysPerYear(entity.getVacationDaysPerYear());
+
+        if (entity.getSupervisor() != null) {
+            dto.setSupervisorUuid(entity.getSupervisor().getUuid());
+        }
+
+        if (entity.getEmployee() != null) {
+            dto.setEmployeeUuid(entity.getEmployee().getUuid());
+        }
+
+        if (entity.getSecretaries() != null) {
+            dto.setSecretaryUuids(entity.getSecretaries().stream()
+                    .map(secretary -> secretary.getUuid())
+                    .collect(Collectors.toList()));
+        }
+        if (entity.getAssistants() != null) {
+            dto.setAssistantUuids(entity.getAssistants().stream()
+                    .map(assistant -> assistant.getUuid())
+                    .collect(Collectors.toList()));
+        }
+
         return dto;
 
     }
@@ -313,6 +422,7 @@ public class ContractLogicBean implements ContractLogic {
         entity.setEndDate(dto.getEndDate());
         entity.setFrequency(dto.getFrequency());
         entity.setHoursPerWeek(dto.getHoursPerWeek());
+        entity.setWorkingDaysPerWeek(dto.getWorkingDaysPerWeek());
         entity.setVacationDaysPerYear(dto.getVacationDaysPerYear());
 
     }

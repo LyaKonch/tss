@@ -1,9 +1,11 @@
 package bravo.utitity;
 
 import bravo.dao.ContractDAO;
+import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
 import bravo.entities.Contract;
+import bravo.entities.Person;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
 import bravo.enums.ContractStatus;
@@ -19,6 +21,7 @@ import jakarta.ejb.Startup;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +29,9 @@ import java.util.Set;
 @Startup
 @Singleton
 public class TestCrudContractAndTimesheet {
+
+    @EJB
+    private PersonDAO personDAO;
 
     @EJB
     private ContractLogic contractBean;
@@ -40,10 +46,18 @@ public class TestCrudContractAndTimesheet {
     @EJB
     private TimesheetDAO timesheetDAO;
 
+    private String employeeUuid = personDAO.findByFullName("Test", "Employee").getFirst().getUuid();
+    private String supervisorUuid = personDAO.findByFullName("Test", "Supervisor").getFirst().getUuid();
+    private String secretaryUuid = personDAO.findByFullName("Test", "Secretary").getFirst().getUuid();
+    private String assistantUuid = personDAO.findByFullName("Test", "Assistant").getFirst().getUuid();
+
+    ;;
+
     @PostConstruct
     public void runTests() {
         System.out.println("--- Starting Contract and Timesheet logic test suite ---");
         try {
+            shouldcreateTestPersons();
             // Contract logic tests
             testContractCrudOperations();
             testContractStatusTransitions();
@@ -59,6 +73,41 @@ public class TestCrudContractAndTimesheet {
             e.printStackTrace();
         }
         System.out.println("--- Contract and Timesheet logic test suite Finished ---");
+    }
+
+    private void shouldcreateTestPersons() {
+
+        if (personDAO.findByFullName("Test", "Employee").isEmpty()) {
+            Person employeePerson = new Person(true);
+            employeePerson.setFirstName("Test");
+            employeePerson.setLastName("Employee");
+            employeePerson.setEmailAddress("employee@example.com");
+            employeePerson.setDateOfBirth(LocalDate.of(1990, 1, 1));
+            personDAO.save(employeePerson);
+            this.employeeUuid = employeePerson.getUuid();
+            Person supervisorPerson = new Person(true);
+            supervisorPerson.setFirstName("Test");
+            supervisorPerson.setLastName("Supervisor");
+            supervisorPerson.setEmailAddress("supervisor@example.com");
+            supervisorPerson.setDateOfBirth(LocalDate.of(1980, 1, 1));
+            personDAO.save(supervisorPerson);
+            this.supervisorUuid = supervisorPerson.getUuid();
+            Person secretaryPerson = new Person(true);
+            secretaryPerson.setFirstName("Test");
+            secretaryPerson.setLastName("Secretary");
+            secretaryPerson.setEmailAddress("secretary@example.com");
+            secretaryPerson.setDateOfBirth(LocalDate.of(1985, 1, 1));
+            personDAO.save(secretaryPerson);
+            this.secretaryUuid = secretaryPerson.getUuid();
+            Person assistantPerson = new Person(true);
+            assistantPerson.setFirstName("Test");
+            assistantPerson.setLastName("Assistant");
+            assistantPerson.setEmailAddress("assistant@example.com");
+            assistantPerson.setDateOfBirth(LocalDate.of(1992, 1, 1));
+            personDAO.save(assistantPerson);
+            this.assistantUuid = assistantPerson.getUuid();
+        }
+
     }
 
     /**
@@ -80,7 +129,11 @@ public class TestCrudContractAndTimesheet {
         dto.setWorkingDaysPerWeek(5);
         dto.setVacationDaysPerYear(20);
         dto.setTerminationDate(null);
-        dto.setEmployeeUuid("857e4c68-ffa9-41c7-939e-71a7eda06d30");
+        dto.setEmployeeUuid(this.employeeUuid);
+        dto.setSupervisorUuid(supervisorUuid);
+        dto.setSecretaryUuids(Collections.singletonList(secretaryUuid));
+        dto.setAssistantUuids(Collections.singletonList(assistantUuid));
+
         ContractDTO created = contractBean.createContract(dto);
         if (created == null) {
             throw new RuntimeException("createContract returned null");
@@ -89,17 +142,18 @@ public class TestCrudContractAndTimesheet {
         if (created.getStatus() != ContractStatus.PREPARED) {
             throw new RuntimeException("Expected PREPARED after create (CN5).");
         }
-
         created.setName("Updated Name");
         ContractDTO updated = contractBean.updateContract(created);
         System.out.println("Updated contract name: " + updated.getName());
         if (!"Updated Name".equals(updated.getName())) {
             throw new RuntimeException("Update did not persist name change (CN1/CN6).");
         }
-
-        // NOTE: deleteContract not called — production method has a condition:
-        // if (contract.getStatus() != PREPARED || contract.getStatus() != ARCHIVED) { throw ... }
-        // which is always true and makes deleteContract unusable as-is. Avoid calling it here.
+        contractBean.deleteContract(updated.getUuid());
+        Contract deletedContract = contractDAO.findByUUID(updated.getUuid());
+        if (deletedContract != null) {
+            throw new RuntimeException("Contract was not deleted.");
+        }
+        System.out.println("testContractCrudOperations OK");
     }
 
     /**
