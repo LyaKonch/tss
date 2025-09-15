@@ -29,6 +29,9 @@ logs/
 .idea/**/shelf
 .idea/misc.xml
 .idea/saveactions_settings.xml
+.idea/webContexts.xml
+.idea/dataSources.xml
+.idea/resourceBundles.xml
 
 # Sensitive or high-churn files
 .idea/**/dataSources.ids
@@ -36,6 +39,10 @@ logs/
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+
+.idea/dataSources.xml
+.idea/resourceBundles.xml
+.idea/webContexts.xml
 
 # Generated files
 .idea/**/contentModel.xml
@@ -55,3 +62,4 @@ tmp/
 __MACOSX/
 Thumbs.db
 [Dd]esktop.ini
+

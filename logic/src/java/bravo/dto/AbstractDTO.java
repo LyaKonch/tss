@@ -1,36 +1,47 @@
-/*
- * (C) Dr. Volker Riediger - Jakarta EE Web Applications
- * University of Koblenz - Faculty 4: Computer Science
- */
 package bravo.dto;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * @author Dr. Volker Riediger <riediger@uni-koblenz.de>
- */
 public abstract class AbstractDTO implements Serializable {
 
-    private static final long serialVersionUID = 5231885890948093876L;
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private Long id;
 
     private String uuid;
-    private int jpaVersion;
+
+    private int version;
+
 
     protected AbstractDTO() {
     }
 
-    protected AbstractDTO(String uuid, int jpaVersion) {
-        this.uuid = uuid;
-        this.jpaVersion = jpaVersion;
+
+    public Long getId() {
+        return id;
     }
 
-    public int getJpaVersion() {
-        return jpaVersion;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getUuid() {
         return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
     public boolean isNew() {
@@ -39,29 +50,14 @@ public abstract class AbstractDTO implements Serializable {
 
     @Override
     public int hashCode() {
-        if (uuid == null) {
-            throw new IllegalStateException("uuid not set");
-        }
-        int hash = 7;
-        hash = 31 * hash + Objects.hashCode(this.uuid);
-        return hash;
+        return Objects.hashCode(uuid);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (uuid == null) {
-            throw new IllegalStateException("uuid not set");
-        }
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AbstractDTO other = (AbstractDTO) obj;
-        return Objects.equals(this.uuid, other.uuid);
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        PersonDTO other = (PersonDTO) obj;
+        return Objects.equals(this.uuid, other.getUuid());
     }
 }
