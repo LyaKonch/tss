@@ -10,6 +10,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "timesheet")
+@NamedQueries({
+        @NamedQuery(name = "Timesheet.findByUuid", query = "SELECT t FROM Timesheet t WHERE t.uuid = :uuid")})
 public class Timesheet extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)

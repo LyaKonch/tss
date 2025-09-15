@@ -44,6 +44,14 @@ public class ContractLogicBean implements ContractLogic {
     }
 
     @Override
+    public List<ContractDTO> findActiveEmployeeContractsByEmail(String email) {
+        List<Contract> entities = contractDAO.findActiveEmployeeContractByEmail(email);
+        List<ContractDTO> dtos = new ArrayList<>(entities.size());
+        for (Contract entity : entities) dtos.add(ContractMapper.toDto(entity));
+        return dtos;
+    }
+
+    @Override
     public List<ContractDTO> findAll() {
         List<Contract> entities = contractDAO.findAll();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
@@ -55,11 +63,7 @@ public class ContractLogicBean implements ContractLogic {
     public List<ContractDTO> getActive() {
         List<Contract> entities = contractDAO.getActiveContracts();
         List<ContractDTO> dtos = new ArrayList<>(entities.size());
-
-        for (Contract entity : entities) {
-            dtos.add(ContractMapper.toDto(entity));
-        }
-
+        for (Contract entity : entities) dtos.add(ContractMapper.toDto(entity));
         return dtos;
     }
 

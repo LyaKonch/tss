@@ -33,6 +33,13 @@ public interface ContractLogic {
     ContractDTO findByUuid(String uuid);
 
     /**
+     * Retrieves all contracts for a given email address that are active with the person being an employee.
+     *
+     * @return list of contracts by a person
+     */
+    List<ContractDTO> findActiveEmployeeContractsByEmail(String email);
+
+    /**
      * Retrieves all contracts.
      *
      * @return a list of all contracts

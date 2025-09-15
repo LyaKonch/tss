@@ -1,94 +1,103 @@
 package bravo.web;
 
-import jakarta.inject.Named;
-import jakarta.faces.view.ViewScoped;
+import bravo.dto.ContractDTO;
+import bravo.dto.TimesheetDTO;
+import bravo.dto.TimesheetEntryDTO;
+import bravo.enums.ContractStatus;
+import bravo.enums.ReportType;
+import bravo.enums.TimesheetStatus;
+import bravo.logic.ContractLogic;
+import bravo.logic.TimesheetEntryLogic;
+import bravo.logic.TimesheetLogic;
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-
-import bravo.dto.TimesheetEntryDTO;
-import bravo.enums.ReportType;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 @Named
 @ViewScoped
 public class EntryBlockBean implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
-    public enum TimesheetStatus { IN_PROGRESS, SIGNED_BY_EMPLOYEE, SIGNED_BY_SUPERVISOR, ARCHIVED }
-    public enum ContractStatus  { PREPARED, STARTED, TERMINATED, ARCHIVED }
+    private static final Logger logger = Logger.getLogger(EntryBlockBean.class.getName());
 
-    public static class TimesheetDTO implements Serializable {
-        private static final long serialVersionUID = 1L;
-        public String uuid;
-        public Long contractId;
-        public LocalDate startDate, endDate;
-        public TimesheetStatus status;
-        public ContractStatus contractStatus;
-        public double hoursDue, hoursActual, contractVacationHours;
+    ResourceBundle msg = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
-        public TimesheetDTO(String uuid, Long contractId, LocalDate start, LocalDate end,
-                            TimesheetStatus status, ContractStatus cStatus,
-                            double due, double actual, double vacHours) {
-            this.uuid = uuid; this.contractId = contractId; this.startDate = start; this.endDate = end;
-            this.status = status; this.contractStatus = cStatus; this.hoursDue = due; this.hoursActual = actual;
-            this.contractVacationHours = vacHours;
-        }
-    }
+    @Inject
+    private ContractLogic contractLogic;
 
-    private static final ZoneId ZONE = ZoneId.systemDefault();
-    private static LocalDate toLocalDate(Date d) {
-        return d == null ? null : d.toInstant().atZone(ZONE).toLocalDate();
-    }
-    private static LocalTime toLocalTime(Date d) {
-        return d == null ? null : d.toInstant().atZone(ZONE).toLocalTime();
-    }
-    private static Date toDate(LocalDate d) {
-        return d == null ? null : Date.from(d.atStartOfDay(ZONE).toInstant());
-    }
-    private static Date toDate(LocalTime t) {
-        return t == null ? null : Date.from(t.atDate(LocalDate.now()).atZone(ZONE).toInstant());
-    }
+    @Inject
+    private TimesheetLogic timesheetLogic;
+
+    @Inject
+    private TimesheetEntryLogic timesheetEntryLogic;
+
+    private ContractDTO contract;
 
     private TimesheetDTO timesheet;
-    private List<TimesheetEntryDTO> entries = new ArrayList<>();
-    private TimesheetEntryDTO selected;
-    private EntryForm form = new EntryForm();
 
-    public EntryBlockBean() { }
+    private TimesheetEntryDTO currentEntry;
+
+    private List<TimesheetEntryDTO> entries = new ArrayList<>();
+
+    public EntryBlockBean() {
+    }
 
     @PostConstruct
     public void init() {
-        YearMonth ym = YearMonth.now();
-        LocalDate start = ym.atDay(1);
-        LocalDate end   = ym.atEndOfMonth();
-        String tsUuid = UUID.randomUUID().toString();
-        this.timesheet = new TimesheetDTO(
-                tsUuid, 99L, start, end,
-                TimesheetStatus.IN_PROGRESS, ContractStatus.STARTED,
-                40.0, 0.0, 80.0
-        );
-        recalcActual();
+        // TODO: we will eventually know who is logged in, using Alice is ofc only for dummy purposes
+        List<ContractDTO> contracts = contractLogic.findActiveEmployeeContractsByEmail("alice@example.com");
+        // TODO: If we get multiple the user has to select which one - which should in turn load the entries etc and update linked sheet
+        contract = contracts.isEmpty() ? null : contracts.getFirst();
+        if (contract == null) return;
+        timesheet = timesheetLogic.getCurrent(contract);
+        entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
+
+        newEntryWithDefaults();
+        recalcTimesheetHoursDue();
+
+        logger.info("Initialized EntryBlockBean.");
+    }
+
+    /**
+     * Creates a new entry with sensible default values.
+     */
+    public void newEntryWithDefaults() {
+        currentEntry = new TimesheetEntryDTO();
+        currentEntry.setType(ReportType.WORK);
+        currentEntry.setStartTime(LocalTime.of(8, 0));
+        currentEntry.setEndTime(LocalTime.of(17, 0));
+        currentEntry.setHours(calcHours(currentEntry));
+        currentEntry.setEntryDate(LocalDate.now());
+        currentEntry.setTimesheetUuid(timesheet.getUuid());
+    }
+
+    public void reloadEntryList() {
+        entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
     }
 
     public void recalcFormHours() {
-        LocalTime s = toLocalTime(form.getStartTime());
-        LocalTime e = toLocalTime(form.getEndTime());
-        double h = 0.0;
-        if (s != null && e != null && e.isAfter(s)) {
-            h = Duration.between(s, e).toMinutes() / 60.0;
+        LocalTime start = currentEntry.getStartTime();
+        LocalTime end = currentEntry.getEndTime();
+        double hours = 0.0;
+        if (start != null && end != null && end.isAfter(start)) {
+            hours = Duration.between(start, end).toMinutes() / 60.0;
         }
-        form.setHours(h);
+        currentEntry.setHours(hours);
     }
 
     public String save() {
@@ -99,116 +108,89 @@ public class EntryBlockBean implements Serializable {
         try {
             validateForm();
 
-            LocalTime s = toLocalTime(form.getStartTime());
-            LocalTime e = toLocalTime(form.getEndTime());
-            form.setHours(Duration.between(s, e).toMinutes() / 60.0);
+            if (currentEntry.getUuid() == null) currentEntry = timesheetEntryLogic.create(currentEntry);
+            else currentEntry = timesheetEntryLogic.update(currentEntry);
 
-            LocalDate d = toLocalDate(form.getEntryDate());
+            recalcTimesheetHoursDue();
+            reloadEntryList();
 
-            if (form.getUuid() == null) {
-                TimesheetEntryDTO dto = new TimesheetEntryDTO(
-                        UUID.randomUUID().toString(),
-                        0,
-                        timesheet.uuid,
-                        d,
-                        s,
-                        e,
-                        form.getType(),
-                        form.getDescription()
-                );
-                entries.add(dto);
-            } else {
-                for (int i = 0; i < entries.size(); i++) {
-                    if (Objects.equals(entries.get(i).getUuid(), form.getUuid())) {
-                        TimesheetEntryDTO dto = new TimesheetEntryDTO(
-                                form.getUuid(),
-                                form.getJpaVersion(),
-                                timesheet.uuid,
-                                d,
-                                s,
-                                e,
-                                form.getType(),
-                                form.getDescription()
-                        );
-                        entries.set(i, dto);
-                        break;
-                    }
-                }
-            }
+            addInfo(msg.getString("label.saved"));
+            logger.info("Saved entry.");
 
-            recalcActual();
-            form = new EntryForm(); 
-            addInfo("Gespeichert.");
         } catch (IllegalArgumentException ex) {
             addError(ex.getMessage());
         }
         return null;
     }
 
-    public void prepareEdit() {
-        if (selected == null) return;
-        form.from(selected);
-    }
-
     public void deleteSelected() {
-        if (!isEditable()) { addError("Timesheet nicht editierbar."); 
-        return; 
+        if (!isEditable()) {
+            addError(msg.getString("entry.notEditable"));
+            return;
         }
-        if (selected == null) return;
-        entries.removeIf(x -> Objects.equals(x.getUuid(), selected.getUuid()));
-        recalcActual();
-        selected = null;
-        addInfo("Eintrag gelöscht.");
+        if (currentEntry == null) return;
+        entries.remove(currentEntry);
+
+        recalcTimesheetHoursDue();
+        newEntryWithDefaults();
+
+        addInfo(msg.getString("entry.deleted"));
     }
 
+    // Is this method+button better here or in a timesheet related page?
     public void signAsEmployee() {
-        if (!isEditable()) { addError("Timesheet nicht editierbar."); return; }
-        timesheet.status = TimesheetStatus.SIGNED_BY_EMPLOYEE;
+        if (!isEditable()) {
+            addError(msg.getString("entry.notEditable"));
+            return;
+        }
+        timesheet.setStatus(TimesheetStatus.SIGNED_BY_EMPLOYEE);
         addInfo("Signiert (Mitarbeiter).");
     }
 
+    // Is this method+button better here or in a timesheet related page?
     public void revokeSignature() {
-        if (timesheet.status == TimesheetStatus.SIGNED_BY_EMPLOYEE) {
-            timesheet.status = TimesheetStatus.IN_PROGRESS;
+        if (timesheet.getStatus() == TimesheetStatus.SIGNED_BY_EMPLOYEE) {
+            timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
             addInfo("Signatur widerrufen.");
         }
     }
 
     private void validateForm() {
-        LocalDate d = toLocalDate(form.getEntryDate());
-        if (d == null) throw new IllegalArgumentException("Datum fehlt.");
-        if (d.isBefore(timesheet.startDate) || d.isAfter(timesheet.endDate))
+        LocalDate entryDate = currentEntry.getEntryDate();
+        if (entryDate == null) throw new IllegalArgumentException("Datum fehlt.");
+        if (entryDate.isBefore(timesheet.getStartDate()) || entryDate.isAfter(timesheet.getEndDate()))
             throw new IllegalArgumentException("Datum außerhalb des Timesheet-Zeitraums.");
 
-        LocalTime s = toLocalTime(form.getStartTime());
-        LocalTime e = toLocalTime(form.getEndTime());
-        if (s == null || e == null) throw new IllegalArgumentException("Zeit fehlt.");
-        if (!e.isAfter(s)) throw new IllegalArgumentException("Ende muss nach Start liegen.");
+        LocalTime startTime = currentEntry.getStartTime();
+        LocalTime endTime = currentEntry.getEndTime();
+        if (startTime == null || endTime == null) throw new IllegalArgumentException("Zeit fehlt.");
+        if (!endTime.isAfter(startTime)) throw new IllegalArgumentException("Ende muss nach Start liegen.");
 
-        ensureNoOverlap(d, s, e);
+        ensureNoOverlap(entryDate, startTime, endTime);
 
-        double newHours = Duration.between(s, e).toMinutes() / 60.0;
-        if (form.getType() == ReportType.VACATION) {
+        double newHours = Duration.between(startTime, endTime).toMinutes() / 60.0;
+        if (currentEntry.getType() == ReportType.VACATION) {
             double used = entries.stream()
                     .filter(x -> x.getType() == ReportType.VACATION)
                     .mapToDouble(this::calcHours)
                     .sum();
-            if (used + newHours > timesheet.contractVacationHours) {
+            if (used + newHours > contract.getVacationHours()) {
                 throw new IllegalArgumentException("Urlaubsstunden überschreiten das Vertragsbudget.");
             }
         }
+        logger.info("Validated new TimesheetEntry!");
     }
 
-    private void ensureNoOverlap(LocalDate d, LocalTime s, LocalTime e) {
-        for (TimesheetEntryDTO x : entries) {
-            if (form.getUuid() != null && Objects.equals(x.getUuid(), form.getUuid())) continue;
-            if (!d.equals(x.getEntryDate())) continue;
+    private void ensureNoOverlap(LocalDate entryDate, LocalTime startDate, LocalTime endDate) {
+        for (TimesheetEntryDTO entry : entries) {
+            if (currentEntry.getUuid() != null && entry.equals(currentEntry)) continue;
+            if (!entryDate.equals(entry.getEntryDate())) continue;
 
-            LocalTime os = x.getStartTime();
-            LocalTime oe = x.getEndTime();
-            if (os != null && oe != null && s.isBefore(oe) && e.isAfter(os)) {
+            LocalTime os = entry.getStartTime();
+            LocalTime oe = entry.getEndTime();
+            if (os != null && oe != null && startDate.isBefore(oe) && endDate.isAfter(os)) {
                 throw new IllegalArgumentException(
-                    "Zeiten überschneiden sich mit Eintrag am " + d + " (" + os + "–" + oe + ")."
+                        "Zeiten überschneiden sich mit Eintrag am " + entryDate + " (" + os + "–" + oe + ")."
                 );
             }
         }
@@ -219,115 +201,43 @@ public class EntryBlockBean implements Serializable {
         return Duration.between(e.getStartTime(), e.getEndTime()).toMinutes() / 60.0;
     }
 
-    private void recalcActual() {
-        timesheet.hoursActual = entries.stream().mapToDouble(this::calcHours).sum();
+    private void recalcTimesheetHoursDue() {
+        timesheet.setHoursDue(entries.stream().mapToDouble(this::calcHours).sum());
     }
 
     private void addInfo(String txt) {
         FacesContext.getCurrentInstance().addMessage(null,
-            new FacesMessage(FacesMessage.SEVERITY_INFO, txt, null));
+                new FacesMessage(FacesMessage.SEVERITY_INFO, txt, ""));
     }
+
     private void addError(String txt) {
         FacesContext.getCurrentInstance().addMessage(null,
-            new FacesMessage(FacesMessage.SEVERITY_ERROR, txt, null));
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, txt, ""));
     }
 
     public boolean isEditable() {
         return timesheet != null
-            && timesheet.status == TimesheetStatus.IN_PROGRESS
-            && timesheet.contractStatus == ContractStatus.STARTED;
+                && timesheet.getStatus() == TimesheetStatus.IN_PROGRESS
+                && contract.getStatus() == ContractStatus.STARTED;
     }
-    public boolean getCanSign()   { return timesheet != null && timesheet.status == TimesheetStatus.IN_PROGRESS; }
-    public boolean getCanRevoke() { return timesheet != null && timesheet.status == TimesheetStatus.SIGNED_BY_EMPLOYEE; }
 
-    public String getStatusLabel() { return timesheet == null ? "" : timesheet.status.name(); }
-    public double getHoursActual() { return timesheet == null ? 0.0 : timesheet.hoursActual; }
+    public boolean canSign() {
+        return timesheet != null && timesheet.getStatus() == TimesheetStatus.IN_PROGRESS;
+    }
 
-    public List<TimesheetEntryDTO> getEntries() { return entries; }
-    public EntryForm getForm() { return form; }
-    public TimesheetEntryDTO getSelected() { return selected; }
-    public void setSelected(TimesheetEntryDTO selected) { this.selected = selected; }
+    public boolean canRevoke() {
+        return timesheet != null && timesheet.getStatus() == TimesheetStatus.SIGNED_BY_EMPLOYEE;
+    }
 
-  
-    public static class EntryForm implements Serializable {
-        private static final long serialVersionUID = 1L;
+    public List<TimesheetEntryDTO> getEntries() {
+        return entries;
+    }
 
-        private String uuid;
-        private int jpaVersion;
+    public TimesheetEntryDTO getCurrentEntry() {
+        return currentEntry;
+    }
 
-        private Date entryDate;
-        private Date startTime;
-        private Date endTime;
-
-        private ReportType type = ReportType.WORK;
-        private String description;
-        private double hours;
-
-        public void from(TimesheetEntryDTO e) {
-            setUuid(e.getUuid());
-            setJpaVersion(e.getJpaVersion());
-            setEntryDate(EntryBlockBean.toDate(e.getEntryDate()));
-            setStartTime(EntryBlockBean.toDate(e.getStartTime()));
-            setEndTime(EntryBlockBean.toDate(e.getEndTime()));
-            setType(e.getType());
-            setDescription(e.getDescription());
-            setHours((e.getStartTime()!=null && e.getEndTime()!=null)
-                    ? Duration.between(e.getStartTime(), e.getEndTime()).toMinutes()/60.0 : 0.0);
-        }
-
-        public String getUuid() { 
-            return uuid; 
-        }
-        public void setUuid(String uuid) { 
-            this.uuid = uuid; 
-        }
-        public int getJpaVersion() { 
-            return jpaVersion; 
-        }
-        public void setJpaVersion(int v) { 
-            this.jpaVersion = v; 
-        }
-
-        public Date getEntryDate() { 
-            return entryDate; 
-        }
-        public void setEntryDate(Date entryDate) { 
-            this.entryDate = entryDate; 
-        }
-
-        public Date getStartTime() { 
-            return startTime;
-        } 
-        public void setStartTime(Date startTime) { 
-            this.startTime = startTime;
-        }
-
-        public Date getEndTime() { 
-            return endTime; 
-        }
-        public void setEndTime(Date endTime) { 
-            this.endTime = endTime; 
-        }
-
-        public ReportType getType() { 
-            return type; 
-        }
-        public void setType(ReportType type) { 
-            this.type = type; 
-        }
-
-        public String getDescription() { 
-            return description; 
-        }
-        public void setDescription(String description) { 
-            this.description = description; 
-        }
-
-        public double getHours() { 
-            return hours; 
-        }
-        public void setHours(double hours) { 
-            this.hours = hours; 
-        }
+    public void setCurrentEntry(TimesheetEntryDTO currentEntry) {
+        this.currentEntry = currentEntry;
     }
 }

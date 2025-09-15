@@ -9,7 +9,13 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "timesheet_entry")
-@NamedQueries({@NamedQuery(name = "TimesheetEntry.findByUuid", query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"), @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid", query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid"), @NamedQuery(name = "TimesheetEntry.findAll", query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")})
+@NamedQueries({
+        @NamedQuery(name = "TimesheetEntry.findByUuid",
+                query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"),
+        @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid",
+                query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid ORDER BY e.entryDate DESC"),
+        @NamedQuery(name = "TimesheetEntry.findAll",
+                query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")})
 public class TimesheetEntry extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)

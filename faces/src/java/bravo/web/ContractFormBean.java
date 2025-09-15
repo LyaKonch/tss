@@ -35,6 +35,7 @@ public class ContractFormBean implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
     private static final Logger logger = Logger.getLogger(ContractFormBean.class.getName());
 
 
@@ -101,7 +102,7 @@ public class ContractFormBean implements Serializable {
             return prepareCreate();
         }
 
-        contract = contractLogic.findByUuid(uuid);
+//        contract = contractLogic.findByUuid(uuid);
         if (contract == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
