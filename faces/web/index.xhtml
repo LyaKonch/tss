@@ -6,27 +6,24 @@
 
   <f:view locale="#{userSessionBean.locale}">
     <h:head>
-      <title>TimeSheet Tracking</title>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    </h:head>
+  <title>TimeSheet Tracking</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</h:head>
+
 
     <h:body>
-      
       <f:loadBundle basename="bravo.web.i18n.messages" var="msg"/>
 
-      
       <h:form id="langSwitch">
-        <h:commandLink value="DE" action="#{userSessionBean.changeLang('de')}">
+        <h:commandLink value="DE" action="#{userSessionBean.setLocale('de')}">
           <f:ajax render="@all"/>
         </h:commandLink>
         |
-        <h:commandLink value="EN" action="#{userSessionBean.changeLang('en')}">
+        <h:commandLink value="EN" action="#{userSessionBean.setLocale('en')}">
           <f:ajax render="@all"/>
         </h:commandLink>
       </h:form>
-
-      <h:outputText value="#{statusBean.statuses}" />
 
       <ui:include src="/fragments/timesheet-entry.xhtml"/>
     </h:body>

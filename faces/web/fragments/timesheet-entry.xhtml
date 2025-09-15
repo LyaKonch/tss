@@ -2,101 +2,117 @@
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
   xmlns:h="http://xmlns.jcp.org/jsf/html"
-  xmlns:f="http://xmlns.jcp.org/jsf/core">
+  xmlns:f="http://xmlns.jcp.org/jsf/core"
+  xmlns:p="http://primefaces.org/ui">
 
   <h:form id="tsEntry">
-    <h:messages globalOnly="false" layout="table"/>
+ <p:messages id="msgs" showDetail="true" closable="true">
+    <p:autoUpdate/>
+</p:messages>
 
-    <h3 style="margin-top:0">
-  Zeitraum: #{entryBlockBean.periodLabel}
-  · Status: #{entryBlockBean.statusLabel}
-  · Ist: #{entryBlockBean.hoursActual}
-    </h3>
+    <p:panel header="#{msg['title.entry']}" 
+             style="max-width:900px;margin:20px auto;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.06)">
 
-    <h:panelGrid columns="3" columnClasses="w-10rem,w-auto,w-10rem" cellpadding="4">
-      <h:outputLabel for="date" value="#{msg['label.date']}" />
-      <h:inputText id="date"
-                   value="#{entryBlockBean.form.entryDateStr}"
-                   required="true"
-                   requiredMessage="Bitte Datum angeben (yyyy-MM-dd)"
-                   disabled="#{!entryBlockBean.editable}"/>
-      <h:message for="date"/>
+      
+      <h:panelGrid columns="3" columnClasses="w-16rem,w-16rem,w-16rem" style="gap:12px" cellpadding="4">
+        <h:panelGroup>
+          <h:outputLabel for="date" value="#{msg['label.date']}" />
+          <p:datePicker id="date"
+                        value="#{entryBlockBean.form.entryDate}"
+                        pattern="dd.MM.yyyy"
+                        placeholder="#{msg['placeholder.date']}"
+                        showIcon="true"
+                        required="true"
+                        requiredMessage="#{msg['error.dateRequired']}"
+                        converterMessage="#{msg['error.dateFormat']}"/>
+        </h:panelGroup>
 
-      <h:outputLabel for="start" value="#{msg['label.start']}" />
-      <h:inputText id="start"
-                   value="#{entryBlockBean.form.startTimeStr}"
-                   required="true"
-                   requiredMessage="Bitte Startzeit angeben (HH:mm, z. B. 09:00)"
-                   disabled="#{!entryBlockBean.editable}"/>
-      <h:message for="start"/>
+        <h:panelGroup>
+          <h:outputLabel for="start" value="#{msg['label.start']}" />
+          <p:datePicker id="start"
+                        value="#{entryBlockBean.form.startTime}"
+                        pattern="HH:mm"
+                        timeOnly="true"
+                        hourFormat="24"
+                        placeholder="#{msg['placeholder.start']}"
+                        showIcon="true"
+                        required="true"
+                        requiredMessage="#{msg['error.timeStartRequired']}"
+                        converterMessage="#{msg['error.timeFormat']}">
+            <p:ajax event="dateSelect" listener="#{entryBlockBean.recalcFormHours}" update="hours"/>
+          </p:datePicker>
+        </h:panelGroup>
 
-      <h:outputLabel for="end" value="#{msg['label.end']}" />
-      <h:inputText id="end"
-                   value="#{entryBlockBean.form.endTimeStr}"
-                   required="true"
-                   requiredMessage="Bitte Endzeit angeben (HH:mm, z. B. 17:30)"
-                   disabled="#{!entryBlockBean.editable}"/>
-      <h:message for="end"/>
+        <h:panelGroup>
+          <h:outputLabel for="end" value="#{msg['label.end']}" />
+          <p:datePicker id="end"
+                        value="#{entryBlockBean.form.endTime}"
+                        pattern="HH:mm"
+                        timeOnly="true"
+                        hourFormat="24"
+                        placeholder="#{msg['placeholder.end']}"
+                        showIcon="true"
+                        required="true"
+                        requiredMessage="#{msg['error.timeEndRequired']}"
+                        converterMessage="#{msg['error.timeFormat']}">
+            <p:ajax event="dateSelect" listener="#{entryBlockBean.recalcFormHours}" update="hours"/>
+          </p:datePicker>
+        </h:panelGroup>
+      </h:panelGrid>
 
-      <h:outputLabel for="type" value="#{msg['label.type']}" />
-      <h:selectOneMenu id="type"
-                       value="#{entryBlockBean.form.type}"
-                       disabled="#{!entryBlockBean.editable}">
-        <f:selectItem itemValue="WORK" itemLabel="WORK" />
-        <f:selectItem itemValue="VACATION" itemLabel="VACATION" />
-        <f:selectItem itemValue="SICK_LEAVE" itemLabel="SICK_LEAVE" />
-      </h:selectOneMenu>
-      <h:outputText/>
+      <h:panelGrid columns="2" columnClasses="w-16rem,w-16rem" style="gap:12px;margin-top:12px" cellpadding="4">
+        <h:panelGroup>
+          <h:outputLabel for="type" value="#{msg['label.type']}" />
+          <h:selectOneMenu id="type" value="#{entryBlockBean.form.type}">
+            <f:selectItem itemValue="WORK"       itemLabel="#{msg['type.work']}" />
+            <f:selectItem itemValue="VACATION"   itemLabel="#{msg['type.vacation']}" />
+            <f:selectItem itemValue="SICK_LEAVE" itemLabel="#{msg['type.sick_leave']}" />
+          </h:selectOneMenu>
+        </h:panelGroup>
 
-      <h:outputLabel for="desc" value="#{msg['label.desc']}" />
-      <h:inputTextarea id="desc"
-                       value="#{entryBlockBean.form.description}"
-                       rows="3"
-                       disabled="#{!entryBlockBean.editable}"/>
-      <h:outputText/>
-    </h:panelGrid>
+        <h:panelGroup>
+          <h:outputLabel for="hours" value="#{msg['label.hours']}" />
+          <h:panelGroup id="hours" layout="block"
+                        style="height:38px;display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:8px;padding:0 12px;background:#f7f7f9">
+            <h:outputText value="#{entryBlockBean.form.hours}">
+              <f:convertNumber minFractionDigits="0" maxFractionDigits="2"/>
+            </h:outputText>h
+          </h:panelGroup>
+        </h:panelGroup>
+      </h:panelGrid>
 
-    <h:panelGroup layout="block" style="margin:12px 0">
-      <h:commandButton value="#{msg['btn.save']}" action="#{entryBlockBean.save}">
-        <f:ajax execute="@form" render="tsEntry"/>
-      </h:commandButton>
+      <h:panelGroup layout="block" style="margin-top:12px">
+        <h:outputLabel for="desc" value="#{msg['label.desc']}" />
+        <p:inputTextarea id="desc"
+                         value="#{entryBlockBean.form.description}"
+                         rows="3"
+                         placeholder="#{msg['placeholder.desc']}"
+                         autoResize="false"
+                         style="width:100%"/>
+      </h:panelGroup>
 
-      <h:commandButton value="#{msg['btn.sign']}"
-                       action="#{entryBlockBean.signAsEmployee}"
-                       rendered="#{entryBlockBean.canSign}">
-        <f:ajax execute="@this" render="tsEntry"/>
-      </h:commandButton>
+      <div style="margin-top:16px">
+        <p:commandButton id="addBtn"
+                         value="#{msg['btn.add']}"
+                         action="#{entryBlockBean.save}"
+                         process="@form"
+                         update="@form msgs entries"
+                         style="width:100%;background:#0b0b1a;border:none;border-radius:8px" />
+      </div>
+    </p:panel>
 
-      <h:commandButton value="#{msg['btn.revoke']}"
-                       action="#{entryBlockBean.revokeSignature}"
-                       rendered="#{entryBlockBean.canRevoke}">
-        <f:ajax execute="@this" render="tsEntry"/>
-      </h:commandButton>
-    </h:panelGroup>
-
-    <!-- Tabelle -->
-    <h:dataTable value="#{entryBlockBean.entries}" var="e" border="1" cellpadding="4" style="width:100%">
-      <h:column><f:facet name="header">#{msg['col.date']}</f:facet>#{e.entryDate}</h:column>
-      <h:column><f:facet name="header">#{msg['col.start']}</f:facet>#{e.startTime}</h:column>
-      <h:column><f:facet name="header">#{msg['col.end']}</f:facet>#{e.endTime}</h:column>
-      <h:column><f:facet name="header">#{msg['col.type']}</f:facet>#{e.type}</h:column>
-      <h:column><f:facet name="header">#{msg['col.hours']}</f:facet>#{e.hours}</h:column>
-      <h:column><f:facet name="header">#{msg['col.desc']}</f:facet>#{e.description}</h:column>
-
-      <h:column rendered="#{entryBlockBean.editable}">
-        <f:facet name="header">#{msg['col.actions']}</f:facet>
-
-        <h:commandLink value="#{msg['link.edit']}" action="#{entryBlockBean.prepareEdit}">
-          <f:setPropertyActionListener target="#{entryBlockBean.selected}" value="#{e}" />
-          <f:ajax execute="@this" render="tsEntry" />
-        </h:commandLink>
-        |
-        <h:commandLink value="#{msg['link.delete']}" action="#{entryBlockBean.deleteSelected}">
-          <f:setPropertyActionListener target="#{entryBlockBean.selected}" value="#{e}" />
-          <f:ajax execute="@this" render="tsEntry" />
-        </h:commandLink>
-      </h:column>
-    </h:dataTable>
+    <p:panel header="#{msg['recent.title']}" 
+             style="max-width:900px;margin:12px auto;border-radius:14px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.04)">
+      <p:dataTable id="entries" value="#{entryBlockBean.entries}" var="e" rows="5" paginator="false"
+                   emptyMessage="#{msg['recent.empty']}" style="width:100%">
+        <p:column headerText="#{msg['col.date']}">#{e.entryDate}</p:column>
+        <p:column headerText="#{msg['col.start']}">#{e.startTime}</p:column>
+        <p:column headerText="#{msg['col.end']}">#{e.endTime}</p:column>
+        <p:column headerText="#{msg['col.type']}">#{e.type}</p:column>
+        <p:column headerText="#{msg['col.hours']}">#{entryBlockBean.calcHours(e)}</p:column>
+        <p:column headerText="#{msg['col.desc']}">#{e.description}</p:column>
+      </p:dataTable>
+    </p:panel>
 
   </h:form>
 </ui:composition>
