@@ -1,24 +1,26 @@
 package bravo.dao;
 
 import bravo.entities.AbstractEntity;
-import com.sun.istack.logging.Logger;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
+
 
 public class AbstractDAO<T extends AbstractEntity> {
 
     @PersistenceContext(unitName = "BravoTSSPU")
     protected EntityManager em;
-    
-    private static final Logger logger = Logger.getLogger(AbstractDAO.class);
-    
+
+    private static final Logger logger = Logger.getLogger(AbstractDAO.class.getName());
+
     private Class<T> entityClass;
+
 
     public AbstractDAO() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
@@ -32,13 +34,13 @@ public class AbstractDAO<T extends AbstractEntity> {
         return em.find(entityClass, id);
     }
 
-    public T findByUUID(String uuid) {
+    public T findByUuid(String uuid) {
         return em.createNamedQuery(entityClass.getSimpleName() + ".findByUuid", entityClass)
-                .setParameter("uuid", uuid)
+                .setParameter("uuid", UUID.fromString(uuid))
                 .getSingleResult();
     }
 
-    @Transactional
+
     public T save(T entry) {
         try {
             if (entry.getId() == null) {
@@ -56,19 +58,16 @@ public class AbstractDAO<T extends AbstractEntity> {
             }
             throw exc;
         }
-
     }
 
     public List<T> findAll() {
         return em.createNamedQuery(entityClass.getSimpleName() + ".findAll", entityClass).getResultList();
     }
-    
-    @Transactional
-    public void delete(T entry) { // delete
+
+    public void delete(T entry) {
         em.remove(em.merge(entry));
     }
-    
-    @Transactional
+
     public void deleteById(Long id) {
         T entity = findById(id);
         if (entity != null) {

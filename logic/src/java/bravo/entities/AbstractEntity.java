@@ -11,10 +11,10 @@ public abstract class AbstractEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // database primary key identifier
+    private Long id;
 
-    @Column(unique = true, length = 36) // additional info for JPA how to map this column 
-    private String uuid; // program level identifier just in case 
+    @Column(unique = true, length = 36)
+    private UUID uuid; // program level identifier just in case
 
     @Version
     private int version;
@@ -24,8 +24,8 @@ public abstract class AbstractEntity implements Serializable {
     }
 
     public AbstractEntity(boolean newEntity) {
-        if (newEntity) { // if true it means new object is being created which implies new uuid need to be assigned
-            uuid = UUID.randomUUID().toString();
+        if (newEntity) {
+            uuid = UUID.randomUUID();
         }
     }
 
@@ -33,7 +33,7 @@ public abstract class AbstractEntity implements Serializable {
     @PrePersist
     private void generateUuidOnPersist() {
         if (uuid == null) {
-            uuid = UUID.randomUUID().toString();
+            uuid = UUID.randomUUID();
         }
     }
 
@@ -46,11 +46,11 @@ public abstract class AbstractEntity implements Serializable {
         this.id = id;
     }
 
-    public String getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
+    public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
 

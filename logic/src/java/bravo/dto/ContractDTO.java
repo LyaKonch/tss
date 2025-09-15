@@ -18,15 +18,23 @@ public class ContractDTO extends AbstractDTO{
     private static final long serialVersionUID = 1L;
 
     private ContractStatus status;
+
     private String name;
+
     private LocalDate startDate;
+
     private LocalDate endDate;
+
     private TimesheetFrequency frequency;
+
     private LocalDate terminationDate;
+
     private double hoursPerWeek;
+
     private int workingDaysPerWeek;
+
     private int vacationDaysPerYear;
-    
+
     private String employeeUuid;
 
     private String supervisorUuid;
@@ -44,9 +52,9 @@ public class ContractDTO extends AbstractDTO{
 
     public ContractDTO(String uuid, int version) {
         super(uuid,version);
-        
+
     }
-    
+
     public ContractStatus getStatus() {
         return status;
     }
@@ -118,12 +126,24 @@ public class ContractDTO extends AbstractDTO{
     public void setVacationDaysPerYear(int vacationDaysPerYear) {
         this.vacationDaysPerYear = vacationDaysPerYear;
     }
-    
+
+    /**
+     * Calculates the hours due based on working days per week and hours per week.
+     * This is a derived property (not stored directly).
+     *
+     * @return the calculated hours due
+     */
     public double getHoursDue() {
         // TODO: Use calculation as described in requirements
         return workingDaysPerWeek * (hoursPerWeek / 5.0);
     }
 
+    /**
+     * Calculates the vacation hours based on vacation days per year and hours per week.
+     * This is a derived property (not stored directly).
+     *
+     * @return the calculated vacation hours
+     */
     public double getVacationHours() {
         return vacationDaysPerYear * (hoursPerWeek / 5.0);
     }
@@ -167,6 +187,4 @@ public class ContractDTO extends AbstractDTO{
     public void setTimesheetUuids(List<String> timesheetUuids) {
         this.timesheetUuids = timesheetUuids;
     }
-
-    
 }

@@ -1,10 +1,53 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
-<f:view>
-    <h:outputLabel value="Hello, world" />
-</f:view>
-</html>
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition template="/WEB-INF/templates/page-layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:param name="pageHeadline" value="${msg.contractListHeadline}"/>
+    <ui:define name="content">
+        <h:form id="searchForm">
+            <p:panel>
+                <p:inputText id="searchText" value="#{contractListBean.searchText}"
+                             placeholder="Search contracts..."/>
+                <p:commandButton value="Search" update="tableForm:contractTable"
+                                 actionListener="#{contractListBean.search}" icon="pi pi-search"/>
+            </p:panel>
+        </h:form>
+        <h:form id="tableForm">
+            <p:panel>
+                <p:dataTable id="contractTable" var="contract"
+                             value="${contractListBean.contractList}" stripedRows="true">
+                    <p:column field="status" headerText="${msg.contractStatusLabel}">
+                        ${contract.status}
+                    </p:column>
+                    <p:column field="name" headerText="${msg.contractNameLabel}">
+                        <p:link outcome="contractForm" value="${contract.name}">
+                            <f:param name="uuid" value="${contract.id}"/>
+                            <f:param name="action" value="edit"/>
+                        </p:link>
+                    </p:column>
+                    <p:column field="startDate" headerText="${msg.contractStartDateLabel}">
+                        ${contract.startDate}
+                    </p:column>
+                    <p:column field="endDate" headerText="${msg.contractEndDateLabel}">
+                        ${contract.endDate}
+                    </p:column>
+                    <p:column field="hoursPerWeek" headerText="${msg.contractHoursPerWeekLabel}">
+                        ${contract.hoursPerWeek}
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+        <h:form id="buttonForm">
+            <p:panel>
+                <p:commandButton id="createContractButton"
+                                 icon="pi pi-plus"
+                                 action="#{contractFormBean.prepareCreate}"
+                                 value="${msg.contractEditNew}"/>
+                <span class="hspace"/>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

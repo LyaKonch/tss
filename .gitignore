@@ -29,6 +29,9 @@ logs/
 .idea/**/shelf
 .idea/misc.xml
 .idea/saveactions_settings.xml
+.idea/webContexts.xml
+.idea/dataSources.xml
+.idea/resourceBundles.xml
 
 # Sensitive or high-churn files
 .idea/**/dataSources.ids

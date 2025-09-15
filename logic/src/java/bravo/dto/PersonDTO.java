@@ -1,22 +1,23 @@
-
 package bravo.dto;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
-
 public class PersonDTO extends AbstractDTO {
+
     private String firstName;
     private String lastName;
-    private String emailAddress;
     private LocalDate dateOfBirth;
+    private String emailAddress;
     private boolean consent;
-    private Set<String> roles; // uuids i guess
+
+    private Set<String> roleUuids = new HashSet<>();
 
     public PersonDTO() {
         super();
     }
-    
+
     public PersonDTO(String uuid, int jpaVersion, String firstName, String lastName, String emailAddress, LocalDate dateOfBirth, boolean consent, Set<String> roleUuids) {
         super(uuid, jpaVersion);
         this.firstName = firstName;
@@ -24,7 +25,7 @@ public class PersonDTO extends AbstractDTO {
         this.emailAddress = emailAddress;
         this.dateOfBirth = dateOfBirth;
         this.consent = consent;
-        this.roles = roleUuids;
+        this.roleUuids = roleUuids;
     }
 
     // Getters and Setters
@@ -44,20 +45,20 @@ public class PersonDTO extends AbstractDTO {
         this.lastName = lastName;
     }
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 
     public boolean isConsent() {
@@ -67,12 +68,12 @@ public class PersonDTO extends AbstractDTO {
     public void setConsent(boolean consent) {
         this.consent = consent;
     }
-    
-    public Set<String> getRoles() {
-        return roles;
+
+    public Set<String> getRoleUuids() {
+        return roleUuids;
     }
 
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
+    public void setRoleUuids(Set<String> roleUuids) {
+        this.roleUuids = roleUuids;
     }
 }

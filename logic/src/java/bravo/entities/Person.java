@@ -49,6 +49,7 @@ public class Person extends AbstractEntity {
     @OneToMany(mappedBy = "person")
     private Set<Role> roles = new HashSet<>();
 
+
     public Person() {
         super();
     }
@@ -56,7 +57,7 @@ public class Person extends AbstractEntity {
     public Person(boolean NewEntity) {
         super(NewEntity);
     }
-    
+
     public FederalState getState(){
         return state;
     }
@@ -64,7 +65,7 @@ public class Person extends AbstractEntity {
     public void setState(FederalState state){
         this.state = state;
     }
-    
+
     public String getFirstName() {
         return firstName;
     }
@@ -112,9 +113,7 @@ public class Person extends AbstractEntity {
     public void setRoles(Set<Role> roles) {
         this.roles.forEach(role -> role.setPerson(null));
         this.roles.clear();
-        if (roles == null) {
-            return;
-        }
+        if (roles == null) return;
         this.roles.addAll(roles);
         roles.forEach(role -> role.setPerson(this));
     }
@@ -124,4 +123,7 @@ public class Person extends AbstractEntity {
         roles.add(role);
     }
 
+
 }
+
+
