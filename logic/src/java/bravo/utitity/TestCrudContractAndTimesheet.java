@@ -4,22 +4,22 @@ import bravo.dao.ContractDAO;
 import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
-import bravo.entities.Contract;
-import bravo.entities.Employee;
-import bravo.entities.Person;
-import bravo.entities.Supervisor;
-import bravo.entities.Timesheet;
-import bravo.entities.TimesheetEntry;
+import bravo.dto.PersonDTO;
+import bravo.entities.*;
 import bravo.enums.ContractStatus;
 import bravo.enums.ReportType;
 import bravo.enums.TimesheetFrequency;
 import bravo.enums.TimesheetStatus;
 import bravo.logic.ContractLogic;
+import bravo.logic.PersonLogic;
+import bravo.logic.impl.TimesheetLogicBean;
 import bravo.logic.TimesheetLogic;
+import bravo.logic.impl.TimesheetLogicBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
@@ -27,13 +27,14 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Startup
 @Singleton
 public class TestCrudContractAndTimesheet {
 
     @EJB
-    private PersonDAO personDAO;
+    PersonLogic personLogic;
 
     @EJB
     private ContractLogic contractBean;
@@ -48,19 +49,32 @@ public class TestCrudContractAndTimesheet {
     @EJB
     private TimesheetDAO timesheetDAO;
 
-    private Employee employeeUuid;
-    private Supervisor supervisorUuid;
-    private Secretary secretaryUuid;
-    private Assisstant assistantUuid;
-    
+    private String employeeUuid;
+    private String supervisorUuid;
+    private String secretaryUuid;
+    private String assistantUuid;
+
     public void runTests() {
         System.out.println("--- Starting Contract and Timesheet logic test suite ---");
         try {
-            employeeUuid = personDAO.findByFullName("Test", "Employee").getFirst().getUuid();
-            supervisorUuid = personDAO.findByFullName("Test", "Supervisor").getFirst().getUuid();
-            secretaryUuid = personDAO.findByFullName("Test", "Secretary").getFirst().getUuid();
-            assistantUuid = personDAO.findByFullName("Test", "Assistant").getFirst().getUuid();
-            
+            List<PersonDTO> persons = personLogic.findAll();
+            employeeUuid = persons.stream()
+                    .filter(person -> "Test".equals(person.getFirstName()) && "Employee".equals(person.getLastName()))
+                    .findFirst().get().getUuid();
+
+            supervisorUuid = persons.stream()
+                    .filter(person -> "Test".equals(person.getFirstName()) && "Supervisor".equals(person.getLastName()))
+                    .findFirst().get().getUuid();
+
+            secretaryUuid = persons.stream()
+                    .filter(person -> "Test".equals(person.getFirstName()) && "Secretary".equals(person.getLastName()))
+                    .findFirst().get().getUuid();
+
+            assistantUuid = persons.stream()
+                    .filter(person -> "Test".equals(person.getFirstName()) && "Assistant".equals(person.getLastName()))
+                    .findFirst().get().getUuid();
+            ;
+
             // Contract logic tests
             testContractCrudOperations();
             testContractStatusTransitions();
@@ -77,56 +91,53 @@ public class TestCrudContractAndTimesheet {
         }
         System.out.println("--- Contract and Timesheet logic test suite Finished ---");
     }
-    
+
     @PostConstruct
     public void shouldcreateTestPersons() {
 
-        if (personDAO.findByFullName("Test", "Employee").isEmpty()) {
+        List<PersonDTO> persons = personLogic.findAll();
 
-            Person employeePerson = new Person(true);
+        if (persons.stream().noneMatch(person -> "Test".equals(person.getFirstName()) && "Employee".equals(person.getLastName()))) {
+
+            PersonDTO employeePerson = new PersonDTO();
             employeePerson.setFirstName("Test");
             employeePerson.setLastName("Employee");
             employeePerson.setEmailAddress("employee@example.com");
             employeePerson.setDateOfBirth(LocalDate.of(1990, 1, 1));
             employeePerson.setConsent(true);
-        
-            personDAO.save(employeePerson);
-            this.employeeUuid = employeePerson.getUuid();
+            personLogic.create(employeePerson);
 
-            Person supervisorPerson = new Person(true);
+            PersonDTO supervisorPerson = new PersonDTO();
             supervisorPerson.setFirstName("Test");
             supervisorPerson.setLastName("Supervisor");
             supervisorPerson.setEmailAddress("supervisor@example.com");
             supervisorPerson.setDateOfBirth(LocalDate.of(1980, 1, 1));
             supervisorPerson.setConsent(true);
-            personDAO.save(supervisorPerson);
-            this.supervisorUuid = supervisorPerson.getUuid();
+            personLogic.create(supervisorPerson);
 
-            Person secretaryPerson = new Person(true);
+            PersonDTO secretaryPerson = new PersonDTO();
             secretaryPerson.setFirstName("Test");
             secretaryPerson.setLastName("Secretary");
             secretaryPerson.setEmailAddress("secretary@example.com");
             secretaryPerson.setDateOfBirth(LocalDate.of(1985, 1, 1));
             secretaryPerson.setConsent(true);
-            personDAO.save(secretaryPerson);
-            this.secretaryUuid = secretaryPerson.getUuid();
+            personLogic.create(secretaryPerson);
 
-            Person assistantPerson = new Person(true);
+            PersonDTO assistantPerson = new PersonDTO();
             assistantPerson.setFirstName("Test");
             assistantPerson.setLastName("Assistant");
             assistantPerson.setEmailAddress("assistant@example.com");
             assistantPerson.setDateOfBirth(LocalDate.of(1992, 1, 1));
             assistantPerson.setConsent(true);
-            personDAO.save(assistantPerson);
-            this.assistantUuid = assistantPerson.getUuid();
+            personLogic.create(assistantPerson);
         }
-        
+
         runTests();
     }
-    
+
     /**
      * Create + Update tests.
-     *
+     * <p>
      * Verifies: - contract created and set to PREPARED (CN5) - update allowed
      * in PREPARED (CN6)
      */
@@ -146,7 +157,7 @@ public class TestCrudContractAndTimesheet {
         dto.setSecretaryUuids(Collections.singletonList(this.secretaryUuid));
         dto.setAssistantUuids(Collections.singletonList(this.assistantUuid));
 
-        ContractDTO created = contractBean.createContract(dto);
+        ContractDTO created = contractBean.create(dto);
         if (created == null) {
             throw new RuntimeException("createContract returned null");
         }
@@ -156,7 +167,7 @@ public class TestCrudContractAndTimesheet {
         }
         created.setName("Updated Name");
         created.setEmployeeUuid(supervisorUuid);
-        ContractDTO updated = contractBean.updateContract(created);
+        ContractDTO updated = contractBean.update(created);
         System.out.println("Updated contract name: " + updated.getName());
         if (!"Updated Name".equals(updated.getName())) {
             throw new RuntimeException("Update did not persist name change (CN1/CN6).");
@@ -166,7 +177,7 @@ public class TestCrudContractAndTimesheet {
             throw new RuntimeException("Update did not persist employee change (CN1/CN6).");
         }
         contractBean.deleteContract(updated.getUuid());
-        ContractDTO deletedContract = contractBean.getContractByUuid(updated.getUuid());
+        ContractDTO deletedContract = contractBean.findByUuid(updated.getUuid());
         if (deletedContract != null) {
             throw new RuntimeException("Contract was not deleted.");
         }
@@ -175,7 +186,7 @@ public class TestCrudContractAndTimesheet {
 
     /**
      * Start -> Terminate -> Archive transitions.
-     *
+     * <p>
      * Verifies: - startContract creates timesheets in IN_PROGRESS (CN7, TS1) -
      * terminateContract sets TERMINATED and removes IN_PROGRESS timesheets
      * (CN8, TS4) - archiveContract sets ARCHIVED when allowed (CN12, AR1)
@@ -196,7 +207,7 @@ public class TestCrudContractAndTimesheet {
         dto.setSecretaryUuids(Collections.singletonList(this.secretaryUuid));
         dto.setAssistantUuids(Collections.singletonList(this.assistantUuid));
 
-        ContractDTO created = contractBean.createContract(dto);
+        ContractDTO created = contractBean.create(dto);
         ContractDTO started = contractBean.startContract(created.getUuid()); // CN7 + TS1
         System.out.println("Started contract UUID: " + started.getUuid() + " status: " + started.getStatus());
         if (started.getStatus() != ContractStatus.STARTED) {
@@ -204,7 +215,7 @@ public class TestCrudContractAndTimesheet {
         }
 
         // Inspect entity timesheets
-        Contract contractEntity = contractDAO.findByUUID(started.getUuid());
+        Contract contractEntity = contractDAO.findByUuid(started.getUuid());
         List<Timesheet> tsList = contractEntity.getTimesheets();
         System.out.println("Timesheets created: " + tsList.size());
         if (tsList.isEmpty()) {
@@ -216,7 +227,7 @@ public class TestCrudContractAndTimesheet {
         }
 
         // Terminate
-        ContractDTO terminated = contractBean.terminateContract(started.getUuid(), LocalDate.now()); // CN8 + TS4
+        ContractDTO terminated = contractBean.terminate(started.getUuid(), LocalDate.now()); // CN8 + TS4
         System.out.println("Terminated contract status: " + terminated.getStatus());
         if (terminated.getStatus() != ContractStatus.TERMINATED) {
             throw new RuntimeException("Expected TERMINATED after terminateContract (CN8).");
@@ -251,10 +262,10 @@ public class TestCrudContractAndTimesheet {
         dto.setSupervisorUuid(this.supervisorUuid);
         dto.setSecretaryUuids(Collections.singletonList(this.secretaryUuid));
 
-        ContractDTO created = contractBean.createContract(dto);
+        ContractDTO created = contractBean.create(dto);
         ContractDTO startedDto = contractBean.startContract(created.getUuid());
 
-        Contract contractEntity = contractDAO.findByUUID(startedDto.getUuid());
+        Contract contractEntity = contractDAO.findByUuid(startedDto.getUuid());
         List<Timesheet> tsList = contractEntity.getTimesheets();
         List<Timesheet> timesheets = timesheetDAO.findByContract(contractEntity);
         System.out.println("Timesheets created for monthly contract: " + tsList.size());
@@ -286,9 +297,9 @@ public class TestCrudContractAndTimesheet {
         dto.setSupervisorUuid(this.supervisorUuid);
         dto.setSecretaryUuids(Collections.singletonList(this.secretaryUuid));
 
-        ContractDTO created = contractBean.createContract(dto);
+        ContractDTO created = contractBean.create(dto);
         ContractDTO started = contractBean.startContract(created.getUuid());
-        Contract entity = contractDAO.findByUUID(started.getUuid());
+        Contract entity = contractDAO.findByUuid(started.getUuid());
         Timesheet ts = entity.getTimesheets().get(0);
 
         TimesheetEntry entry = new TimesheetEntry(true);
@@ -332,9 +343,9 @@ public class TestCrudContractAndTimesheet {
         dto.setSupervisorUuid(this.supervisorUuid);
         dto.setSecretaryUuids(Collections.singletonList(this.secretaryUuid));
 
-        ContractDTO created = contractBean.createContract(dto);
+        ContractDTO created = contractBean.create(dto);
         ContractDTO started = contractBean.startContract(created.getUuid());
-        Contract entity = contractDAO.findByUUID(started.getUuid());
+        Contract entity = contractDAO.findByUuid(started.getUuid());
         Timesheet ts = entity.getTimesheets().get(0);
 
         // Add an entry so signing is meaningful
@@ -389,11 +400,10 @@ public class TestCrudContractAndTimesheet {
         dto.setSupervisorUuid(this.supervisorUuid);
         dto.setSecretaryUuids(Collections.singletonList(this.secretaryUuid));
 
-        ContractDTO created = contractBean.createContract(dto);
+        ContractDTO created = contractBean.create(dto);
         ContractDTO started = contractBean.startContract(created.getUuid());
-        Contract entity = contractDAO.findByUUID(started.getUuid());
 
-        Double hoursDue = contractBean.getHoursDue(entity);
+        Double hoursDue = contractBean.calculateHoursDue(started);
         System.out.println("Hours due for contract: " + hoursDue);
         if (hoursDue == null || hoursDue <= 0.0) {
             throw new RuntimeException("Expected positive hours due (CN4).");
