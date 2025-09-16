@@ -1,10 +1,12 @@
 package bravo.mapper;
 
+import bravo.dao.RoleDAO;
 import bravo.dto.ContractDTO;
 import bravo.entities.*;
 import bravo.logic.PersonLogic;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.Null;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -19,6 +21,9 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
     @Inject
     private PersonMapper personMapper;
 
+    @Inject
+    RoleDAO roleDAO;
+
     private static final Logger logger = Logger.getLogger(ContractMapper.class.getName());
 
     /**
@@ -32,15 +37,15 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         if (dto.getUuid() != null) entity.setUuid(UUID.fromString(dto.getUuid()));
 
         //noinspection Duplicates --- IntelliJ Duplication Inspection Suppression - No easy way around similar calls
-        entity.setStatus(dto.getStatus());
-        entity.setName(dto.getName());
-        entity.setStartDate(dto.getStartDate());
-        entity.setEndDate(dto.getEndDate());
-        entity.setFrequency(dto.getFrequency());
+        if(dto.getStatus() != null) entity.setStatus(dto.getStatus());
+        if(dto.getName() != null) entity.setName(dto.getName());
+        if(dto.getStartDate() != null) entity.setStartDate(dto.getStartDate());
+        if(dto.getEndDate() != null) entity.setEndDate(dto.getEndDate());
+        if(dto.getFrequency() != null) entity.setFrequency(dto.getFrequency());
         entity.setTerminationDate(dto.getTerminationDate());
-        entity.setHoursPerWeek(dto.getHoursPerWeek());
-        entity.setWorkingDaysPerWeek(dto.getWorkingDaysPerWeek());
-        entity.setVacationDaysPerYear(dto.getVacationDaysPerYear());
+        if(!dto.getHoursPerWeek().equals(null)) entity.setHoursPerWeek(dto.getHoursPerWeek());
+        if(!dto.getStatus().equals(null)) entity.setWorkingDaysPerWeek(dto.getWorkingDaysPerWeek());
+        if(!dto.getStatus().equals(null)) entity.setVacationDaysPerYear(dto.getVacationDaysPerYear());
 
         Person employeeEntity = personMapper.toEntity(personLogic.findByUuid(dto.getEmployeeUuid()));
         Employee employee = new Employee();
@@ -143,6 +148,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         if (newEmployeePerson != null && !newEmployeePerson.equals(oldEmployeePerson)) {
             Employee oldEmployeeRole = existingContract.getEmployee();
             if (oldEmployeeRole != null) {
+                roleDAO.delete(oldEmployeeRole);
                 oldEmployeePerson.getRoles().remove(oldEmployeeRole);
             }
             Employee newEmployeeRole = new Employee();
@@ -158,6 +164,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         if (newSupervisorPerson != null && !newSupervisorPerson.equals(oldSupervisorPerson)) {
             Supervisor oldSupervisorRole = existingContract.getSupervisor();
             if (oldSupervisorRole != null) {
+                roleDAO.delete(oldSupervisorRole);
                 oldSupervisorPerson.getRoles().remove(oldSupervisorRole);
             }
             Supervisor newSupervisorRole = new Supervisor();
@@ -173,6 +180,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         // Remove old secretaries that are not in the new list
         for (Secretary oldRole : oldSecretaryRoles) {
             if (!newSecretaryUuidsSet.contains(oldRole.getPerson().getUuid().toString())) {
+                roleDAO.delete(oldRole);
                 oldRole.getPerson().getRoles().remove(oldRole);
                 existingContract.removeSecretary(oldRole);
             }
@@ -202,6 +210,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         // Remove old assistants that are not in the new list
         for (Assistant oldRole : oldAssistantRoles) {
             if (!newAssistantUuidsSet.contains(oldRole.getPerson().getUuid().toString())) {
+                roleDAO.delete(oldRole);
                 oldRole.getPerson().getRoles().remove(oldRole);
                 existingContract.removeAssistant(oldRole);
             }

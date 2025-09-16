@@ -53,6 +53,14 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
         dto.setDateOfBirth(entity.getDateOfBirth());
         dto.setEmailAddress(entity.getEmailAddress());
         dto.setConsent(entity.isConsent());
+        dto.setState(entity.getState());
+
+        if (entity.getRoles() != null) {
+            Set<String> roles = entity.getRoles().stream()
+                    .map(role -> role.getUuid().toString())
+                    .collect(Collectors.toSet());
+            dto.setRoleUuids(roles);
+        }
 
         return dto;
     }
@@ -77,7 +85,9 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
                 .collect(Collectors.toSet());
 
         // Remove old roles from the person's set and unlink the person
-        rolesToRemove.forEach(role -> existingPerson.getRoles().remove(role));
+        rolesToRemove.forEach(role -> {
+            roleDAO.delete(role);
+            existingPerson.getRoles().remove(role);});
 
         // Find roles to add
         Set<String> oldRoleUuids = oldRoles.stream()
@@ -90,6 +100,7 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
                     .forEach(uuid -> {
                         Role newRole = roleDAO.findByUuid(uuid);
                         if (newRole != null) {
+                            newRole.getPerson().getRoles().remove(newRole);
                             existingPerson.addRole(newRole);
                         }
                     });

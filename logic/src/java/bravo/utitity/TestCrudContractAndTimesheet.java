@@ -6,10 +6,7 @@ import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
 import bravo.entities.*;
-import bravo.enums.ContractStatus;
-import bravo.enums.ReportType;
-import bravo.enums.TimesheetFrequency;
-import bravo.enums.TimesheetStatus;
+import bravo.enums.*;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
 import bravo.logic.impl.TimesheetLogicBean;
@@ -103,6 +100,7 @@ public class TestCrudContractAndTimesheet {
             employeePerson.setFirstName("Test");
             employeePerson.setLastName("Employee");
             employeePerson.setEmailAddress("employee@example.com");
+            employeePerson.setState(FederalState.RHINELAND_PALATINATE);
             employeePerson.setDateOfBirth(LocalDate.of(1990, 1, 1));
             employeePerson.setConsent(true);
             personLogic.create(employeePerson);
@@ -111,6 +109,7 @@ public class TestCrudContractAndTimesheet {
             supervisorPerson.setFirstName("Test");
             supervisorPerson.setLastName("Supervisor");
             supervisorPerson.setEmailAddress("supervisor@example.com");
+            supervisorPerson.setState(FederalState.RHINELAND_PALATINATE);
             supervisorPerson.setDateOfBirth(LocalDate.of(1980, 1, 1));
             supervisorPerson.setConsent(true);
             personLogic.create(supervisorPerson);
@@ -119,6 +118,7 @@ public class TestCrudContractAndTimesheet {
             secretaryPerson.setFirstName("Test");
             secretaryPerson.setLastName("Secretary");
             secretaryPerson.setEmailAddress("secretary@example.com");
+            secretaryPerson.setState(FederalState.RHINELAND_PALATINATE);
             secretaryPerson.setDateOfBirth(LocalDate.of(1985, 1, 1));
             secretaryPerson.setConsent(true);
             personLogic.create(secretaryPerson);
@@ -127,6 +127,7 @@ public class TestCrudContractAndTimesheet {
             assistantPerson.setFirstName("Test");
             assistantPerson.setLastName("Assistant");
             assistantPerson.setEmailAddress("assistant@example.com");
+            assistantPerson.setState(FederalState.RHINELAND_PALATINATE);
             assistantPerson.setDateOfBirth(LocalDate.of(1992, 1, 1));
             assistantPerson.setConsent(true);
             personLogic.create(assistantPerson);
@@ -145,6 +146,7 @@ public class TestCrudContractAndTimesheet {
         System.out.println("== Test Contract CRUD ==");
         ContractDTO dto = new ContractDTO();
         dto.setName("Test Contract");
+        dto.setStatus(ContractStatus.PREPARED);
         dto.setStartDate(LocalDate.of(2025, 1, 1));
         dto.setEndDate(LocalDate.of(2025, 12, 31));
         dto.setFrequency(TimesheetFrequency.MONTHLY);
@@ -195,6 +197,7 @@ public class TestCrudContractAndTimesheet {
         System.out.println("== Test Contract Status Transitions ==");
         ContractDTO dto = new ContractDTO();
         dto.setName("Transition Contract");
+        dto.setStatus(ContractStatus.PREPARED);
         dto.setStartDate(LocalDate.of(2025, 1, 1));
         dto.setEndDate(LocalDate.of(2025, 3, 31));
         dto.setFrequency(TimesheetFrequency.WEEKLY);
@@ -252,6 +255,7 @@ public class TestCrudContractAndTimesheet {
         System.out.println("== testTimesheetGeneration ==");
         ContractDTO dto = new ContractDTO();
         dto.setName("TS Gen Contract");
+        dto.setStatus(ContractStatus.PREPARED);
         dto.setStartDate(LocalDate.of(2025, 1, 1));
         dto.setEndDate(LocalDate.of(2025, 3, 31));
         dto.setFrequency(TimesheetFrequency.MONTHLY);
@@ -287,6 +291,7 @@ public class TestCrudContractAndTimesheet {
         System.out.println("== Test Timesheet Entries ==");
         ContractDTO dto = new ContractDTO();
         dto.setName("Entry Contract");
+        dto.setStatus(ContractStatus.PREPARED);
         dto.setStartDate(LocalDate.of(2025, 1, 1));
         dto.setEndDate(LocalDate.of(2025, 1, 31));
         dto.setFrequency(TimesheetFrequency.MONTHLY);
@@ -333,6 +338,7 @@ public class TestCrudContractAndTimesheet {
         System.out.println("== Test Timesheet Signing Process ==");
         ContractDTO dto = new ContractDTO();
         dto.setName("Signing Contract");
+        dto.setStatus(ContractStatus.PREPARED);
         dto.setStartDate(LocalDate.of(2025, 1, 1));
         dto.setEndDate(LocalDate.of(2025, 1, 31));
         dto.setFrequency(TimesheetFrequency.MONTHLY);

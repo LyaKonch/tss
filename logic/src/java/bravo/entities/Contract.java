@@ -19,7 +19,8 @@ import java.util.List;
 @Table(name = "contract")
 @NamedQueries({
         @NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"),
-        @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")
+        @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC"),
+        @NamedQuery(name = "Contract.findByUuid", query = "SELECT c FROM Contract c WHERE c.uuid = :uuid")
 })
 public class Contract extends AbstractEntity {
 
@@ -154,7 +155,7 @@ public class Contract extends AbstractEntity {
         this.terminationDate = terminationDate;
     }
 
-    public double getHoursPerWeek() {
+    public Double getHoursPerWeek() {
         return hoursPerWeek;
     }
 
@@ -170,7 +171,7 @@ public class Contract extends AbstractEntity {
         this.workingDaysPerWeek = workingDaysPerWeek;
     }
 
-    public int getVacationDaysPerYear() {
+    public Integer getVacationDaysPerYear() {
         return vacationDaysPerYear;
     }
 

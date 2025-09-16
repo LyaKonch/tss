@@ -46,7 +46,7 @@ public class Person extends AbstractEntity {
     private FederalState state = RHINELAND_PALATINATE;
 
     // Person 1 < --- > 0..* Role
-    @OneToMany(mappedBy = "person")
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Role> roles = new HashSet<>();
 
 
@@ -63,7 +63,9 @@ public class Person extends AbstractEntity {
     }
 
     public void setState(FederalState state){
-        this.state = state;
+        if(!state.equals(null)){
+            this.state = state;
+        }
     }
 
     public String getFirstName() {

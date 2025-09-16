@@ -6,7 +6,8 @@ import jakarta.persistence.*;
 @Table(name = "role")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "role_type")
-@NamedQueries({@NamedQuery(name = "Role.findByPerson", query = "SELECT r FROM Role r WHERE r.person = :person")})
+@NamedQueries({@NamedQuery(name = "Role.findByPerson", query = "SELECT r FROM Role r WHERE r.person = :person"),
+@NamedQuery(name = "Role.findByUuid", query = "SELECT r FROM Role r WHERE r.uuid = :uuid")})
 public abstract class Role extends AbstractEntity {
 
     // now Person can be created without a role, which also matchs domain model.

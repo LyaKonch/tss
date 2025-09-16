@@ -103,7 +103,7 @@ public class ContractDTO extends AbstractDTO{
         this.terminationDate = terminationDate;
     }
 
-    public double getHoursPerWeek() {
+    public Double getHoursPerWeek() {
         return hoursPerWeek;
     }
 
@@ -111,7 +111,7 @@ public class ContractDTO extends AbstractDTO{
         this.hoursPerWeek = hoursPerWeek;
     }
 
-    public int getWorkingDaysPerWeek() {
+    public Integer getWorkingDaysPerWeek() {
         return workingDaysPerWeek;
     }
 
@@ -119,7 +119,7 @@ public class ContractDTO extends AbstractDTO{
         this.workingDaysPerWeek = workingDaysPerWeek;
     }
 
-    public int getVacationDaysPerYear() {
+    public Integer getVacationDaysPerYear() {
         return vacationDaysPerYear;
     }
 

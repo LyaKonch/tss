@@ -64,7 +64,7 @@ public class AbstractDAO<T extends AbstractEntity> {
     }
 
     public void delete(T entry) {
-        em.remove(em.merge(entry));
+        em.remove(entry);
     }
 
     public void deleteById(Long id) {
