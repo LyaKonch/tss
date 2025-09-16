@@ -1,5 +1,7 @@
 package bravo.dto;
 
+import bravo.enums.FederalState;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,6 +12,7 @@ public class PersonDTO extends AbstractDTO {
     private String lastName;
     private LocalDate dateOfBirth;
     private String emailAddress;
+    private FederalState state;
     private boolean consent;
 
     private Set<String> roleUuids = new HashSet<>();
@@ -75,5 +78,13 @@ public class PersonDTO extends AbstractDTO {
 
     public void setRoleUuids(Set<String> roleUuids) {
         this.roleUuids = roleUuids;
+    }
+
+    public FederalState getState() {
+        return state;
+    }
+
+    public void setState(FederalState state) {
+        this.state = state;
     }
 }
