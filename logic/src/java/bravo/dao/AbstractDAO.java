@@ -21,7 +21,6 @@ public class AbstractDAO<T extends AbstractEntity> {
 
     private Class<T> entityClass;
 
-
     public AbstractDAO() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }

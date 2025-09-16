@@ -6,10 +6,9 @@ import bravo.logic.PersonLogic;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
@@ -117,4 +116,112 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
 
         return dto;
     }
+
+    public void updateExistingContractFromDto(ContractDTO contractDto, Contract existingContract) {
+        if(!contractDto.getUuid().equals(existingContract.getUuid().toString())){
+            logger.warning("Aborting function updateExistingContractFromDto.\n " +
+                    "You are trying to update wrong contract(uuid)" + existingContract.getUuid().toString() +
+                    " with dto(uuid)" + contractDto.getUuid());
+            return;
+        }
+
+        // Map basic fields
+        existingContract.setStatus(contractDto.getStatus());
+        existingContract.setName(contractDto.getName());
+        existingContract.setStartDate(contractDto.getStartDate());
+        existingContract.setEndDate(contractDto.getEndDate());
+        existingContract.setFrequency(contractDto.getFrequency());
+        existingContract.setTerminationDate(contractDto.getTerminationDate());
+        existingContract.setHoursPerWeek(contractDto.getHoursPerWeek());
+        existingContract.setWorkingDaysPerWeek(contractDto.getWorkingDaysPerWeek());
+        existingContract.setVacationDaysPerYear(contractDto.getVacationDaysPerYear());
+
+        // Employee logic
+        String newEmployeeUuid = contractDto.getEmployeeUuid();
+        Person oldEmployeePerson = existingContract.getEmployee().getPerson();
+        Person newEmployeePerson = (newEmployeeUuid != null) ? personMapper.toEntity(personLogic.findByUuid(newEmployeeUuid)) : null;
+        if (newEmployeePerson != null && !newEmployeePerson.equals(oldEmployeePerson)) {
+            Employee oldEmployeeRole = existingContract.getEmployee();
+            if (oldEmployeeRole != null) {
+                oldEmployeePerson.getRoles().remove(oldEmployeeRole);
+            }
+            Employee newEmployeeRole = new Employee();
+            newEmployeePerson.addRole(newEmployeeRole);
+            existingContract.setEmployee(newEmployeeRole);
+        }
+
+        // Supervisor logic
+        String newSupervisorUuid = contractDto.getSupervisorUuid();
+        Person oldSupervisorPerson = existingContract.getSupervisor().getPerson();
+        Person newSupervisorPerson = (newSupervisorUuid != null) ? personMapper.toEntity(personLogic.findByUuid(newSupervisorUuid)) : null;
+
+        if (newSupervisorPerson != null && !newSupervisorPerson.equals(oldSupervisorPerson)) {
+            Supervisor oldSupervisorRole = existingContract.getSupervisor();
+            if (oldSupervisorRole != null) {
+                oldSupervisorPerson.getRoles().remove(oldSupervisorRole);
+            }
+            Supervisor newSupervisorRole = new Supervisor();
+            newSupervisorPerson.addRole(newSupervisorRole);
+            existingContract.setSupervisor(newSupervisorRole);
+        }
+
+        // Secretaries logic
+        List<String> newSecretaryUuids = contractDto.getSecretaryUuids();
+        List<Secretary> oldSecretaryRoles = new ArrayList<>(existingContract.getSecretaries());
+        Set<String> newSecretaryUuidsSet = (newSecretaryUuids != null) ? new HashSet<>(newSecretaryUuids) : new HashSet<>();
+
+        // Remove old secretaries that are not in the new list
+        for (Secretary oldRole : oldSecretaryRoles) {
+            if (!newSecretaryUuidsSet.contains(oldRole.getPerson().getUuid().toString())) {
+                oldRole.getPerson().getRoles().remove(oldRole);
+                existingContract.removeSecretary(oldRole);
+            }
+        }
+
+        // Add new secretaries that are not in the old list
+        Set<String> currentSecretaryUuids = oldSecretaryRoles.stream()
+                .map(r -> r.getPerson().getUuid().toString())
+                .collect(Collectors.toSet());
+
+        if (newSecretaryUuids != null) {
+            for (String uuid : newSecretaryUuids) {
+                if (!currentSecretaryUuids.contains(uuid)) {
+                    Person secretaryPerson = personMapper.toEntity(personLogic.findByUuid(uuid));
+                    Secretary newSecretaryRole = new Secretary();
+                    secretaryPerson.addRole(newSecretaryRole);
+                    existingContract.addSecretary(newSecretaryRole);
+                }
+            }
+        }
+
+        // Assistants logic
+        List<String> newAssistantUuids = contractDto.getAssistantUuids();
+        List<Assistant> oldAssistantRoles = new ArrayList<>(existingContract.getAssistants());
+        Set<String> newAssistantUuidsSet = (newAssistantUuids != null) ? new HashSet<>(newAssistantUuids) : new HashSet<>();
+
+        // Remove old assistants that are not in the new list
+        for (Assistant oldRole : oldAssistantRoles) {
+            if (!newAssistantUuidsSet.contains(oldRole.getPerson().getUuid().toString())) {
+                oldRole.getPerson().getRoles().remove(oldRole);
+                existingContract.removeAssistant(oldRole);
+            }
+        }
+
+        // Add new assistants that are not in the old list
+        Set<String> currentAssistantUuids = oldAssistantRoles.stream()
+                .map(r -> r.getPerson().getUuid().toString())
+                .collect(Collectors.toSet());
+
+        if (newAssistantUuids != null) {
+            for (String uuid : newAssistantUuids) {
+                if (!currentAssistantUuids.contains(uuid)) {
+                    Person assistantPerson = personMapper.toEntity(personLogic.findByUuid(uuid));
+                    Assistant newAssistantRole = new Assistant();
+                    assistantPerson.addRole(newAssistantRole);
+                    existingContract.addAssistant(newAssistantRole);
+                }
+            }
+        }
+    }
+
 }

@@ -37,7 +37,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
 
     public void createNewEntry(TimesheetEntryDTO entryDto) {
-        Timesheet timesheet = timesheetDAO.findByUUID(entryDto.getUuid());
+        Timesheet timesheet = timesheetDAO.findByUuid(entryDto.getUuid());
         if (timesheet == null) {
             throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid() + "is not found");
         }
@@ -159,7 +159,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     public double hoursDue(String uuid) {
-        Timesheet timesheet = timesheetDAO.findByUUID(uuid);
+        Timesheet timesheet = timesheetDAO.findByUuid(uuid);
         FederalState state = timesheet.getContract().getEmployee().getPerson().getState();
         if (timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
             return 0.0;

@@ -50,17 +50,6 @@ public class ContractDAO extends AbstractDAO<Contract> {
         return em.createNamedQuery("Contract.findByName", Contract.class)
                 .setParameter("name", name)
                 .getSingleResult();
-    /**
-     * Retrieves all active, i.e. started, contracts from the database.
-     *
-     * @return a list of all active contracts
-     */
-    public List<Contract> getActiveContracts() {
-        TypedQuery<Contract> query = em.createQuery(
-                "SELECT c FROM Contract c WHERE c.status = :status",
-                Contract.class);
-        query.setParameter("status", ContractStatus.STARTED);
-        return query.getResultList();
     }
 
     /**

@@ -15,10 +15,13 @@ public abstract class AbstractDTO implements Serializable {
 
     private int version;
 
-
     protected AbstractDTO() {
     }
 
+    protected AbstractDTO(String uuid, int version) {
+        this.uuid = uuid;
+        this.version = version;
+    }
 
     public Long getId() {
         return id;

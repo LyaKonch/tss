@@ -5,7 +5,9 @@ import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
 import bravo.entities.Contract;
+import bravo.entities.Employee;
 import bravo.entities.Person;
+import bravo.entities.Supervisor;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
 import bravo.enums.ContractStatus;
@@ -46,10 +48,10 @@ public class TestCrudContractAndTimesheet {
     @EJB
     private TimesheetDAO timesheetDAO;
 
-    private String employeeUuid;
-    private String supervisorUuid;
-    private String secretaryUuid;
-    private String assistantUuid;
+    private Employee employeeUuid;
+    private Supervisor supervisorUuid;
+    private Secretary secretaryUuid;
+    private Assisstant assistantUuid;
     
     public void runTests() {
         System.out.println("--- Starting Contract and Timesheet logic test suite ---");
