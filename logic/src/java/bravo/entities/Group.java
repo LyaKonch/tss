@@ -1,5 +1,6 @@
 package bravo.entities;
 
+import bravo.enums.GroupName;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 
@@ -15,7 +16,8 @@ public class Group implements Serializable {
     private Long id;
 
     @Column(name = "group_name", unique = true, nullable = false)
-    private String groupName;
+    @Enumerated(EnumType.STRING)
+    private GroupName groupName;
 
     // Getters and Setters
     public Long getId() {
@@ -26,11 +28,11 @@ public class Group implements Serializable {
         this.id = id;
     }
 
-    public String getGroupName() {
+    public GroupName getGroupName() {
         return groupName;
     }
 
-    public void setGroupName(String groupName) {
+    public void setGroupName(GroupName groupName) {
         this.groupName = groupName;
     }
 

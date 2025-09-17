@@ -38,6 +38,9 @@ public class Person extends AbstractEntity {
     @NotBlank
     private String emailAddress;
 
+    @OneToOne(mappedBy = "person", optional = true)
+    private User user;
+
     private boolean consent;
 
     // state should be chosen by user.
@@ -48,7 +51,6 @@ public class Person extends AbstractEntity {
     // Person 1 < --- > 0..* Role
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Role> roles = new HashSet<>();
-
 
     public Person() {
         super();

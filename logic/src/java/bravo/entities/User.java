@@ -2,7 +2,7 @@ package bravo.entities;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-
+import bravo.entities.Person;
 import jakarta.persistence.*;
 import java.io.Serializable;
 
@@ -19,11 +19,15 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username", unique = true, nullable = false)
+    @Column(name = "username", unique = true, nullable = true)
     private String username;
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @OneToOne(optional = false,fetch = FetchType.LAZY)
+    @JoinColumn(name = "person_id", referencedColumnName = "id", nullable = false, unique = true)
+    private Person person;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "group_id", nullable = false)
@@ -60,6 +64,13 @@ public class User implements Serializable {
 
     public void setGroup(Group group) {
         this.group = group;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+        if (person != null) {
+            this.username = person.getEmailAddress();
+        }
     }
 
     @Override
