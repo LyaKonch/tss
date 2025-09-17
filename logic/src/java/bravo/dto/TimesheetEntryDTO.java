@@ -5,6 +5,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @XmlRootElement
 public class TimesheetEntryDTO extends AbstractDTO {

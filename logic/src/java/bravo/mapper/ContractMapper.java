@@ -93,12 +93,14 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
             entity.addSecretary(secretaryRole);
             secretaryPerson.addRole(secretaryRole);
         }
+        entity.setSecretaries(secretaries);
 
         for (Person assistantPerson : assistantPersons) {
             Assistant assistantRole = new Assistant();
             entity.addAssistant(assistantRole);
             assistantPerson.addRole(assistantRole);
         }
+        entity.setAssistants(assistants);
 
         return entity;
     }

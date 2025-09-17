@@ -25,7 +25,7 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
         Person entity = new Person();
 
         if (dto.getId() != null) entity.setId(dto.getId());
-        if (dto.getUuid() != null) entity.setUuid(UUID.fromString(dto.getUuid()));
+        if (dto.getUuid() != null) entity.setUuid(dto.getUuid());
 
         entity.setFirstName(dto.getFirstName());
         entity.setLastName(dto.getLastName());

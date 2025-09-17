@@ -14,7 +14,7 @@ public abstract class AbstractEntity implements Serializable {
     private Long id;
 
     @Column(unique = true, length = 36)
-    private UUID uuid; // program level identifier just in case
+    private String uuid; // program level identifier just in case
 
     @Version
     private int version;
@@ -25,7 +25,7 @@ public abstract class AbstractEntity implements Serializable {
 
     public AbstractEntity(boolean newEntity) {
         if (newEntity) {
-            uuid = UUID.randomUUID();
+            uuid = UUID.randomUUID().toString();
         }
     }
 
@@ -33,7 +33,7 @@ public abstract class AbstractEntity implements Serializable {
     @PrePersist
     private void generateUuidOnPersist() {
         if (uuid == null) {
-            uuid = UUID.randomUUID();
+            uuid = UUID.randomUUID().toString();
         }
     }
 
@@ -46,11 +46,11 @@ public abstract class AbstractEntity implements Serializable {
         this.id = id;
     }
 
-    public UUID getUuid() {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
+    public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 
