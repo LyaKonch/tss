@@ -1,9 +1,11 @@
 package bravo.mapper;
 
+import bravo.dao.PersonDAO;
 import bravo.dao.RoleDAO;
 import bravo.dto.PersonDTO;
 import bravo.entities.Person;
 import bravo.entities.Role;
+import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -16,8 +18,10 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
     @Inject
     RoleDAO roleDAO;
 
+    /*Map dto to NEW ENTITY if it doesn't exist, otherwise it returns existent*/
     @Override
     public Person toEntity(PersonDTO dto) {
+
         Person entity = new Person();
 
         if (dto.getId() != null) entity.setId(dto.getId());
@@ -55,7 +59,7 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
         dto.setConsent(entity.isConsent());
         dto.setState(entity.getState());
 
-        if (entity.getRoles() != null) {
+        if (entity.getRoles() != null && !entity.getRoles().isEmpty()) {
             Set<String> roles = entity.getRoles().stream()
                     .map(role -> role.getUuid().toString())
                     .collect(Collectors.toSet());

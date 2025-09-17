@@ -73,7 +73,7 @@ public interface ContractLogic {
 
     void deleteContract(String uuid);
 
-    ContractDTO startContract(String uuid);
+    ContractDTO startContract(ContractDTO contractDto);
 
     ContractDTO archiveContract(String uuid);
 }

@@ -1,10 +1,10 @@
 package bravo.logic.impl;
 
 import bravo.dao.ContractDAO;
+import bravo.dao.RoleDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
-import bravo.entities.Contract;
-import bravo.entities.Timesheet;
+import bravo.entities.*;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.enums.TimesheetStatus;
@@ -37,6 +37,9 @@ public class ContractLogicBean implements ContractLogic {
     @Inject
     private ContractMapper ContractMapper;
 
+    @Inject
+    RoleDAO roleDAO;
+
     @Override
     public ContractDTO create(ContractDTO contractDto) {
         if (contractDto == null) {
@@ -48,12 +51,13 @@ public class ContractLogicBean implements ContractLogic {
         return ContractMapper.toDto(entity);
     }
 
-    public ContractDTO startContract(String uuid) {
-        if (uuid == null) {
+    @Override
+    public ContractDTO startContract(ContractDTO contractDto) {
+        if (contractDto.getUuid() == null) {
             throw new IllegalArgumentException("UUID cannot be null.");
         }
         try {
-            Contract contract = contractDAO.findByUuid(uuid);
+            Contract contract = contractDAO.findByUuid(contractDto.getUuid());
             if (contract.getStatus() != ContractStatus.PREPARED) {
                 throw new IllegalStateException("Can only start a contract in PREPARED status.");
             }
@@ -64,7 +68,7 @@ public class ContractLogicBean implements ContractLogic {
             Contract updatedContract = contractDAO.save(contract);
             return ContractMapper.toDto(updatedContract);
         } catch (NoResultException e) {
-            throw new IllegalArgumentException("Contract with UUID " + uuid + " not found.");
+            throw new IllegalArgumentException("Contract with UUID " + contractDto.getUuid() + " not found.");
         }
     }
 
@@ -191,7 +195,10 @@ public class ContractLogicBean implements ContractLogic {
             if (!contract.getTimesheets().isEmpty()) {
                 throw new IllegalStateException("Contract still has some related to it timesheets.");
             }
-            contractDAO.delete(contract);
+
+            roleDAO.deleteRolesByContractIdNative(contract.getId());
+
+            contractDAO.deleteById(contract.getId());
 
         } catch (NoResultException e) {
             throw new IllegalArgumentException("Contract with UUID " + uuid + " not found.");

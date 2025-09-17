@@ -62,6 +62,32 @@ public class RoleDAO extends AbstractDAO<Role> {
                 .getResultList();
     }
 
+    public int deleteRolesByContractIdNative(Long contractId) {
+        if (contractId == null) return 0;
+
+
+        int total = 0;
+        total += em.createNativeQuery("DELETE FROM employee WHERE contract_id = ?")
+                .setParameter(1, contractId)
+                .executeUpdate();
+
+        total += em.createNativeQuery("DELETE FROM supervisor WHERE contract_id = ?")
+                .setParameter(1, contractId)
+                .executeUpdate();
+
+        total += em.createNativeQuery("DELETE FROM secretary WHERE contract_id = ?")
+                .setParameter(1, contractId)
+                .executeUpdate();
+
+        total += em.createNativeQuery("DELETE FROM assistant WHERE contract_id = ?")
+                .setParameter(1, contractId)
+                .executeUpdate();
+
+        em.flush();
+        em.clear();
+
+        return total;
+    }
     
     //Deletes a role and updates the person's roles collection because JPA only deletes from db, not Person's set of roles
     public void deleteWithPersonUpdate(Role role) {
