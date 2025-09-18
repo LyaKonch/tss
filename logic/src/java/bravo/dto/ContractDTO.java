@@ -3,15 +3,19 @@ package bravo.dto;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 
+import java.io.Serial;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data Transfer Object (DTO) for Contracts.
+ * Data Transfer Object (DTO) for Contract information.
  * This class extends AbstractDTO to inherit common DTO functionality.
  */
 public class ContractDTO extends AbstractDTO {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private ContractStatus status;
 
@@ -25,11 +29,11 @@ public class ContractDTO extends AbstractDTO {
 
     private LocalDate terminationDate;
 
-    private double hoursPerWeek;
+    private Double hoursPerWeek;
 
-    private int workingDaysPerWeek;
+    private Integer workingDaysPerWeek;
 
-    private int vacationDaysPerYear;
+    private Integer vacationDaysPerYear;
 
     private String employeeUuid;
 
@@ -46,6 +50,10 @@ public class ContractDTO extends AbstractDTO {
         super();
     }
 
+    public ContractDTO(String uuid, int version) {
+        super(uuid, version);
+
+    }
 
     public ContractStatus getStatus() {
         return status;
@@ -95,27 +103,27 @@ public class ContractDTO extends AbstractDTO {
         this.terminationDate = terminationDate;
     }
 
-    public double getHoursPerWeek() {
+    public Double getHoursPerWeek() {
         return hoursPerWeek;
     }
 
-    public void setHoursPerWeek(double hoursPerWeek) {
+    public void setHoursPerWeek(Double hoursPerWeek) {
         this.hoursPerWeek = hoursPerWeek;
     }
 
-    public int getWorkingDaysPerWeek() {
+    public Integer getWorkingDaysPerWeek() {
         return workingDaysPerWeek;
     }
 
-    public void setWorkingDaysPerWeek(int workingDaysPerWeek) {
+    public void setWorkingDaysPerWeek(Integer workingDaysPerWeek) {
         this.workingDaysPerWeek = workingDaysPerWeek;
     }
 
-    public int getVacationDaysPerYear() {
+    public Integer getVacationDaysPerYear() {
         return vacationDaysPerYear;
     }
 
-    public void setVacationDaysPerYear(int vacationDaysPerYear) {
+    public void setVacationDaysPerYear(Integer vacationDaysPerYear) {
         this.vacationDaysPerYear = vacationDaysPerYear;
     }
 

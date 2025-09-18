@@ -29,7 +29,8 @@ public class PersonLogicBean implements PersonLogic {
 
     @Override
     public PersonDTO update(PersonDTO person) {
-        Person entity = personMapper.toEntity(person);
+        Person entity = personDAO.findByUuid(person.getUuid());
+        personMapper.updateExistingPersonFromDto(person, entity);
         personDAO.save(entity);
         return personMapper.toDto(entity);
     }

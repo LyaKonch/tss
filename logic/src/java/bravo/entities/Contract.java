@@ -1,8 +1,11 @@
 package bravo.entities;
 
 import bravo.enums.ContractStatus;
+import bravo.enums.FederalState;
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.TimesheetLogic;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -16,7 +19,8 @@ import java.util.List;
 @Table(name = "contract")
 @NamedQueries({
         @NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"),
-        @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC")
+        @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC"),
+        @NamedQuery(name = "Contract.findByUuid", query = "SELECT c FROM Contract c WHERE c.uuid = :uuid")
 })
 public class Contract extends AbstractEntity {
 
@@ -33,8 +37,9 @@ public class Contract extends AbstractEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TimesheetFrequency frequency = TimesheetFrequency.MONTHLY;
-
-    private LocalDate terminationDate;
+    
+    @Nullable
+    private LocalDate terminationDate = null;
 
     @Positive
     private Double hoursPerWeek;
@@ -49,6 +54,7 @@ public class Contract extends AbstractEntity {
     @Max(365)
     private int vacationDaysPerYear = 20;
 
+    
 
     // Contract 1 < --- > 1 Employee
     @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -87,11 +93,6 @@ public class Contract extends AbstractEntity {
         int months = getDurationInWholeMonths();
         if (months <= 0 || hoursPerWeek <= 0) return 0.0;
         return vacationDaysPerYear * (months / 12.0) * (hoursPerWeek / workingDaysPerWeek);
-    }
-
-    @Transient
-    private double hoursDue(TimesheetLogic timesheetLogic) {
-        return timesheets.stream().mapToDouble(timesheetLogic::getHoursDue).sum();
     }
 
     private int getDurationInWholeMonths() {
@@ -154,7 +155,7 @@ public class Contract extends AbstractEntity {
         this.terminationDate = terminationDate;
     }
 
-    public double getHoursPerWeek() {
+    public Double getHoursPerWeek() {
         return hoursPerWeek;
     }
 
@@ -170,7 +171,7 @@ public class Contract extends AbstractEntity {
         this.workingDaysPerWeek = workingDaysPerWeek;
     }
 
-    public int getVacationDaysPerYear() {
+    public Integer getVacationDaysPerYear() {
         return vacationDaysPerYear;
     }
 
@@ -272,7 +273,13 @@ public class Contract extends AbstractEntity {
         return vacationHours();
     }
 
-    public double getHoursDue(TimesheetLogic timesheetLogic) {
-        return hoursDue(timesheetLogic);
+    
+    public void removeTimesheet(Timesheet timesheet) {
+        if (timesheet != null) {
+            timesheets.remove(timesheet);
+            timesheet.setContract(null); // this removes the reference  
+        }
     }
+    
+    
 }

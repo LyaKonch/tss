@@ -1,5 +1,9 @@
 package bravo.entities;
 
+import bravo.enums.FederalState;
+
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,12 +15,17 @@ import java.util.Set;
 @Entity
 @Table(name = "person")
 @NamedQueries({
-        @NamedQuery(name = "Person.findByEmail",
-                query = "SELECT p FROM Person p WHERE p.emailAddress = :email"),
-        @NamedQuery(name = "Person.findAll",
-                query = "SELECT p FROM Person p ORDER BY p.lastName ASC"),
         @NamedQuery(name = "Person.findByUuid",
-                query = "SELECT p FROM Person p WHERE p.uuid = :uuid")})
+                query = "SELECT e FROM Person e WHERE e.uuid = :uuid"),
+        @NamedQuery(name = "Person.findAll",
+                query = "SELECT e FROM Person e"),
+        @NamedQuery(name = "Person.findByEmail",
+                query = "SELECT e FROM Person e WHERE e.emailAddress = :emailAddress"),
+        @NamedQuery(name = "Person.findByFullName",
+                query = "SELECT e FROM Person e WHERE e.firstName = :firstName AND e.lastName = :lastName"),
+        @NamedQuery(name = "Person.findByRoleType",
+                query = "SELECT e FROM Person e JOIN e.roles r WHERE TYPE(r) = :roleType")
+})
 public class Person extends AbstractEntity {
 
     @NotBlank
@@ -33,10 +42,14 @@ public class Person extends AbstractEntity {
 
     private boolean consent;
 
-    // Person 1 < --- > 0..* Role
-    @OneToMany(mappedBy = "person")
-    private Set<Role> roles = new HashSet<>();
+    // state should be chosen by user.
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private FederalState state = RHINELAND_PALATINATE;
 
+    // Person 1 < --- > 0..* Role
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Role> roles = new HashSet<>();
 
     public Person() {
         super();
@@ -46,6 +59,15 @@ public class Person extends AbstractEntity {
         super(NewEntity);
     }
 
+    public FederalState getState() {
+        return state;
+    }
+
+    public void setState(FederalState state) {
+        if (!state.equals(null)) {
+            this.state = state;
+        }
+    }
 
     public String getFirstName() {
         return firstName;

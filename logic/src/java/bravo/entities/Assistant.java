@@ -2,9 +2,10 @@ package bravo.entities;
 
 import jakarta.persistence.*;
 
-
 @Entity
 @DiscriminatorValue("Assistant")
+@NamedQuery(name = "Assistant.findByContract",
+        query = "SELECT s FROM Assistant s WHERE s.contract = :contract")
 public class Assistant extends Role {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -20,4 +21,3 @@ public class Assistant extends Role {
     }
 
 }
-

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="holiday-calculator-0.2.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/logic/src/java/lib/holiday-calculator-0.2.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

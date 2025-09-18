@@ -21,7 +21,6 @@ public class AbstractDAO<T extends AbstractEntity> {
 
     private Class<T> entityClass;
 
-
     public AbstractDAO() {
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
@@ -40,19 +39,21 @@ public class AbstractDAO<T extends AbstractEntity> {
                 .getSingleResult();
     }
 
-    public void save(T entry) {
+
+    public T save(T entry) {
         try {
             if (entry.getId() == null) {
                 em.persist(entry);
             } else {
-                em.merge(entry);
+                entry = em.merge(entry);
             }
+            return entry;
         } catch (ConstraintViolationException exc) {
             for (ConstraintViolation<?> violation : exc.getConstraintViolations()) {
-                logger.severe("Validation failed: " +
-                        "Property=" + violation.getPropertyPath() +
-                        ", Invalid value=" + violation.getInvalidValue() +
-                        ", Message=" + violation.getMessage());
+                logger.severe("Validation failed: "
+                        + "Property=" + violation.getPropertyPath()
+                        + ", Invalid value=" + violation.getInvalidValue()
+                        + ", Message=" + violation.getMessage());
             }
             throw exc;
         }
@@ -63,7 +64,9 @@ public class AbstractDAO<T extends AbstractEntity> {
     }
 
     public void delete(T entry) {
-        em.remove(em.merge(entry));
+        if (entry == null) return;
+        T managed = em.contains(entry) ? entry : em.merge(entry);
+        em.remove(managed);
     }
 
     public void deleteById(Long id) {
