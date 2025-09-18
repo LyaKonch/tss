@@ -103,6 +103,7 @@ public class EntryBlockBean implements Serializable {
     public String save() {
         if (!isEditable()) {
             addError("Timesheet nicht editierbar.");
+           
             return null;
         }
         try {
@@ -135,24 +136,6 @@ public class EntryBlockBean implements Serializable {
         newEntryWithDefaults();
 
         addInfo(msg.getString("entry.deleted"));
-    }
-
-    // Is this method+button better here or in a timesheet related page?
-    public void signAsEmployee() {
-        if (!isEditable()) {
-            addError(msg.getString("entry.notEditable"));
-            return;
-        }
-        timesheet.setStatus(TimesheetStatus.SIGNED_BY_EMPLOYEE);
-        addInfo("Signiert (Mitarbeiter).");
-    }
-
-    // Is this method+button better here or in a timesheet related page?
-    public void revokeSignature() {
-        if (timesheet.getStatus() == TimesheetStatus.SIGNED_BY_EMPLOYEE) {
-            timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
-            addInfo("Signatur widerrufen.");
-        }
     }
 
     private void validateForm() {
