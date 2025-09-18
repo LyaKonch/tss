@@ -35,6 +35,7 @@ public class ContractFormBean implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
     private static final Logger logger = Logger.getLogger(ContractFormBean.class.getName());
 
 
@@ -105,7 +106,7 @@ public class ContractFormBean implements Serializable {
         if (contract == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
-            return "contractView?faces-redirect=true";
+            return "contractList?faces-redirect=true";
         }
 
         return null; // Stay on the same page since we're already on the edit page
@@ -133,7 +134,7 @@ public class ContractFormBean implements Serializable {
             Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
             flash.setKeepMessages(true);
 
-            return "contractView?faces-redirect=true";
+            return "contractList?faces-redirect=true";
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error saving contract: " + e.getMessage(), null));

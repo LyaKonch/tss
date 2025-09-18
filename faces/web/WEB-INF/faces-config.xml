@@ -28,8 +28,8 @@
             <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>contractView</from-outcome>
-            <to-view-id>/pages/user/contractView.xhtml</to-view-id>
+            <from-outcome>contractList</from-outcome>
+            <to-view-id>/pages/user/contractList.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
     </navigation-rule>

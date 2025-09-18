@@ -7,12 +7,16 @@ import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Backing bean for contract list view.
@@ -25,8 +29,15 @@ public class ContractListBean implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    private static final Logger logger = Logger.getLogger(ContractListBean.class.getName());
+
     @EJB
     private ContractLogic contractLogic;
+
+    @Inject
+    private ContractDetailsBean contractDetailsBean;
 
     private String searchText;
 
@@ -83,6 +94,14 @@ public class ContractListBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error searching contracts: " + e.getMessage(), null));
         }
+    }
+
+    public void prepareDetails(ContractDTO contract) {
+        contractDetailsBean.init(contract);
+    }
+
+    public String formatDate(LocalDate date) {
+        return (date != null ? date.format(formatter) : "Invalid");  // TODO: Use locale and maybe localized date format
     }
 
 

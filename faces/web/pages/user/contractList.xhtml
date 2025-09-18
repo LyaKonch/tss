@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition template="/WEB-INF/templates/page-layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:comp="jakarta.faces.composite/comp">
+
+    <ui:param name="pageHeadline" value="${msg.contractListHeadline}" />
+    <!--    <f:param />    &lt;!&ndash; Use jakarta.faces.core - else might be autoremoved by IntelliJ &ndash;&gt;-->
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="description" value="Shows a list of contracts the user is involved in." />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="dialogForm">
+            <!-- or make header the contract name -->
+            <p:dialog id="detailsDialog" header="Contract Details" widgetVar="contractDetails" modal="true"
+                      closable="true" resizable="true" responsive="true" closeOnEscape="true"
+                      rendered="#{not empty contractDetailsBean.contract}">
+                <ui:include src="contractDetails.xhtml" />
+            </p:dialog>
+        </h:form>
+        <h:form id="tableForm">
+            <p:panel>
+                <p:dataTable id="contractTable" var="contract" reflow="true"
+                             value="#{contractListBean.contractList}" stripedRows="true">
+
+                    <p:column field="name" headerText="${msg.contractNameLabel}" />
+                    <p:column field="startDate" headerText="${msg.contractStartDateLabel}">
+                        #{contractListBean.formatDate(contract.startDate)}
+                    </p:column>
+                    <p:column field="endDate" headerText="${msg.contractEndDateLabel}">
+                        #{contractListBean.formatDate(contract.endDate)}
+                    </p:column>
+                    <p:column field="status" headerText="${msg.contractStatusLabel}">
+                        <comp:coloredLabel
+                                color="#{contract.status.color}">#{contract.status.displayName}
+                        </comp:coloredLabel>
+                    </p:column>
+                    <p:column field="hoursPerWeek" headerText="${msg.contractHoursPerWeekLabel}">
+                        #{contract.hoursPerWeek}
+                    </p:column>
+
+                    <p:column headerText="${msg.contractActionsLabel}">
+                        <p:commandButton icon="pi pi-eye"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined eye-fix"
+                                         action="#{contractListBean.prepareDetails(contract)}"
+                                         update=":dialogForm"
+                                         oncomplete="PF('contractDetails').show();" />
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+
+        <h:form id="buttonForm">
+            <p:panel>
+                <p:commandButton id="createContractButton"
+                                 icon="pi pi-plus"
+                                 action="#{contractFormBean.prepareCreate}"
+                                 value="${msg.contractEditNew}" />
+                <span class="hspace" />
+            </p:panel>
+        </h:form>
+
+    </ui:define>
+</ui:composition>

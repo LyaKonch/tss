@@ -7,6 +7,8 @@
 >
 <h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <h:outputStylesheet library="css" name="primeflex.css" />
+    <h:outputStylesheet library="css" name="contracts.css" />
     <title>Bravo TSS - <ui:insert name="title">Default Title</ui:insert></title>
 </h:head>
 <h:body>
@@ -14,7 +16,7 @@
         <h:form id="headerMenuForm">
             <p:menubar>
                 <p:menuitem outcome="dashboard" value="Homepage" icon="pi pi-home" />
-                <p:menuitem outcome="contractView" value="Contract List" icon="pi pi-list" />
+                <p:menuitem outcome="contractList" value="Contract List" icon="pi pi-list" />
                 <p:menuitem outcome="contractForm" value="Create Contract" icon="pi pi-list" />
             </p:menubar>
         </h:form>
