@@ -1,7 +1,7 @@
 package bravo.enums;
 
 public enum GroupName {
-    STUFF,
+    STAFF,
     ADMIN,
     USER
 }

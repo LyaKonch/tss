@@ -1,10 +1,6 @@
 package bravo.entities;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import bravo.entities.Person;
 import jakarta.persistence.*;
-import java.io.Serializable;
 
 
 /**
@@ -13,41 +9,25 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "users")
-public class User implements Serializable {
+@NamedQueries({
+        @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
+        @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u WHERE u.email = :email"),
+        @NamedQuery(name = "User.findByUuid", query = "SELECT u FROM User u WHERE u.uuid = :uuid")
+})
+public class User extends AbstractEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "username", unique = true, nullable = true)
-    private String username;
+    @Column(name = "email", unique = true, nullable = true)
+    private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
 
-    @OneToOne(optional = false,fetch = FetchType.LAZY)
-    @JoinColumn(name = "person_id", referencedColumnName = "id", nullable = false, unique = true)
-    private Person person;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "group_id", nullable = false)
-    private Group group;
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    public String getEmail() {
+        return email;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -58,27 +38,11 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public Group getGroup() {
-        return group;
-    }
-
-    public void setGroup(Group group) {
-        this.group = group;
-    }
-
-    public void setPerson(Person person) {
-        this.person = person;
-        if (person != null) {
-            this.username = person.getEmailAddress();
-        }
-    }
-
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", group='" + group.getGroupName() + '\'' +
+                "id=" + getId() +
+                ", email='" + email + '\'' +
                 '}';
     }
 }

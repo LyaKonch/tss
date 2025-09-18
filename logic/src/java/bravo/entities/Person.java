@@ -1,7 +1,9 @@
 package bravo.entities;
 
 import bravo.enums.FederalState;
+
 import static bravo.enums.FederalState.RHINELAND_PALATINATE;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,16 +15,16 @@ import java.util.Set;
 @Entity
 @Table(name = "person")
 @NamedQueries({
-    @NamedQuery(name = "Person.findByUuid",
-            query = "SELECT e FROM Person e WHERE e.uuid = :uuid"),
-    @NamedQuery(name = "Person.findAll",
-            query = "SELECT e FROM Person e"),
-    @NamedQuery(name = "Person.findByEmail",
-            query = "SELECT e FROM Person e WHERE e.emailAddress = :emailAddress"),
-    @NamedQuery(name = "Person.findByFullName",
-            query = "SELECT e FROM Person e WHERE e.firstName = :firstName AND e.lastName = :lastName"),
-    @NamedQuery(name = "Person.findByRoleType",
-            query = "SELECT e FROM Person e JOIN e.roles r WHERE TYPE(r) = :roleType")
+        @NamedQuery(name = "Person.findByUuid",
+                query = "SELECT e FROM Person e WHERE e.uuid = :uuid"),
+        @NamedQuery(name = "Person.findAll",
+                query = "SELECT e FROM Person e"),
+        @NamedQuery(name = "Person.findByEmail",
+                query = "SELECT e FROM Person e WHERE e.emailAddress = :emailAddress"),
+        @NamedQuery(name = "Person.findByFullName",
+                query = "SELECT e FROM Person e WHERE e.firstName = :firstName AND e.lastName = :lastName"),
+        @NamedQuery(name = "Person.findByRoleType",
+                query = "SELECT e FROM Person e JOIN e.roles r WHERE TYPE(r) = :roleType")
 })
 public class Person extends AbstractEntity {
 
@@ -37,9 +39,6 @@ public class Person extends AbstractEntity {
     @Email
     @NotBlank
     private String emailAddress;
-
-    @OneToOne(mappedBy = "person", optional = true)
-    private User user;
 
     private boolean consent;
 
@@ -60,12 +59,12 @@ public class Person extends AbstractEntity {
         super(NewEntity);
     }
 
-    public FederalState getState(){
+    public FederalState getState() {
         return state;
     }
 
-    public void setState(FederalState state){
-        if(!state.equals(null)){
+    public void setState(FederalState state) {
+        if (!state.equals(null)) {
             this.state = state;
         }
     }

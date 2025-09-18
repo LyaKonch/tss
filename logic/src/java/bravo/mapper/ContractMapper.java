@@ -155,7 +155,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
             return;
         }
 
-        // Завантажуємо потенційно нових Employee та Supervisor
+
         Person newEmployeePerson = null;
         if (contractDto.getEmployeeUuid() != null) {
             newEmployeePerson = personMapper.toEntity(personLogic.findByUuid(contractDto.getEmployeeUuid()));
@@ -166,7 +166,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
             newSupervisorPerson = personMapper.toEntity(personLogic.findByUuid(contractDto.getSupervisorUuid()));
         }
 
-        // Завантажуємо всіх Person для нових Secretaries та Assistants
+
         Map<String, Person> secretaryPersonMap = new HashMap<>();
         if (contractDto.getSecretaryUuids() != null) {
             for (String uuid : contractDto.getSecretaryUuids()) {
@@ -181,12 +181,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
             }
         }
 
-        // ===================================================================================
-        // КРОК 3: ФАЗА ОНОВЛЕННЯ (Update/Link Phase)
-        // Тепер, коли всі дані в пам'яті, ми безпечно модифікуємо існуючий контракт.
-        // ===================================================================================
 
-        // 1. Оновлення простих полів
         existingContract.setStatus(contractDto.getStatus());
         existingContract.setName(contractDto.getName());
         existingContract.setStartDate(contractDto.getStartDate());
@@ -197,19 +192,17 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         existingContract.setWorkingDaysPerWeek(contractDto.getWorkingDaysPerWeek());
         existingContract.setVacationDaysPerYear(contractDto.getVacationDaysPerYear());
 
-        // 2. Оновлення Employee
-        // Перевіряємо, чи змінився UUID
+
         if (newEmployeePerson != null && !newEmployeePerson.getUuid().toString().equals(existingContract.getEmployee().getPerson().getUuid().toString())) {
-            // Логіка заміни ролі: стару роль треба видалити
-            // orphanRemoval=true на Person->roles подбає про видалення старої ролі з БД
+
             existingContract.getEmployee().getPerson().getRoles().remove(existingContract.getEmployee());
 
             Employee newEmployeeRole = new Employee();
             newEmployeePerson.addRole(newEmployeeRole);
-            existingContract.setEmployee(newEmployeeRole); // Цей метод має коректно обробляти зв'язки
+            existingContract.setEmployee(newEmployeeRole);
         }
 
-        // 3. Оновлення Supervisor
+
         if (newSupervisorPerson != null && (existingContract.getSupervisor() == null || !newSupervisorPerson.getUuid().toString().equals(existingContract.getSupervisor().getPerson().getUuid().toString()))) {
             if (existingContract.getSupervisor() != null) {
                 existingContract.getSupervisor().getPerson().getRoles().remove(existingContract.getSupervisor());
