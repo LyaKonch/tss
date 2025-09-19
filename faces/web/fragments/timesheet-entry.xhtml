@@ -37,13 +37,14 @@
     <p:messages id="msgs" showDetail="true" closable="true">
       <p:autoUpdate />
     </p:messages>
-
+      
     <p:panel header="#{msg['title.entry']}" styleClass="panel">
-
+        
       <h:panelGrid columns="3" columnClasses="w-16rem,w-16rem,w-16rem"
                    styleClass="grid-gap" cellpadding="4">
-
+          
         <h:panelGroup layout="block" styleClass="field-col">
+            
           <h:outputLabel for="date" value="#{msg['label.date']}" />
           <p:datePicker id="date"
                         value="#{entryBlockBean.currentEntry.entryDate}"
@@ -54,7 +55,7 @@
                         requiredMessage="#{msg['error.dateRequired']}"
                         converterMessage="#{msg['error.dateFormat']}" />
         </h:panelGroup>
-
+          
         <h:panelGroup layout="block" styleClass="field-col">
           <h:outputLabel for="start" value="#{msg['label.start']}" />
           <p:datePicker id="start"
@@ -86,13 +87,9 @@
             <p:ajax event="dateSelect" listener="#{entryBlockBean.recalcFormHours}" update="hours" />
           </p:datePicker>
         </h:panelGroup>
-
       </h:panelGrid>
 
-     
       <h:panelGroup layout="block" styleClass="inline-row" style="margin-top:12px">
-
-        
         <h:panelGroup layout="block" styleClass="inline-col inline-col--type">
           <h:outputLabel for="type" value="#{msg['label.type']}" />
           <h:selectOneMenu id="type"
