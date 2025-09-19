@@ -1,7 +1,9 @@
 package bravo.web;
 
 import bravo.dto.ContractDTO;
+import bravo.dto.PersonDTO;
 import bravo.logic.ContractLogic;
+import bravo.logic.PersonLogic;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -36,6 +38,12 @@ public class ContractListBean implements Serializable {
     @EJB
     private ContractLogic contractLogic;
 
+    @EJB
+    private PersonLogic personLogic;
+
+    @Inject
+    private Authorization auth;
+
     @Inject
     private ContractDetailsBean contractDetailsBean;
 
@@ -58,7 +66,16 @@ public class ContractListBean implements Serializable {
      */
     private void loadContracts() {
         try {
-            contractList = contractLogic.findAll();
+            if(auth.isUserInRole("ADMIN")) {contractList = contractLogic.findAll();}
+            if(
+                    auth.isUserInRole("USER")
+                    || auth.isUserInRole("STAFF")
+                    && auth.isUserInRole("ADMIN"))
+            {
+                PersonDTO person = personLogic.findByEmail(auth.getEmail());
+                contractList = contractLogic.findContractsAssociatedWithPerson(person);
+            }
+
         } catch (Exception e) {
             contractList = new ArrayList<>();
             FacesContext.getCurrentInstance().addMessage(null,

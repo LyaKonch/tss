@@ -2,15 +2,17 @@ package bravo.logic.impl;
 
 import bravo.dao.ContractDAO;
 import bravo.dao.RoleDAO;
+import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
-import bravo.entities.Contract;
-import bravo.entities.Timesheet;
+import bravo.dto.PersonDTO;
+import bravo.entities.*;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.enums.TimesheetStatus;
 import bravo.logic.ContractLogic;
 import bravo.logic.TimesheetLogic;
 import bravo.mapper.ContractMapper;
+import bravo.mapper.PersonMapper;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -19,7 +21,10 @@ import jakarta.persistence.NoResultException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Stateless
@@ -38,29 +43,15 @@ public class ContractLogicBean implements ContractLogic {
 
     @Inject
     RoleDAO roleDAO;
+    @Inject
+    private PersonMapper personMapper;
 
     @Override
     public ContractDTO create(ContractDTO contractDto) {
         if (contractDto == null) throw new IllegalArgumentException("ContractDTO cannot be null.");
         Contract entity = ContractMapper.toEntity(contractDto);
+        contractDAO.save(entity);
         return ContractMapper.toDto(entity);
-    }
-
-    @Override
-    public ContractDTO update(ContractDTO contractDto) {
-        if (contractDto == null || contractDto.getUuid() == null) {
-            throw new IllegalArgumentException("Contract Update: ContractDTO or its UUID is null");
-        }
-        try {
-            Contract existingContract = contractDAO.findByUuid(contractDto.getUuid());
-            if (!(existingContract.getStatus() == ContractStatus.PREPARED)) {
-                throw new IllegalStateException("Contract Update: Updates only allowed in status PREPARED.");
-            }
-            existingContract = ContractMapper.toEntity(contractDto);
-            return ContractMapper.toDto(existingContract);
-        } catch (NoResultException e) {
-            throw new IllegalArgumentException("Contract Update: Contract with UUID " + contractDto.getUuid() + " not found.");
-        }
     }
 
     @Override
@@ -79,6 +70,24 @@ public class ContractLogicBean implements ContractLogic {
 
             Contract updatedContract = contractDAO.save(contract);
             return ContractMapper.toDto(updatedContract);
+        } catch (NoResultException e) {
+            throw new IllegalArgumentException("Contract with UUID " + contractDto.getUuid() + " not found.");
+        }
+    }
+
+    @Override
+    public ContractDTO update(ContractDTO contractDto) {
+        if (contractDto == null || contractDto.getUuid() == null) {
+            throw new IllegalArgumentException("ContractDTO and its UUID cannot be null.");
+        }
+        try {
+            Contract existingContract = contractDAO.findByUuid(contractDto.getUuid());
+            if (!(existingContract.getStatus() == ContractStatus.PREPARED)) {
+                throw new IllegalStateException("Update and deletion of contracts is only possible in state PREPARED. ");
+            }
+            ContractMapper.updateExistingContractFromDto(contractDto, existingContract);
+            contractDAO.save(existingContract);
+            return ContractMapper.toDto(existingContract);
         } catch (NoResultException e) {
             throw new IllegalArgumentException("Contract with UUID " + contractDto.getUuid() + " not found.");
         }
@@ -133,6 +142,27 @@ public class ContractLogicBean implements ContractLogic {
         }
 
 
+    }
+
+    @Override
+    public List<ContractDTO> findContractsAssociatedWithPerson(PersonDTO person){
+        Set<ContractDTO> contracts = new HashSet<>();
+
+        List<Role> roles = roleDAO.findByPerson(personMapper.toEntity(person));
+
+        for (Role role : roles) {
+            if (role instanceof Employee) {
+                contracts.add(ContractMapper.toDto(((Employee) role).getContract()));
+            } else if (role instanceof Supervisor) {
+                contracts.add(ContractMapper.toDto(((Supervisor) role).getContract()));
+            } else if (role instanceof Assistant) {
+                contracts.add(ContractMapper.toDto(((Assistant) role).getContract()));
+            } else if (role instanceof Secretary) {
+                contracts.add(ContractMapper.toDto(((Secretary) role).getContract()));
+            }
+        }
+
+        return contracts.stream().toList();
     }
 
     @Override

@@ -38,5 +38,18 @@
             <to-view-id>/pages/user/contractList.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
+
+        <navigation-case>
+            <from-outcome>personForm</from-outcome>
+            <to-view-id>/pages/user/personForm.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+
+        <navigation-case>
+            <from-outcome>toLoginForm</from-outcome>
+            <to-view-id>/pages/user/login.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+
     </navigation-rule>
 </faces-config>
