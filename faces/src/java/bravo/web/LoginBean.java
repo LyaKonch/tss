@@ -66,6 +66,7 @@ public class LoginBean {
             return null; // stay on page
         }
     }
+    
 
     public String logout() {
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -123,6 +124,10 @@ public class LoginBean {
     public void setSecurityRole(String securityRole) {
         this.securityRole = securityRole;
     }
+    
+    public boolean isIsLoggedIn(){
+        return whoAmI!=null;
+    }
 
     public class WhoAmI {
         public String email;
@@ -167,6 +172,7 @@ public class LoginBean {
         public boolean getStuff() {
             return stuff;
         }
+       
 
     }
 
