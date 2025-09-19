@@ -11,7 +11,7 @@
     <ui:define name="content">
         <!--        <f:metadata>-->
         <!--            <f:viewParam name="uuid" />-->
-        <!--            <f:viewAction action="#{contractFormBean.prepareEdit(param['uuid'])}" />-->
+        <!--            <f:viewAction action="#{contractEditBean.prepareEdit(param['uuid'])}" />-->
         <!--        </f:metadata>-->
         <h:form id="contractForm">
             <p:panel>
@@ -21,72 +21,72 @@
 
                 <p:panelGrid columns="2" styleClass="ui-fluid">
                     <p:outputLabel for="name" value="${msg.contractNameLabel}" />
-                    <p:inputText id="name" value="#{contractFormBean.contract.name}" required="true" />
+                    <p:inputText id="name" value="#{contractEditBean.contract.name}" required="true" />
 
                     <p:outputLabel for="startDate" value="${msg.contractStartDateLabel}" />
-                    <p:datePicker id="startDate" value="#{contractFormBean.contract.startDate}" required="true"
+                    <p:datePicker id="startDate" value="#{contractEditBean.contract.startDate}" required="true"
                                   showIcon="true" locale="de" pattern="dd.MM.yyyy" />
 
                     <p:outputLabel for="endDate" value="${msg.contractEndDateLabel}" />
-                    <p:datePicker id="endDate" value="#{contractFormBean.contract.endDate}"
+                    <p:datePicker id="endDate" value="#{contractEditBean.contract.endDate}"
                                   showIcon="true" pattern="dd.MM.yyyy" />
 
                     <p:outputLabel for="frequency" value="${msg.contractFrequencyLabel}" />
-                    <p:selectOneMenu id="frequency" value="#{contractFormBean.contract.frequency}" required="true">
+                    <p:selectOneMenu id="frequency" value="#{contractEditBean.contract.frequency}" required="true">
                         <f:selectItem itemLabel="Select Frequency" itemValue="" />
-                        <f:selectItems value="#{contractFormBean.frequencies}" var="freq"
+                        <f:selectItems value="#{contractEditBean.frequencies}" var="freq"
                                        itemLabel="#{freq}" itemValue="#{freq}" />
                     </p:selectOneMenu>
 
                     <p:outputLabel for="hoursPerWeek" value="${msg.contractHoursPerWeekLabel}" />
-                    <p:inputNumber id="hoursPerWeek" value="#{contractFormBean.contract.hoursPerWeek}"
+                    <p:inputNumber id="hoursPerWeek" value="#{contractEditBean.contract.hoursPerWeek}"
                                    required="true" minValue="0" maxValue="168" decimalPlaces="1" />
 
                     <p:outputLabel for="workingDaysPerWeek" value="${msg.contractWorkingDaysPerWeekLabel}" />
-                    <p:inputNumber id="workingDaysPerWeek" value="#{contractFormBean.contract.workingDaysPerWeek}"
+                    <p:inputNumber id="workingDaysPerWeek" value="#{contractEditBean.contract.workingDaysPerWeek}"
                                    required="true" minValue="1" maxValue="7" decimalPlaces="0" />
 
                     <p:outputLabel for="vacationDaysPerYear" value="${msg.contractVacationDaysPerYearLabel}" />
-                    <p:inputNumber id="vacationDaysPerYear" value="#{contractFormBean.contract.vacationDaysPerYear}"
+                    <p:inputNumber id="vacationDaysPerYear" value="#{contractEditBean.contract.vacationDaysPerYear}"
                                    required="true" minValue="0" maxValue="365" decimalPlaces="0" />
 
                     <p:outputLabel for="employee" value="${msg.contractEmployee}" />
-                    <p:autoComplete id="employee" value="#{contractFormBean.employee}"
-                                    completeMethod="#{contractFormBean.completeText}" var="person"
-                                    itemLabel="#{contractFormBean.getFullName(person)}" itemValue="#{person}"
+                    <p:autoComplete id="employee" value="#{contractEditBean.employee}"
+                                    completeMethod="#{contractEditBean.completeText}" var="person"
+                                    itemLabel="#{contractEditBean.getFullName(person)}" itemValue="#{person}"
                                     converter="personConverter"
                                     scrollHeight="250" />
 
                     <p:outputLabel for="supervisor" value="${msg.contractSupervisor}" />
-                    <p:autoComplete id="supervisor" value="#{contractFormBean.supervisor}"
-                                    completeMethod="#{contractFormBean.completeText}" var="person"
-                                    itemLabel="#{contractFormBean.getFullName(person)}" itemValue="#{person}"
+                    <p:autoComplete id="supervisor" value="#{contractEditBean.supervisor}"
+                                    completeMethod="#{contractEditBean.completeText}" var="person"
+                                    itemLabel="#{contractEditBean.getFullName(person)}" itemValue="#{person}"
                                     converter="personConverter"
                                     scrollHeight="250" />
 
                     <p:outputLabel for="secretaries" value="${msg.contractSecretaries}" />
-                    <p:autoComplete id="secretaries" multiple="true" value="#{contractFormBean.secretaries}"
-                                    completeMethod="#{contractFormBean.completeText}" showEmptyMessage="false"
-                                    var="person" itemLabel="#{contractFormBean.getFullName(person)}"
+                    <p:autoComplete id="secretaries" multiple="true" value="#{contractEditBean.secretaries}"
+                                    completeMethod="#{contractEditBean.completeText}" showEmptyMessage="false"
+                                    var="person" itemLabel="#{contractEditBean.getFullName(person)}"
                                     itemValue="#{person}" converter="personConverter"
                                     forceSelection="true" scrollHeight="250">
                         <p:column>
                             <span class="flag" style="width: 30px; height: 20px" />
                             <h:outputText style="vertical-align: middle; margin-left: .5rem"
-                                          value="#{contractFormBean.getFullName(person)}" />
+                                          value="#{contractEditBean.getFullName(person)}" />
                         </p:column>
                     </p:autoComplete>
 
                     <p:outputLabel for="assistants" value="${msg.contractAssistants}" />
-                    <p:autoComplete id="assistants" multiple="true" value="#{contractFormBean.assistants}"
-                                    completeMethod="#{contractFormBean.completeText}" showEmptyMessage="false"
-                                    var="person" itemLabel="#{contractFormBean.getFullName(person)}"
+                    <p:autoComplete id="assistants" multiple="true" value="#{contractEditBean.assistants}"
+                                    completeMethod="#{contractEditBean.completeText}" showEmptyMessage="false"
+                                    var="person" itemLabel="#{contractEditBean.getFullName(person)}"
                                     itemValue="#{person}" converter="personConverter"
                                     forceSelection="true" scrollHeight="250">
                         <p:column>
                             <span class="flag" style="width: 30px; height: 20px" />
                             <h:outputText style="vertical-align: middle; margin-left: .5rem"
-                                          value="#{contractFormBean.getFullName(person)}" />
+                                          value="#{contractEditBean.getFullName(person)}" />
                         </p:column>
                     </p:autoComplete>
 
@@ -98,11 +98,10 @@
 
 
                 <p:commandButton value="${msg.saveButtonLabel}"
-                                 action="#{contractFormBean.save}"
+                                 action="#{contractEditBean.save}"
                                  icon="pi pi-save"
                                  update="messages"
                                  process="@form" />
-                <span class="hspace" />
                 <p:button value="${msg.cancelButtonLabel}"
                           outcome="contractList"
                           icon="pi pi-times"

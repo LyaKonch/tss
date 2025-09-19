@@ -31,12 +31,12 @@ import java.util.stream.Collectors;
  */
 @Named
 @ViewScoped
-public class ContractFormBean implements Serializable {
+public class ContractEditBean implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = Logger.getLogger(ContractFormBean.class.getName());
+    private static final Logger logger = Logger.getLogger(ContractEditBean.class.getName());
 
 
     @EJB
@@ -88,7 +88,7 @@ public class ContractFormBean implements Serializable {
         contract.setHoursPerWeek(40.0);
         contract.setWorkingDaysPerWeek(5);
         contract.setVacationDaysPerYear(20);
-        return "contractForm?faces-redirect=true";
+        return "contractEditBean?faces-redirect=true";
     }
 
     /**

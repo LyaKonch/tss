@@ -1,7 +1,7 @@
 package bravo.web.converter;
 
 import bravo.dto.PersonDTO;
-import bravo.web.ContractFormBean;
+import bravo.web.ContractEditBean;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
@@ -18,8 +18,8 @@ public class PersonConverter implements Converter<PersonDTO> {
             return null;
         }
 
-        ContractFormBean bean = context.getApplication()
-                .evaluateExpressionGet(context, "#{contractFormBean}", ContractFormBean.class);
+        ContractEditBean bean = context.getApplication()
+                .evaluateExpressionGet(context, "#{contractEditBean}", ContractEditBean.class);
 
         List<PersonDTO> candidates = bean.completeText(""); // get all persons
         return candidates.stream()

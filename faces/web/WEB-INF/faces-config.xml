@@ -29,8 +29,8 @@
             <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>contractForm</from-outcome>
-            <to-view-id>/pages/user/contractForm.xhtml</to-view-id>
+            <from-outcome>contractEdit</from-outcome>
+            <to-view-id>/pages/user/contractEdit.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
         <navigation-case>
