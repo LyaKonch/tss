@@ -1,0 +1,21 @@
+.label-headline {
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+.eye-fix {
+    /* try adjust eye position to be more centered */
+    position: relative;
+    bottom: 1px;
+    left: 5px;
+}
+
+.contact-box {
+    background-color: var(--surface-400);
+    padding: 6px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

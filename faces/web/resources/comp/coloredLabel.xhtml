@@ -1,0 +1,35 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:composite="jakarta.faces.composite"
+>
+
+<h:head>
+    <title>Colored Label</title>
+</h:head>
+<h:body>
+    <composite:interface>
+        <composite:attribute name="color" type="java.lang.String" />
+        <composite:attribute name="textColor" type="java.lang.String" />
+    </composite:interface>
+
+    <composite:implementation>
+        <span style="
+            background-color: #{cc.attrs.color != null ? cc.attrs.color: 'var(--surface-ground)'};
+            color: #{cc.attrs.textColor != null ? cc.attrs.textColor : 'var(--text-color)'};
+            border: 1px solid grey;
+            padding: 0.3rem 0.6rem 0.4rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-flex;
+            white-space: nowrap;
+            max-width: max-content;
+            width: auto;
+            align-items: center;">
+
+            <composite:insertChildren />
+
+        </span>
+    </composite:implementation>
+</h:body>
+</html>
