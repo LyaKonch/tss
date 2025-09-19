@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ui="jakarta.faces.facelets"
-                xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:comp="jakarta.faces.composite/comp">
@@ -11,8 +10,11 @@
 
     <!--        <ui:param name="pageHeadline" value="${msg.contractDetailsHeadline}" por contract Name />-->
 
-    <h:form id="contractForm">
-        <div class="ui-fluid formgrid grid">
+    <p:dialog id="detailsDialog" header="#{contractDetailsBean.contract.name}" widgetVar="contractDetails" modal="true"
+              closable="true" resizable="true" responsive="true" closeOnEscape="true"
+              rendered="#{not empty contractDetailsBean.contract}">
+
+        <div class="ui-fluid formgrid grid" style="max-width: 600px;">
 
             <div class="field col-12 md:col-6 flex flex-column">
                 <p:outputLabel value="Your Role:" styleClass="label-headline" />
@@ -41,6 +43,32 @@
                 <p:outputLabel for="endDate" value="End Date:" styleClass="label-headline" />
                 <p:outputLabel id="endDate"
                                value="#{contractDetailsBean.formatDate(contractDetailsBean.contract.endDate)}" />
+            </div>
+
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="frequency" value="Timesheet Frequency:" styleClass="label-headline" />
+                <p:outputLabel id="frequency"
+                               value="#{contractDetailsBean.contract.frequency.displayName}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="hoursPerWeek" value="Weekly Hours:" styleClass="label-headline" />
+                <p:outputLabel id="hoursPerWeek"
+                               value="#{contractDetailsBean.contract.hoursPerWeek}" />
+            </div>
+
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="workingDaysPerWeek" value="Weekly Workdays:" styleClass="label-headline" />
+                <p:outputLabel id="workingDaysPerWeek"
+                               value="#{contractDetailsBean.contract.workingDaysPerWeek}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="vacationDaysPerYear" value="Yearly Vacation Days:" styleClass="label-headline" />
+                <p:outputLabel id="vacationDaysPerYear"
+                               value="#{contractDetailsBean.contract.vacationDaysPerYear}" />
             </div>
 
 
@@ -85,6 +113,6 @@
             <!--                         oncomplete="PF('contractDialog').hide();" />-->
         </div>
 
-    </h:form>
+    </p:dialog>
 
 </ui:composition>

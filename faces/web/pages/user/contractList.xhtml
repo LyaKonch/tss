@@ -18,13 +18,9 @@
 
     <ui:define name="content">
         <h:form id="dialogForm">
-            <!-- or make header the contract name -->
-            <p:dialog id="detailsDialog" header="Contract Details" widgetVar="contractDetails" modal="true"
-                      closable="true" resizable="true" responsive="true" closeOnEscape="true"
-                      rendered="#{not empty contractDetailsBean.contract}">
-                <ui:include src="contractDetails.xhtml" />
-            </p:dialog>
+            <ui:include src="contractDetails.xhtml" />
         </h:form>
+
         <h:form id="tableForm">
             <p:panel>
                 <p:dataTable id="contractTable" var="contract" reflow="true"
