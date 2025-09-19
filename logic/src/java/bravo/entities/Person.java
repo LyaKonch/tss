@@ -1,16 +1,14 @@
 package bravo.entities;
 
 import bravo.enums.FederalState;
-
-import static bravo.enums.FederalState.RHINELAND_PALATINATE;
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 
 @Entity
 @Table(name = "person")
@@ -36,8 +34,7 @@ public class Person extends AbstractEntity {
 
     private LocalDate dateOfBirth;
 
-    @Email
-    @NotBlank
+    @Column(unique = true, nullable = false)
     private String emailAddress;
 
     private boolean consent;
@@ -64,9 +61,7 @@ public class Person extends AbstractEntity {
     }
 
     public void setState(FederalState state) {
-        if (!state.equals(null)) {
-            this.state = state;
-        }
+        if (state != null) this.state = state;
     }
 
     public String getFirstName() {
