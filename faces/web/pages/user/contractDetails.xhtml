@@ -7,9 +7,7 @@
 
     <f:facet name="" />  <!-- Use jakarta.faces.core - else might be autoremoved by IntelliJ -->
 
-    <!--        <ui:param name="pageHeadline" value="${msg.contractDetailsHeadline}" por contract Name />-->
-
-    <p:dialog id="detailsDialog" header="#{contractDetailsBean.contract.name}" widgetVar="contractDetails" modal="true"
+    <p:dialog header="#{contractDetailsBean.contract.name}" widgetVar="detailsDialog" modal="true"
               closable="true" resizable="true" responsive="true" closeOnEscape="true"
               rendered="#{not empty contractDetailsBean.contract}">
 
@@ -107,9 +105,6 @@
                     </div>
                 </ui:repeat>
             </div>
-
-            <!--        <p:commandButton value="Save" action="#{contractDetailsBean}" update=":mainForm"-->
-            <!--                         oncomplete="PF('contractDialog').hide();" />-->
         </div>
 
     </p:dialog>

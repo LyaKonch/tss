@@ -17,7 +17,7 @@
     </ui:define>
 
     <ui:define name="content">
-        <h:form id="dialogForm">
+        <h:form id="detailsForm">
             <ui:include src="contractDetails.xhtml" />
         </h:form>
 
@@ -46,8 +46,9 @@
                         <p:commandButton icon="pi pi-eye"
                                          styleClass="ui-button-secondary ui-button-rounded ui-button-outlined eye-fix"
                                          action="#{contractListBean.prepareDetails(contract)}"
-                                         update=":dialogForm"
-                                         oncomplete="PF('contractDetails').show();" />
+                                         update=":detailsForm"
+                                         oncomplete="PF('detailsDialog').show();" />
+
                     </p:column>
 
                 </p:dataTable>
