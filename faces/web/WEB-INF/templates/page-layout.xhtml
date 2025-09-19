@@ -4,7 +4,7 @@
       xmlns:ui="jakarta.faces.facelets"
       xmlns:h="jakarta.faces.html"
       xmlns:p="http://primefaces.org/ui"
->
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 <h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <h:outputStylesheet library="css" name="primeflex.css" />
@@ -12,23 +12,27 @@
     <title>Bravo TSS - <ui:insert name="title">Default Title</ui:insert></title>
 </h:head>
 <h:body>
-    <div id="header">
-        <h:form id="headerMenuForm">
-            <p:menubar>
-                <p:menuitem outcome="index" value="Timesheets" icon="pi pi-home" />
-                <p:menuitem outcome="dashboard" value="Homepage" icon="pi pi-home" />
-                <p:menuitem outcome="contractList" value="Contract List" icon="pi pi-list" />
-                <p:menuitem outcome="contractForm" value="Create Contract" icon="pi pi-list" />
-            </p:menubar>
-        </h:form>
-    </div>
+    <f:view locale="#{userSessionBean.locale}">
+        <div id="header">
+            <h:form id="headerMenuForm">
+                <p:menubar>
+                    <p:menuitem outcome="entries" value="Entries" icon="pi pi-home" />
+                    <p:menuitem outcome="contractList" value="Contract List" icon="pi pi-list" />
+                    <p:submenu label="Language" icon="pi pi-globe">
+                        <p:menuitem value="Deutsch" action="#{userSessionBean.setLocale('de')}" update="@all" />
+                        <p:menuitem value="English" action="#{userSessionBean.setLocale('en')}" update="@all" />
+                    </p:submenu>
+                </p:menubar>
+            </h:form>
+        </div>
 
-    <div id="content">
-        <ui:insert name="content" />
-    </div>
+        <div id="content">
+            <ui:insert name="content" />
+        </div>
 
-    <div id="footer">
-        <p>Bravo Timesheet System</p>
-    </div>
+        <div id="footer">
+            <p>Bravo Timesheet System</p>
+        </div>
+    </f:view>
 </h:body>
 </html>

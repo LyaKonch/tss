@@ -7,7 +7,6 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,8 +20,11 @@ public class LoginBean {
     UserLogic userLogicBean;
 
     private String email;
+
     private String password;
+
     private String securityRole;
+
     private WhoAmI whoAmI;
 
     // getters / setters
@@ -58,7 +60,7 @@ public class LoginBean {
         try {
             req.login(email, password); // delegates to container (jdbcRealm)
 
-            return "/pages/dashboard.xhtml?faces-redirect=true";
+            return "dashboard";
         } catch (ServletException e) {
             fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Login failed", "Invalid credentials"));
             return null; // stay on page
@@ -124,8 +126,11 @@ public class LoginBean {
 
     public class WhoAmI {
         public String email;
+
         public boolean admin;
+
         public boolean user;
+
         public boolean stuff;
 
         public WhoAmI(String email, boolean admin, boolean user, boolean stuff) {
