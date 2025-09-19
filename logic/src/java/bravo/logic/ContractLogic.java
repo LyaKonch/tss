@@ -77,4 +77,10 @@ public interface ContractLogic {
      * @return the calculated vacation hours
      */
     double calculateVacationHours(ContractDTO contract);
+
+    void deleteContract(String uuid);
+
+    ContractDTO startContract(ContractDTO contractDto);
+
+    ContractDTO archiveContract(String uuid);
 }

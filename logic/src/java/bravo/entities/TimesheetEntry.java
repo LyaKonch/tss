@@ -47,7 +47,7 @@ public class TimesheetEntry extends AbstractEntity {
 
     @Transient
     private double hours() {
-        if (startTime == null || endTime == null) return 0.0;
+        if (startTime == null || endTime == null  || endTime.isBefore(startTime)) return 0.0;
         long minutes = Duration.between(startTime, endTime).toMinutes();
         return Math.max(0, minutes) / 60.0;
     }

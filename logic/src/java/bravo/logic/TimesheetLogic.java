@@ -30,5 +30,7 @@ public interface TimesheetLogic {
 
     List<TimesheetEntry> getEntries(Timesheet timesheet);
 
+    double hoursDue(String uuid);
+
     TimesheetDTO getCurrent(ContractDTO contract);
 }
