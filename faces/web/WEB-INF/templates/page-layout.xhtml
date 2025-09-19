@@ -30,9 +30,35 @@
             <ui:insert name="content" />
         </div>
 
-        <div id="footer">
-            <p>Bravo Timesheet System</p>
-        </div>
+       
+            <div id="footer">
+                    <p:panel>
+                        <div>
+                            ${msg.footerCurrentUserLabel}
+                            ${loginBean.isLoggedIn ? loginBean.whoAmI.email : msg.notLoggedIn}
+                            <span class="hspace"/>
+                            <p:chip rendered="${loginBean.whoAmI.user}" label="${msg.userLabel}" styleClass="mr-22"/>
+                            <span class="hspace"/>
+                            <p:chip rendered="${loginBean.whoAmI.stuff}" label="${msg.staffLabel}" styleClass="mr-22"/>
+                            <span class="hspace"/>
+                            <p:chip rendered="${loginBean.whoAmI.admin}" label="${msg.adminLabel}" styleClass="mr-22"/>
+                        </div>
+                        <h:form id="localeForm">
+                          
+                        </h:form>
+                        <div class="topsep">
+                          
+                            <h:outputText value="${userSessionBean.currentDate}">
+                                <f:convertDateTime/>
+                            </h:outputText>
+                        </div>
+                        <div class="topsep">
+                            <h:outputFormat value="${msg.footerLabel}"/>
+                           
+                        </div>
+                    </p:panel>
+                </div>
+       
     </f:view>
 </h:body>
 </html>
