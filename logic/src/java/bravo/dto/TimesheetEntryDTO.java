@@ -5,34 +5,38 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @XmlRootElement
 public class TimesheetEntryDTO extends AbstractDTO {
 
     private ReportType type;
+
     private String description;
+
     private double hours;
+
     private LocalTime startTime;
+
     private LocalTime endTime;
+
     private LocalDate entryDate;
 
     private String timesheetUuid;
 
 
     public TimesheetEntryDTO() {
+        super();
     }
 
-    public TimesheetEntryDTO(String uuid, int jpaVersion, String timesheetUuid, LocalDate entryDate, LocalTime startTime, LocalTime endTime, ReportType type, String description) {
+    public TimesheetEntryDTO(ReportType type, String description, LocalTime startTime, LocalTime endTime, LocalDate entryDate, UUID timesheetUuid) {
         super();
-        this.setUuid(uuid);
-        this.setVersion(jpaVersion);
         this.type = type;
         this.description = description;
         this.startTime = startTime;
         this.endTime = endTime;
         this.entryDate = entryDate;
-        this.timesheetUuid = timesheetUuid;
-
+        this.timesheetUuid = timesheetUuid.toString();
     }
 
     public ReportType getType() {
@@ -87,4 +91,7 @@ public class TimesheetEntryDTO extends AbstractDTO {
         return timesheetUuid;
     }
 
+    public void setTimesheetUuid(String timesheetUuid) {
+        this.timesheetUuid = timesheetUuid;
+    }
 }

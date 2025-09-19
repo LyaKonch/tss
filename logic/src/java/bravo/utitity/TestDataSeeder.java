@@ -49,7 +49,7 @@ public class TestDataSeeder {
         Person bob = createPerson("Bob", "Baker", "bob@example.com", LocalDate.of(2005, 5, 5), true);
 
         // Contracts
-        Contract contractA = createContract(ContractStatus.STARTED, "Alice Employee Contract", LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31), TimesheetFrequency.WEEKLY, null, 40.0);
+        Contract contractA = createContract(ContractStatus.STARTED, "Alice Employee Contract", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), TimesheetFrequency.WEEKLY, null, 40.0);
         Contract contractB = createContract(ContractStatus.PREPARED, "Bob Employee Contract", LocalDate.of(2021, 1, 1), LocalDate.of(2021, 12, 31), TimesheetFrequency.MONTHLY, null, 38.0);
 
         // Roles (and links)
@@ -82,9 +82,9 @@ public class TestDataSeeder {
         personDAO.save(bob);
 
         // Timesheets
-        Timesheet timesheetAA = createTimesheet(contractA, TimesheetStatus.ARCHIVED, LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31), true, true);
-        Timesheet timesheetAB = createTimesheet(contractA, TimesheetStatus.SIGNED_BY_SUPERVISOR, LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 28), true, true);
-        Timesheet timesheetAC = createTimesheet(contractA, TimesheetStatus.IN_PROGRESS, LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31), false, false);
+        Timesheet timesheetAA = createTimesheet(contractA, TimesheetStatus.ARCHIVED, LocalDate.of(2025, 9, 8), LocalDate.of(2025, 9, 14), true, true);
+        Timesheet timesheetAB = createTimesheet(contractA, TimesheetStatus.IN_PROGRESS, LocalDate.of(2025, 9, 15), LocalDate.of(2025, 9, 21), false, false);
+        Timesheet timesheetAC = createTimesheet(contractA, TimesheetStatus.IN_PROGRESS, LocalDate.of(2025, 9, 22), LocalDate.of(2025, 9, 28), false, false);
 
         Timesheet timesheetBA = createTimesheet(contractB, TimesheetStatus.ARCHIVED, LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31), true, true);
         Timesheet timesheetBB = createTimesheet(contractB, TimesheetStatus.SIGNED_BY_SUPERVISOR, LocalDate.of(2021, 2, 1), LocalDate.of(2021, 2, 28), true, true);

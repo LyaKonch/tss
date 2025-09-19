@@ -3,10 +3,14 @@ package bravo.dao;
 import bravo.entities.Contract;
 import bravo.entities.Timesheet;
 import bravo.enums.TimesheetStatus;
+import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
+
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
+@LocalBean
 @Stateless
 public class TimesheetDAO extends AbstractDAO<Timesheet> {
 
@@ -26,6 +30,19 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
                 getResultList();
     }
 
+    public Timesheet findCurrent(String contractUuid) {
+        LocalDate today = LocalDate.now();
+        return em.createQuery(
+                        "SELECT t FROM Timesheet t " +
+                                "WHERE t.contract.uuid = :contractUuid " +
+                                "AND :today BETWEEN t.startDate AND t.endDate",
+                        Timesheet.class
+                )
+                .setParameter("contractUuid", UUID.fromString(contractUuid))
+                .setParameter("today", today)
+                .getSingleResult();
+    }
+
     public List<Timesheet> findTimesheetsBetweenDates(LocalDate startDate, LocalDate endDate) {
         return em.createNamedQuery("Timesheet.findBetweenDates", Timesheet.class).
                 setParameter("startDate", startDate).
@@ -38,12 +55,12 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
                 .setParameter("referenceDate", referenceDate)
                 .getResultList();
     }
-    
+
     // end date of the timesheet doesn't exactly point at the time it was archived.
     public List<Timesheet> findArchivedBefore(LocalDate date) {
         return em.createQuery("SELECT t FROM Timesheet t WHERE t.status = ARCHIVED AND t.endDate < :date", Timesheet.class)
                 .setParameter("date", date)
                 .getResultList();
-        
-    }    
+
+    }
 }
