@@ -1,9 +1,6 @@
 package bravo.logic.impl;
 
 import bravo.dao.TimesheetDAO;
-
-import bravo.dao.PersonDAO;
-import bravo.dao.TimesheetDAO;
 import bravo.dao.TimesheetEntryDAO;
 import bravo.dto.ContractDTO;
 import bravo.dto.TimesheetDTO;
@@ -24,6 +21,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
@@ -40,6 +38,8 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Inject
     private TimesheetMapper timesheetMapper;
 
+    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
+
 
     public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUuid(entryDto.getUuid());
@@ -47,7 +47,8 @@ public class TimesheetLogicBean implements TimesheetLogic {
             throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid() + "is not found");
         }
 
-        TimesheetEntry newEntry = new TimesheetEntry(true);// true means new object, it's supposed to generate new UUID for new objects;
+        // true means a new object, it's supposed to generate new UUID for new objects;
+        TimesheetEntry newEntry = new TimesheetEntry(true);
         if (entryDto.getEntryDate().isBefore(timesheet.getEndDate())
                 || entryDto.getEntryDate().equals(timesheet.getEndDate())
                 || entryDto.getEntryDate().isAfter(timesheet.getStartDate())
@@ -71,10 +72,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Override
     public void addEntry(Timesheet timesheet, TimesheetEntry e) {
         requireEditable(timesheet);
-        if (e != null) {
-            e.setTimesheet(timesheet);
-            timesheet.getEntries().add(e);
+        if (e == null) {
+            logger.warning("Attempted to add null entry to timesheet " + timesheet.getUuid());
+            return;
         }
+        e.setTimesheet(timesheet);
+        timesheet.getEntries().add(e);
         entryDAO.save(e);
         timesheetDAO.save(timesheet);
     }
@@ -82,10 +85,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Override
     public void removeEntry(Timesheet timesheet, TimesheetEntry e) {
         requireEditable(timesheet);
-        if (e != null) {
-            timesheet.getEntries().remove(e);
-            e.setTimesheet(null);
+        if (e == null) {
+            logger.warning("Attempted to add null entry to timesheet " + timesheet.getUuid());
+            return;
         }
+        timesheet.getEntries().remove(e);
+        e.setTimesheet(null);
         entryDAO.save(e);
         timesheetDAO.save(timesheet);
     }
