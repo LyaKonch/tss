@@ -2,7 +2,6 @@ package bravo.web;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
-import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
@@ -17,8 +16,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Arrays;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -37,6 +36,7 @@ public class ContractEditBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(ContractEditBean.class.getName());
 
+    private final EnumSet<TimesheetFrequency> frequencies = EnumSet.allOf(TimesheetFrequency.class);
 
     @EJB
     private ContractLogic contractLogic;
@@ -46,10 +46,6 @@ public class ContractEditBean implements Serializable {
 
     private ContractDTO contract;
 
-    private List<ContractStatus> statuses;
-
-    private List<TimesheetFrequency> frequencies;
-
     private PersonDTO employee;
 
     private PersonDTO supervisor;
@@ -58,52 +54,37 @@ public class ContractEditBean implements Serializable {
 
     private List<PersonDTO> assistants;
 
-    public void init() {
-        if (contract == null) return;
-        try {
-            logger.info("Logger initialized");
-
-            statuses = Arrays.asList(ContractStatus.values());
-            frequencies = Arrays.asList(TimesheetFrequency.values());
-
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error initializing bean: " + e.getMessage(), null));
-        }
-    }
-
     /**
      * Prepares a new contract for creation.
-     *
-     * @return the navigation outcome
      */
-    public String prepareCreate() {
+    public void prepareCreate() {
         // Include required and sensible defaults
         contract = new ContractDTO();
-        contract.setStatus(ContractStatus.PREPARED);
         contract.setFrequency(TimesheetFrequency.WEEKLY);
         contract.setStartDate(LocalDate.now().withDayOfMonth(1));
         contract.setEndDate(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()));
         contract.setHoursPerWeek(40.0);
         contract.setWorkingDaysPerWeek(5);
         contract.setVacationDaysPerYear(20);
-        return "contractEditBean?faces-redirect=true";
     }
 
     /**
      * Prepare bean to edit a contract.
      *
-     * @param contract the contract to edit
+     * @param dto the contract to edit
      */
-    public void prepareEdit(ContractDTO contract) {
-        init();
-        if (contract == null) {
+    public void prepareEdit(ContractDTO dto) {
+        if (dto == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
             throw new IllegalArgumentException("Tried to edit a null contract.");
         }
 
-        this.contract = contract;
+        contract = dto;
+        employee = personLogic.findByUuid(contract.getEmployeeUuid());
+        supervisor = personLogic.findByUuid(contract.getSupervisorUuid());
+        for (String uuid : contract.getSecretaryUuids()) secretaries.add(personLogic.findByUuid(uuid));
+        for (String uuid : contract.getAssistantUuids()) assistants.add(personLogic.findByUuid(uuid));
     }
 
     /**
@@ -112,7 +93,7 @@ public class ContractEditBean implements Serializable {
      * @return the navigation outcome
      */
     public String save() {
-        logger.warning("Saving contract: " + contract);
+        logger.info("Saving contract: " + contract);
         try {
             if (contract.isNew()) {
                 contractLogic.create(contract);
@@ -161,17 +142,7 @@ public class ContractEditBean implements Serializable {
         this.contract = contract;
     }
 
-    public List<ContractStatus> getStatuses() {
-        if (statuses == null) {
-            statuses = Arrays.asList(ContractStatus.values());
-        }
-        return statuses;
-    }
-
-    public List<TimesheetFrequency> getFrequencies() {
-        if (frequencies == null) {
-            frequencies = Arrays.asList(TimesheetFrequency.values());
-        }
+    public EnumSet<TimesheetFrequency> getFrequencies() {
         return frequencies;
     }
 
