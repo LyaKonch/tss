@@ -10,9 +10,12 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "timesheet_entry")
 @NamedQueries({
-    @NamedQuery(name = "TimesheetEntry.findByUuid", query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"),
-    @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid", query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid"),
-    @NamedQuery(name = "TimesheetEntry.findAll", query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")})
+        @NamedQuery(name = "TimesheetEntry.findByUuid",
+                query = "SELECT e FROM TimesheetEntry e WHERE e.uuid = :uuid"),
+        @NamedQuery(name = "TimesheetEntry.findByTimesheetUuid",
+                query = "SELECT e FROM TimesheetEntry e WHERE e.timesheet.uuid = :timesheetUuid ORDER BY e.entryDate DESC"),
+        @NamedQuery(name = "TimesheetEntry.findAll",
+                query = "SELECT e FROM TimesheetEntry e ORDER BY e.entryDate DESC")})
 public class TimesheetEntry extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
@@ -27,9 +30,11 @@ public class TimesheetEntry extends AbstractEntity {
 
     private LocalDate entryDate;
 
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "timesheet_id")
     private Timesheet timesheet;
+
 
     public TimesheetEntry() {
         super();
@@ -39,14 +44,14 @@ public class TimesheetEntry extends AbstractEntity {
         super(NewEntity);
     }
 
+
     @Transient
     private double hours() {
-        if (startTime == null || endTime == null || endTime.isBefore(startTime)) {
-            return 0.0;
-        }
+        if (startTime == null || endTime == null  || endTime.isBefore(startTime)) return 0.0;
         long minutes = Duration.between(startTime, endTime).toMinutes();
         return Math.max(0, minutes) / 60.0;
     }
+
 
     public ReportType getType() {
         return type;

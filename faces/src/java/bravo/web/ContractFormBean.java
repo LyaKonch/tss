@@ -102,7 +102,7 @@ public class ContractFormBean implements Serializable {
             return prepareCreate();
         }
 
-        contract = contractLogic.findByUuid(uuid);
+//        contract = contractLogic.findByUuid(uuid);
         if (contract == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));

@@ -1,9 +1,9 @@
 package bravo.logic.impl;
 
-
-import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dao.TimesheetEntryDAO;
+import bravo.dto.ContractDTO;
+import bravo.dto.TimesheetDTO;
 import bravo.dto.TimesheetEntryDTO;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
@@ -11,20 +11,20 @@ import bravo.enums.ContractStatus;
 import bravo.enums.FederalState;
 import bravo.enums.TimesheetStatus;
 import bravo.logic.TimesheetLogic;
+import bravo.mapper.TimesheetMapper;
 import bravo.utitity.PublicHolidayService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
-
-    @EJB
-    private PersonDAO personDAO;
 
     @EJB
     private PublicHolidayService holidayChecker;
@@ -35,6 +35,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @EJB
     private TimesheetDAO timesheetDAO;
 
+    @Inject
+    private TimesheetMapper timesheetMapper;
+
+    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
+
 
     public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUuid(entryDto.getUuid());
@@ -42,7 +47,8 @@ public class TimesheetLogicBean implements TimesheetLogic {
             throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid() + "is not found");
         }
 
-        TimesheetEntry newEntry = new TimesheetEntry(true);// true means new object, it's supposed to generate new UUID for new objects;
+        // true means a new object, it's supposed to generate new UUID for new objects;
+        TimesheetEntry newEntry = new TimesheetEntry(true);
         if (entryDto.getEntryDate().isBefore(timesheet.getEndDate())
                 || entryDto.getEntryDate().equals(timesheet.getEndDate())
                 || entryDto.getEntryDate().isAfter(timesheet.getStartDate())
@@ -66,10 +72,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Override
     public void addEntry(Timesheet timesheet, TimesheetEntry e) {
         requireEditable(timesheet);
-        if (e != null) {
-            e.setTimesheet(timesheet);
-            timesheet.getEntries().add(e);
+        if (e == null) {
+            logger.warning("Attempted to add null entry to timesheet " + timesheet.getUuid());
+            return;
         }
+        e.setTimesheet(timesheet);
+        timesheet.getEntries().add(e);
         entryDAO.save(e);
         timesheetDAO.save(timesheet);
     }
@@ -77,10 +85,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Override
     public void removeEntry(Timesheet timesheet, TimesheetEntry e) {
         requireEditable(timesheet);
-        if (e != null) {
-            timesheet.getEntries().remove(e);
-            e.setTimesheet(null);
+        if (e == null) {
+            logger.warning("Attempted to add null entry to timesheet " + timesheet.getUuid());
+            return;
         }
+        timesheet.getEntries().remove(e);
+        e.setTimesheet(null);
         entryDAO.save(e);
         timesheetDAO.save(timesheet);
     }
@@ -125,6 +135,14 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Override
     public List<TimesheetEntry> getEntries(Timesheet timesheet) {
         return Collections.unmodifiableList(timesheet.getEntries());
+    }
+
+    @Override
+    public TimesheetDTO getCurrent(ContractDTO contract) {
+        Timesheet entity = timesheetDAO.findCurrent(contract.getUuid());
+        TimesheetDTO dto = timesheetMapper.toDto(entity);
+        dto.setHoursDue(hoursDue(dto.getUuid()));
+        return dto;
     }
 
     @Override
@@ -174,26 +192,19 @@ public class TimesheetLogicBean implements TimesheetLogic {
         int count = 0;
         for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
             DayOfWeek w = dat.getDayOfWeek();
-            if (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY) {
-                count++;
-            }
+            if (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY) count++;
         }
         return count;
     }
 
     public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end, FederalState state) {
-        if (holidayChecker == null) {
-            return 0;
-        }
+        if (holidayChecker == null) return 0;
         int count = 0;
         for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
             DayOfWeek w = dat.getDayOfWeek();
             boolean workday = (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY);
-            if (workday && holidayChecker.isHoliday(dat, state)) {
-                count++;
-            }
+            if (workday && holidayChecker.isHoliday(dat, state)) count++;
         }
         return count;
     }
-
 }

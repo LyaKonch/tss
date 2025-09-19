@@ -1,7 +1,10 @@
 package bravo.logic;
 
+import bravo.dto.ContractDTO;
+import bravo.dto.TimesheetDTO;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -24,6 +27,8 @@ public interface TimesheetLogic {
     void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries);
 
     List<TimesheetEntry> getEntries(Timesheet timesheet);
-    
-    double hoursDue(String uuid); 
+
+    double hoursDue(String uuid);
+
+    TimesheetDTO getCurrent(ContractDTO contract);
 }
