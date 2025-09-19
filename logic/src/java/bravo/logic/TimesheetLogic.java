@@ -10,8 +10,6 @@ import java.util.List;
 
 public interface TimesheetLogic {
 
-    double getHoursDue(Timesheet timesheet);
-
     double getReportedHours(Timesheet timesheet);
 
     void signByEmployee(Timesheet timesheet, LocalDate date);

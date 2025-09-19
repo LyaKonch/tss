@@ -29,9 +29,6 @@ import java.util.List;
 public class TimesheetLogicBean implements TimesheetLogic {
 
     @EJB
-    private PersonDAO personDAO;
-
-    @EJB
     private PublicHolidayService holidayChecker;
 
     @EJB
@@ -139,7 +136,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
     public TimesheetDTO getCurrent(ContractDTO contract) {
         Timesheet entity = timesheetDAO.findCurrent(contract.getUuid());
         TimesheetDTO dto = timesheetMapper.toDto(entity);
-        dto.setHoursDue(getHoursDue(entity));
+        dto.setHoursDue(hoursDue(dto.getUuid()));
         return dto;
     }
 
@@ -196,7 +193,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end, FederalState state) {
-        if (holidayChecker == null)return 0;
+        if (holidayChecker == null) return 0;
         int count = 0;
         for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
             DayOfWeek w = dat.getDayOfWeek();
