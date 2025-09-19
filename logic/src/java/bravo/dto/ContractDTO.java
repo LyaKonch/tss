@@ -55,6 +55,27 @@ public class ContractDTO extends AbstractDTO {
 
     }
 
+    @Override
+    public String toString() {
+        return "ContractDTO {\n" +
+                "  status=" + status + ",\n" +
+                "  name=" + name + ",\n" +
+                "  startDate=" + startDate + ",\n" +
+                "  endDate=" + endDate + ",\n" +
+                "  frequency=" + frequency + ",\n" +
+                "  terminationDate=" + terminationDate + ",\n" +
+                "  hoursPerWeek=" + hoursPerWeek + ",\n" +
+                "  workingDaysPerWeek=" + workingDaysPerWeek + ",\n" +
+                "  vacationDaysPerYear=" + vacationDaysPerYear + ",\n" +
+                "  employeeUuid=" + employeeUuid + ",\n" +
+                "  supervisorUuid=" + supervisorUuid + ",\n" +
+                "  secretaryUuids=" + secretaryUuids + ",\n" +
+                "  assistantUuids=" + assistantUuids + ",\n" +
+                "  timesheetUuids=" + timesheetUuids + "\n" +
+                "}";
+    }
+
+
     public ContractStatus getStatus() {
         return status;
     }
