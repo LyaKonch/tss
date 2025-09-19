@@ -60,7 +60,7 @@ public abstract class AbstractDTO implements Serializable {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        PersonDTO other = (PersonDTO) obj;
+        AbstractDTO other = (AbstractDTO) obj;
         return Objects.equals(this.uuid, other.getUuid());
     }
 }

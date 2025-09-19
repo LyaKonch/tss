@@ -57,21 +57,21 @@ public class EntryBlockBean implements Serializable {
     public EntryBlockBean() {
     }
 
-    @PostConstruct
-    public void init() {
-        // TODO: we will eventually know who is logged in, using Alice is ofc only for dummy purposes
-        List<ContractDTO> contracts = contractLogic.findActiveEmployeeContractsByEmail("alice@example.com");
-        // TODO: If we get multiple the user has to select which one - which should in turn load the entries etc and update linked sheet
-        contract = contracts.isEmpty() ? null : contracts.getFirst();
-        if (contract == null) return;
-        timesheet = timesheetLogic.getCurrent(contract);
-        entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
-
-        newEntryWithDefaults();
-        recalcTimesheetHoursDue();
-
-        logger.info("Initialized EntryBlockBean.");
-    }
+//    @PostConstruct
+//    public void init() {
+//        // TODO: we will eventually know who is logged in, using Alice is ofc only for dummy purposes
+//        List<ContractDTO> contracts = contractLogic.findActiveEmployeeContractsByEmail("alice@example.com");
+//        // TODO: If we get multiple the user has to select which one - which should in turn load the entries etc and update linked sheet
+//        contract = contracts.isEmpty() ? null : contracts.getFirst();
+//        if (contract == null) return;
+//        timesheet = timesheetLogic.getCurrent(contract);
+//        entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
+//
+//        newEntryWithDefaults();
+//        recalcTimesheetHoursDue();
+//
+//        logger.info("Initialized EntryBlockBean.");
+    //}
 
     /**
      * Creates a new entry with sensible default values.

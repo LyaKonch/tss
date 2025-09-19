@@ -1,23 +1,21 @@
 package bravo.web;
 
-import bravo.logic.UserLogic;
-import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+
 import jakarta.inject.Named;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.security.Principal;
+import java.util.logging.Logger;
 
 @Named
 @RequestScoped
 public class LoginBean {
-
-    @EJB
-    UserLogic userLogicBean;
+    private static final Logger logger = Logger.getLogger(LoginBean.class.getName());
 
     private String email;
 
