@@ -3,7 +3,6 @@ package bravo.web;
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
 import bravo.enums.RoleType;
-import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
 import jakarta.ejb.EJB;
 import jakarta.faces.context.FacesContext;
@@ -34,9 +33,6 @@ public class ContractDetailsBean implements Serializable {
 
     // Move to upcoming user bean or sth? since it could be a user setting and then its not duplicated with listBean
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-    @EJB
-    private ContractLogic contractLogic;
 
     @EJB
     private PersonLogic personLogic;
