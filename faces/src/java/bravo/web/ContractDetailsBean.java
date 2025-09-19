@@ -51,10 +51,7 @@ public class ContractDetailsBean implements Serializable {
     private List<PersonDTO> assistants = new ArrayList<>();
 
     public void init(ContractDTO contract) {
-        // Reset lists before initializing with a new contract
-        roles.clear();
-        secretaries.clear();
-        assistants.clear();
+        resetBean();
 
         // Find the logged-in user's Person
         String username = FacesContext.getCurrentInstance().getExternalContext().getUserPrincipal().getName();
@@ -74,6 +71,18 @@ public class ContractDetailsBean implements Serializable {
         if (assistants.contains(user)) roles.add(RoleType.Assistant);
 
         this.contract = contract;
+    }
+
+    /**
+     * Resets the bean to its initial state.
+     */
+    private void resetBean() {
+        contract = null;
+        roles.clear();
+        employee = null;
+        supervisor = null;
+        secretaries.clear();
+        assistants.clear();
     }
 
     public String getFullName(PersonDTO person) {

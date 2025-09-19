@@ -16,6 +16,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -50,14 +51,16 @@ public class ContractEditBean implements Serializable {
 
     private PersonDTO supervisor;
 
-    private List<PersonDTO> secretaries;
+    private List<PersonDTO> secretaries = new ArrayList<>();
 
-    private List<PersonDTO> assistants;
+    private List<PersonDTO> assistants = new ArrayList<>();
 
     /**
      * Prepares a new contract for creation.
      */
     public void prepareCreate() {
+        resetBean();
+
         // Include required and sensible defaults
         contract = new ContractDTO();
         contract.setFrequency(TimesheetFrequency.WEEKLY);
@@ -74,6 +77,8 @@ public class ContractEditBean implements Serializable {
      * @param dto the contract to edit
      */
     public void prepareEdit(ContractDTO dto) {
+        resetBean();
+
         if (dto == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
@@ -93,7 +98,7 @@ public class ContractEditBean implements Serializable {
      * @return the navigation outcome
      */
     public String save() {
-        logger.info("Saving contract: " + contract);
+        logger.info("Saving contract:\n" + contract);
         try {
             if (contract.isNew()) {
                 contractLogic.create(contract);
@@ -116,6 +121,18 @@ public class ContractEditBean implements Serializable {
             return null;
         }
     }
+
+    /**
+     * Resets the bean to its initial state.
+     */
+    private void resetBean() {
+        contract = null;
+        employee = null;
+        supervisor = null;
+        secretaries.clear();
+        assistants.clear();
+    }
+
 
     public String getFullName(PersonDTO person) {
         if (person == null) return "";
