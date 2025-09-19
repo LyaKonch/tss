@@ -16,8 +16,8 @@ public class UserSessionBean implements Serializable {
 
     private Locale locale = Locale.GERMAN;
 
-    public Locale getLocale() {
-        return locale;
+    public String getLocale() {
+        return locale.getLanguage();
     }
 
     public void setLocale(Locale locale) {
