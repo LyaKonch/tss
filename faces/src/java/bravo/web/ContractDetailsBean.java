@@ -6,6 +6,7 @@ import bravo.enums.RoleType;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
 import jakarta.ejb.EJB;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
@@ -53,15 +54,16 @@ public class ContractDetailsBean implements Serializable {
 
     private List<PersonDTO> assistants = new ArrayList<>();
 
-    //    @PostConstruct
     public void init(ContractDTO contract) {
         // Reset lists before initializing with a new contract
         roles.clear();
         secretaries.clear();
         assistants.clear();
 
-        // TODO: Get user + user person and make them main person, not employee
-        PersonDTO user = personLogic.findAll().getFirst();
+        // Find the logged-in user's Person
+        String username = FacesContext.getCurrentInstance().getExternalContext().getUserPrincipal().getName();
+        PersonDTO user = personLogic.findByEmail(username);
+        logger.info("User: " + user.getFirstName());
 
         // Load associated persons
         employee = personLogic.findByUuid(contract.getEmployeeUuid());
