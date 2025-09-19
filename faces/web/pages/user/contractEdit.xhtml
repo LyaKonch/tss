@@ -101,13 +101,15 @@
 
         <p:divider />
 
-
-        <p:commandButton value="${msg.saveButtonLabel}"
-                         action="#{contractEditBean.save}"
-                         icon="pi pi-save"
-                         process="@form" />
-        <p:button value="${msg.cancelButtonLabel}"
-                  outcome="contractList"
-                  icon="pi pi-times" />
+        <div class="flex align-items-center gap-2">
+            <p:commandButton icon="pi pi-save" value="${msg.saveButtonLabel}"
+                             styleClass="ui-button-rounded icon-fix"
+                             action="#{contractEditBean.save()}"
+                             update=":tableForm"
+                             oncomplete="PF('editDialog').close();" />
+            <p:commandButton icon="pi pi-times" value="${msg.cancelButtonLabel}"
+                             styleClass="ui-button-rounded ui-button-outlined icon-fix"
+                             onclick="PF('editDialog').close();" />
+        </div>
     </p:dialog>
 </ui:composition>
