@@ -35,19 +35,16 @@
                     <p:panel>
                         <div>
                             ${msg.footerCurrentUserLabel}
-                            ${loginBean.isLoggedIn ? loginBean.whoAmI.email : msg.notLoggedIn}
                             <span class="hspace"/>
-                            <p:chip rendered="${loginBean.whoAmI.user}" label="${msg.userLabel}" styleClass="mr-22"/>
+                            <p:chip label="${loginBean.isLoggedIn ? loginBean.emailAddress : msg.notLoggedIn}" styleClass="mr-22"/>
                             <span class="hspace"/>
-                            <p:chip rendered="${loginBean.whoAmI.stuff}" label="${msg.staffLabel}" styleClass="mr-22"/>
-                            <span class="hspace"/>
-                            <p:chip rendered="${loginBean.whoAmI.admin}" label="${msg.adminLabel}" styleClass="mr-22"/>
+                            <p:chip  label="${loginBean.securityRole}" styleClass="mr-22"/>
                         </div>
                         <h:form id="localeForm">
                           
                         </h:form>
                         <div class="topsep">
-                          
+                            
                             <h:outputText value="${userSessionBean.currentDate}">
                                 <f:convertDateTime/>
                             </h:outputText>
