@@ -17,8 +17,13 @@
     </ui:define>
 
     <ui:define name="content">
+
         <h:form id="detailsForm">
             <ui:include src="contractDetails.xhtml" />
+        </h:form>
+
+        <h:form id="editForm">
+            <ui:include src="contractEdit.xhtml" />
         </h:form>
 
         <h:form id="tableForm">
@@ -39,13 +44,17 @@
                         </comp:coloredLabel>
                     </p:column>
 
-                    <p:column headerText="${msg.contractActionsLabel}">
+                    <p:column headerText="${msg.contractActionsLabel}" styleClass="flex align-items-center gap-2">
                         <p:commandButton icon="pi pi-eye"
                                          styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
                                          action="#{contractListBean.prepareDetails(contract)}"
                                          update=":detailsForm"
                                          oncomplete="PF('detailsDialog').show();" />
-
+                        <p:commandButton icon="pi pi-pencil"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         action="#{contractListBean.prepareEdit(contract)}"
+                                         update=":editForm"
+                                         oncomplete="PF('editDialog').show();" />
                     </p:column>
 
                 </p:dataTable>
@@ -54,11 +63,10 @@
 
         <h:form id="buttonForm">
             <p:panel>
-                <p:commandButton id="createContractButton"
-                                 icon="pi pi-plus"
-                                 action="#{contractFormBean.prepareCreate}"
-                                 value="${msg.contractEditNew}" />
-                <span class="hspace" />
+                <p:commandButton icon="pi pi-plus" value="${msg.contractEditNew}"
+                                 action="#{contractEditBean.prepareCreate()}"
+                                 update=":editForm"
+                                 oncomplete="PF('editDialog').show();" />
             </p:panel>
         </h:form>
 

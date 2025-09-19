@@ -4,8 +4,8 @@ package bravo.enums;
  * Represents the frequency at which timesheets are submitted.
  */
 public enum TimesheetFrequency {
-    WEEKLY("Employee", "#FFC107"),
-    MONTHLY("Employee", "#FFC107");
+    WEEKLY("Weekly", "#FFC107"),
+    MONTHLY("Monthly", "#FFC107");
 
     private final String displayName;
 

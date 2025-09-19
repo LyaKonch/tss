@@ -29,19 +29,23 @@ public class ContractListBean implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-    private static final Logger logger = Logger.getLogger(ContractListBean.class.getName());
-
     @EJB
     private ContractLogic contractLogic;
 
     @Inject
     private ContractDetailsBean contractDetailsBean;
 
+    @Inject
+    private ContractEditBean contractEditBean;
+
     private String searchText;
 
     private List<ContractDTO> contractList;
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    private static final Logger logger = Logger.getLogger(ContractListBean.class.getName());
+
 
     /**
      * Initializes the bean.
@@ -98,6 +102,10 @@ public class ContractListBean implements Serializable {
 
     public void prepareDetails(ContractDTO contract) {
         contractDetailsBean.init(contract);
+    }
+
+    public void prepareEdit(ContractDTO contract) {
+        contractEditBean.prepareEdit(contract);
     }
 
     public String formatDate(LocalDate date) {

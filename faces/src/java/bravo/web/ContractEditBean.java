@@ -6,7 +6,6 @@ import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
-import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -59,8 +58,8 @@ public class ContractEditBean implements Serializable {
 
     private List<PersonDTO> assistants;
 
-    @PostConstruct
     public void init() {
+        if (contract == null) return;
         try {
             logger.info("Logger initialized");
 
@@ -92,24 +91,19 @@ public class ContractEditBean implements Serializable {
     }
 
     /**
-     * Loads a contract for editing.
+     * Prepare bean to edit a contract.
      *
-     * @param uuid the UUID of the contract to edit
-     * @return the navigation outcome
+     * @param contract the contract to edit
      */
-    public String prepareEdit(String uuid) {
-        if (uuid == null || uuid.isEmpty() || "new".equals(uuid)) {
-            return prepareCreate();
-        }
-
-//        contract = contractLogic.findByUuid(uuid);
+    public void prepareEdit(ContractDTO contract) {
+        init();
         if (contract == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
-            return "contractList?faces-redirect=true";
+            throw new IllegalArgumentException("Tried to edit a null contract.");
         }
 
-        return null; // Stay on the same page since we're already on the edit page
+        this.contract = contract;
     }
 
     /**
