@@ -28,17 +28,22 @@
 
         <h:form id="tableForm">
             <p:panel>
-                <p:dataTable id="contractTable" var="contract" reflow="true"
-                             value="#{contractListBean.contractList}" stripedRows="true">
+                <p:dataTable id="contractTable" var="contract" reflow="true" stripedRows="true"
+                             value="#{contractListBean.contractList}">
 
-                    <p:column field="name" headerText="${msg.contractNameLabel}" />
-                    <p:column field="startDate" headerText="${msg.contractStartDateLabel}">
+                    <p:column field="name" headerText="${msg.contractNameLabel}" filterMatchMode="contains" />
+
+                    <p:column field="startDate" headerText="${msg.contractStartDateLabel}"
+                              filterBy="#{contractListBean.formatDate(contract.startDate)}" filterMatchMode="contains">
                         #{contractListBean.formatDate(contract.startDate)}
                     </p:column>
-                    <p:column field="endDate" headerText="${msg.contractEndDateLabel}">
+
+                    <p:column field="endDate" headerText="${msg.contractEndDateLabel}"
+                              filterBy="#{contractListBean.formatDate(contract.endDate)}" filterMatchMode="contains">
                         #{contractListBean.formatDate(contract.endDate)}
                     </p:column>
-                    <p:column field="status" headerText="${msg.contractStatusLabel}">
+
+                    <p:column field="status" headerText="${msg.contractStatusLabel}" filterMatchMode="contains">
                         <comp:coloredLabel
                                 color="#{contract.status.color}">#{contract.status.displayName}
                         </comp:coloredLabel>
