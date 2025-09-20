@@ -106,10 +106,10 @@
                              styleClass="ui-button-rounded icon-fix"
                              action="#{contractEditBean.save()}"
                              update=":tableForm"
-                             oncomplete="PF('editDialog').close();" />
-            <p:commandButton icon="pi pi-times" value="${msg.cancelButtonLabel}"
+                             oncomplete="PF('editDialog').hide();" />
+            <p:commandButton icon="pi pi-times" value="${msg.cancelButtonLabel}" type="button"
                              styleClass="ui-button-rounded ui-button-outlined icon-fix"
-                             onclick="PF('editDialog').close();" />
+                             onclick="PF('editDialog').hide();" />
         </div>
     </p:dialog>
 </ui:composition>
