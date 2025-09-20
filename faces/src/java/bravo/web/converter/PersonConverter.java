@@ -1,31 +1,25 @@
 package bravo.web.converter;
 
 import bravo.dto.PersonDTO;
-import bravo.web.ContractEditBean;
+import bravo.logic.PersonLogic;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.convert.Converter;
 import jakarta.faces.convert.FacesConverter;
+import jakarta.inject.Inject;
 
-import java.util.List;
-
+@RequestScoped
 @FacesConverter(value = "personConverter", managed = true)
 public class PersonConverter implements Converter<PersonDTO> {
 
+    @Inject
+    private PersonLogic personLogic;
+
     @Override
     public PersonDTO getAsObject(FacesContext context, UIComponent component, String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return null;
-        }
-
-        ContractEditBean bean = context.getApplication()
-                .evaluateExpressionGet(context, "#{contractEditBean}", ContractEditBean.class);
-
-        List<PersonDTO> candidates = bean.completeText(""); // get all persons
-        return candidates.stream()
-                .filter(p -> value.equals(p.getUuid()))
-                .findFirst()
-                .orElse(null);
+        if (value == null || value.trim().isEmpty()) return null;
+        return personLogic.findByUuid(value);
     }
 
     @Override
