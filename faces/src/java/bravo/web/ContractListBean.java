@@ -64,14 +64,13 @@ public class ContractListBean implements Serializable {
     /**
      * Loads all contracts from the database relevant to the logged-in user.
      */
-    private void loadContracts() {
+    public void loadContracts() {
         try {
-            if(auth.isUserInRole("ADMIN")) {contractList = contractLogic.findAll();}
-            if(
+            if (auth.isUserInRole("ADMIN")) contractList = contractLogic.findAll();
+            if (
                     auth.isUserInRole("USER")
-                    || auth.isUserInRole("STAFF")
-                    && auth.isUserInRole("ADMIN"))
-            {
+                            || auth.isUserInRole("STAFF")
+                            && auth.isUserInRole("ADMIN")) {
 
                 PersonDTO person = personLogic.findByEmail(auth.getUserEmail());
                 contractList = contractLogic.findContractsAssociatedWithPerson(person);
