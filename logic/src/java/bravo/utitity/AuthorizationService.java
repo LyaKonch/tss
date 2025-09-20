@@ -1,8 +1,11 @@
 package bravo.utitity;
 
 import bravo.dao.ContractDAO;
+import bravo.dao.PersonDAO;
+import bravo.dao.UserDAO;
 import bravo.dao.UserGroupDAO;
 import bravo.entities.Contract;
+import bravo.entities.Person;
 import bravo.entities.Supervisor;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
@@ -13,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.faces.context.FacesContext;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -33,6 +37,9 @@ public class AuthorizationService {
 
     @Inject
     private ContractDAO contractDAO;
+
+    @Inject
+    private PersonDAO personDAO;
 
     public String getCurrentEmail() {
         Principal p = sessionContext.getCallerPrincipal();
@@ -67,6 +74,8 @@ public class AuthorizationService {
         // additional domain rules can be added here
         return false;
     }
+
+
 
     public void logPrincipalAndRoles() {
         String p = getCurrentEmail();
