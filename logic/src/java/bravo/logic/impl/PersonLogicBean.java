@@ -11,10 +11,8 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -62,12 +60,6 @@ public class PersonLogicBean implements PersonLogic {
         List<PersonDTO> dtos = new java.util.ArrayList<>(entities.size());
         for (Person entity : entities) dtos.add(personMapper.toDto(entity));
         return dtos;
-    }
-
-    @Override
-    public PersonDTO findByEmail(String email){
-        Optional<Person> entity = personDAO.findByEmailAddress(email);
-        return entity.map(person -> personMapper.toDto(person)).orElse(null);
     }
 
     // returns roles uuid for person
