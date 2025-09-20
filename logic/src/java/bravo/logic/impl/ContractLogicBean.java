@@ -2,9 +2,9 @@ package bravo.logic.impl;
 
 import bravo.dao.ContractDAO;
 import bravo.dao.RoleDAO;
-import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
-import bravo.entities.*;
+import bravo.entities.Contract;
+import bravo.entities.Timesheet;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.enums.TimesheetStatus;
@@ -14,7 +14,6 @@ import bravo.mapper.ContractMapper;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-
 import jakarta.persistence.NoResultException;
 
 import java.time.DayOfWeek;
@@ -26,7 +25,7 @@ import java.util.logging.Logger;
 @Stateless
 public class ContractLogicBean implements ContractLogic {
 
-    private static final Logger LOGGER = Logger.getLogger(ContractLogicBean.class.getName());
+    private static final Logger logger = Logger.getLogger(ContractLogicBean.class.getName());
 
     @EJB
     private ContractDAO contractDAO;
@@ -42,13 +41,26 @@ public class ContractLogicBean implements ContractLogic {
 
     @Override
     public ContractDTO create(ContractDTO contractDto) {
-        if (contractDto == null) {
-            throw new IllegalArgumentException("ContractDTO cannot be null.");
-        }
-
+        if (contractDto == null) throw new IllegalArgumentException("ContractDTO cannot be null.");
         Contract entity = ContractMapper.toEntity(contractDto);
-        contractDAO.save(entity);
         return ContractMapper.toDto(entity);
+    }
+
+    @Override
+    public ContractDTO update(ContractDTO contractDto) {
+        if (contractDto == null || contractDto.getUuid() == null) {
+            throw new IllegalArgumentException("Contract Update: ContractDTO or its UUID is null");
+        }
+        try {
+            Contract existingContract = contractDAO.findByUuid(contractDto.getUuid());
+            if (!(existingContract.getStatus() == ContractStatus.PREPARED)) {
+                throw new IllegalStateException("Contract Update: Updates only allowed in status PREPARED.");
+            }
+            existingContract = ContractMapper.toEntity(contractDto);
+            return ContractMapper.toDto(existingContract);
+        } catch (NoResultException e) {
+            throw new IllegalArgumentException("Contract Update: Contract with UUID " + contractDto.getUuid() + " not found.");
+        }
     }
 
     @Override
@@ -67,24 +79,6 @@ public class ContractLogicBean implements ContractLogic {
 
             Contract updatedContract = contractDAO.save(contract);
             return ContractMapper.toDto(updatedContract);
-        } catch (NoResultException e) {
-            throw new IllegalArgumentException("Contract with UUID " + contractDto.getUuid() + " not found.");
-        }
-    }
-
-    @Override
-    public ContractDTO update(ContractDTO contractDto) {
-        if (contractDto == null || contractDto.getUuid() == null) {
-            throw new IllegalArgumentException("ContractDTO and its UUID cannot be null.");
-        }
-        try {
-            Contract existingContract = contractDAO.findByUuid(contractDto.getUuid());
-            if (!(existingContract.getStatus() == ContractStatus.PREPARED)) {
-                throw new IllegalStateException("Update and deletion of contracts is only possible in state PREPARED. ");
-            }
-            ContractMapper.updateExistingContractFromDto(contractDto, existingContract);
-            contractDAO.save(existingContract);
-            return ContractMapper.toDto(existingContract);
         } catch (NoResultException e) {
             throw new IllegalArgumentException("Contract with UUID " + contractDto.getUuid() + " not found.");
         }

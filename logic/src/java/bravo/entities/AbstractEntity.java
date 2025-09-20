@@ -14,27 +14,14 @@ public abstract class AbstractEntity implements Serializable {
     private Long id;
 
     @Column(unique = true, length = 36)
-    private UUID uuid; // program level identifier just in case
+    private UUID uuid;
 
     @Version
     private int version;
 
 
     public AbstractEntity() {
-    }
-
-    public AbstractEntity(boolean newEntity) {
-        if (newEntity) {
-            uuid = UUID.randomUUID();
-        }
-    }
-
-
-    @PrePersist
-    private void generateUuidOnPersist() {
-        if (uuid == null) {
-            uuid = UUID.randomUUID();
-        }
+        uuid = UUID.randomUUID();
     }
 
 

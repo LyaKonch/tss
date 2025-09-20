@@ -45,16 +45,14 @@ public class Person extends AbstractEntity {
     private FederalState state = RHINELAND_PALATINATE;
 
     // Person 1 < --- > 0..* Role
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "person", orphanRemoval = true)
     private Set<Role> roles = new HashSet<>();
+
 
     public Person() {
         super();
     }
 
-    public Person(boolean NewEntity) {
-        super(NewEntity);
-    }
 
     public FederalState getState() {
         return state;
@@ -109,16 +107,29 @@ public class Person extends AbstractEntity {
     }
 
     public void setRoles(Set<Role> roles) {
-        this.roles.forEach(role -> role.setPerson(null));
         this.roles.clear();
         if (roles == null) return;
         this.roles.addAll(roles);
         roles.forEach(role -> role.setPerson(this));
     }
 
+    /**
+     * Bidirectional update for adding a new role.
+     * Updates the new role's person reference.
+     * Doesn't remove the old role from this person.
+     */
     public void addRole(Role role) {
-        role.setPerson(this);
-        roles.add(role);
+        if (role == null) return;
+        boolean wasAdded = roles.add(role);
+        if (wasAdded) role.setPerson(this);
+    }
+
+    /**
+     * Remove the role from the person's collection.
+     */
+    public void removeRole(Role role) {
+        if (role == null) return;
+        roles.remove(role);
     }
 
 

@@ -124,7 +124,7 @@ public class TestDataSeeder {
      * Helper for one-line creation of a person.
      */
     private Person createPerson(String first, String last, String email, LocalDate dob, boolean consent) {
-        Person person = new Person(true);
+        Person person = new Person();
         person.setFirstName(first);
         person.setLastName(last);
         person.setEmailAddress(email);
@@ -137,7 +137,7 @@ public class TestDataSeeder {
      * Helper for one-line creation of a contract.
      */
     private Contract createContract(ContractStatus status, String name, LocalDate startDate, LocalDate endDate, TimesheetFrequency frequency, LocalDate terminationDate, double hoursPerWeek) {
-        Contract contract = new Contract(true);
+        Contract contract = new Contract();
         contract.setStatus(status);
         contract.setName(name);
         contract.setStartDate(startDate);
@@ -153,7 +153,7 @@ public class TestDataSeeder {
      * Links contract and timesheet.
      */
     private Timesheet createTimesheet(Contract contract, TimesheetStatus status, LocalDate startDate, LocalDate endDate, boolean signedByEmp, boolean signedBySup) {
-        Timesheet sheet = new Timesheet(true);
+        Timesheet sheet = new Timesheet();
         sheet.setContract(contract);
         sheet.setStatus(status);
         sheet.setStartDate(startDate);
@@ -170,7 +170,7 @@ public class TestDataSeeder {
      * Links timesheet and entry.
      */
     private TimesheetEntry createTimesheetEntry(Timesheet timesheet, ReportType type, String description, LocalTime startTime, LocalTime endTime, LocalDate entryDate) {
-        TimesheetEntry entry = new TimesheetEntry(true);
+        TimesheetEntry entry = new TimesheetEntry();
         entry.setTimesheet(timesheet);
         entry.setType(type);
         entry.setDescription(description);
