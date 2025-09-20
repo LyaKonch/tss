@@ -9,10 +9,15 @@ import java.util.Set;
 public class PersonDTO extends AbstractDTO {
 
     private String firstName;
+
     private String lastName;
+
     private LocalDate dateOfBirth;
+
     private String emailAddress;
+
     private FederalState state;
+
     private boolean consent;
 
     private Set<String> roleUuids = new HashSet<>();
@@ -77,7 +82,9 @@ public class PersonDTO extends AbstractDTO {
     }
 
     public void setRoleUuids(Set<String> roleUuids) {
-        this.roleUuids = roleUuids;
+        this.roleUuids.clear();
+        if (roleUuids == null) return;
+        this.roleUuids.addAll(roleUuids);
     }
 
     public FederalState getState() {

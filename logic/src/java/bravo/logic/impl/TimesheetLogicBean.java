@@ -52,7 +52,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
         }
 
         // true means a new object, it's supposed to generate new UUID for new objects;
-        TimesheetEntry newEntry = new TimesheetEntry(true);
+        TimesheetEntry newEntry = new TimesheetEntry();
         if (entryDto.getEntryDate().isBefore(timesheet.getEndDate())
                 || entryDto.getEntryDate().equals(timesheet.getEndDate())
                 || entryDto.getEntryDate().isAfter(timesheet.getStartDate())

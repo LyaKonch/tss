@@ -2,6 +2,8 @@ package bravo.dto;
 
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serial;
 import java.time.LocalDate;
@@ -35,10 +37,13 @@ public class ContractDTO extends AbstractDTO {
 
     private Integer vacationDaysPerYear;
 
+    @NotBlank
     private String employeeUuid;
 
+    @NotBlank
     private String supervisorUuid;
 
+    @Size(min = 1)
     private List<String> secretaryUuids = new ArrayList<>();
 
     private List<String> assistantUuids = new ArrayList<>();
@@ -54,6 +59,27 @@ public class ContractDTO extends AbstractDTO {
         super(uuid, version);
 
     }
+
+    @Override
+    public String toString() {
+        return "ContractDTO {\n" +
+                "  status=" + status + ",\n" +
+                "  name=" + name + ",\n" +
+                "  startDate=" + startDate + ",\n" +
+                "  endDate=" + endDate + ",\n" +
+                "  frequency=" + frequency + ",\n" +
+                "  terminationDate=" + terminationDate + ",\n" +
+                "  hoursPerWeek=" + hoursPerWeek + ",\n" +
+                "  workingDaysPerWeek=" + workingDaysPerWeek + ",\n" +
+                "  vacationDaysPerYear=" + vacationDaysPerYear + ",\n" +
+                "  employeeUuid=" + employeeUuid + ",\n" +
+                "  supervisorUuid=" + supervisorUuid + ",\n" +
+                "  secretaryUuids=" + secretaryUuids + ",\n" +
+                "  assistantUuids=" + assistantUuids + ",\n" +
+                "  timesheetUuids=" + timesheetUuids + "\n" +
+                "}";
+    }
+
 
     public ContractStatus getStatus() {
         return status;
@@ -169,7 +195,9 @@ public class ContractDTO extends AbstractDTO {
     }
 
     public void setSecretaryUuids(List<String> secretaryUuids) {
-        this.secretaryUuids = secretaryUuids;
+        this.secretaryUuids.clear();
+        if (secretaryUuids == null) return;
+        this.secretaryUuids.addAll(secretaryUuids);
     }
 
     public List<String> getAssistantUuids() {
@@ -177,7 +205,9 @@ public class ContractDTO extends AbstractDTO {
     }
 
     public void setAssistantUuids(List<String> assistantUuids) {
-        this.assistantUuids = assistantUuids;
+        this.assistantUuids.clear();
+        if (assistantUuids == null) return;
+        this.assistantUuids.addAll(assistantUuids);
     }
 
     public List<String> getTimesheetUuids() {
@@ -185,6 +215,8 @@ public class ContractDTO extends AbstractDTO {
     }
 
     public void setTimesheetUuids(List<String> timesheetUuids) {
-        this.timesheetUuids = timesheetUuids;
+        this.timesheetUuids.clear();
+        if (timesheetUuids == null) return;
+        this.timesheetUuids.addAll(timesheetUuids);
     }
 }

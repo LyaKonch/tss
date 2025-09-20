@@ -57,7 +57,11 @@
                 </p:menubar>
             </h:form>
         </div>
-
+        <h:form id="messageForm">
+            <p:messages closable="true" skipDetailIfEqualsSummary="true">
+                <p:autoUpdate />
+            </p:messages>
+        </h:form>
         <div id="content">
             <ui:insert name="content" />
         </div>
