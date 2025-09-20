@@ -32,15 +32,14 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
 
     public Timesheet findCurrent(String contractUuid) {
         LocalDate today = LocalDate.now();
-        return em.createQuery(
+        return getSingleResultOrNull(em.createQuery(
                         "SELECT t FROM Timesheet t " +
                                 "WHERE t.contract.uuid = :contractUuid " +
                                 "AND :today BETWEEN t.startDate AND t.endDate",
                         Timesheet.class
-                )
-                .setParameter("contractUuid", UUID.fromString(contractUuid))
+                ).setParameter("contractUuid", UUID.fromString(contractUuid))
                 .setParameter("today", today)
-                .getSingleResult();
+                );
     }
 
     public List<Timesheet> findTimesheetsBetweenDates(LocalDate startDate, LocalDate endDate) {

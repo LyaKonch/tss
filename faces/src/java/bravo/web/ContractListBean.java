@@ -77,7 +77,7 @@ public class ContractListBean implements Serializable {
                     && auth.isUserInRole("ADMIN"))
             {
 
-                PersonDTO person = personLogic.findByEmail(auth.getEmail());
+                PersonDTO person = personLogic.findByEmail(auth.getUserEmail());
                 contractList = contractLogic.findContractsAssociatedWithPerson(person);
             }
 

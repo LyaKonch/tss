@@ -18,10 +18,13 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
     @Inject
     RoleDAO roleDAO;
 
+    @Inject
+    PersonDAO personDAO;
     /*Map dto to NEW ENTITY if it doesn't exist, otherwise it returns existent*/
     @Override
     public Person toEntity(PersonDTO dto) {
-
+        Person maybe = personDAO.findByUuid(dto.getUuid());
+        if(maybe!= null){ return maybe ;}
         Person entity = new Person();
 
         if (dto.getId() != null) entity.setId(dto.getId());

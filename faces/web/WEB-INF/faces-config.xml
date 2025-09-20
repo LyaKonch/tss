@@ -51,5 +51,11 @@
             <redirect/>
         </navigation-case>
 
+        <navigation-case>
+            <from-outcome>mainPage</from-outcome>
+            <to-view-id>/pages/user/dashboard.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+
     </navigation-rule>
 </faces-config>

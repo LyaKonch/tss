@@ -2,6 +2,7 @@ package bravo.logic;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.TimesheetDTO;
+import bravo.dto.TimesheetEntryDTO;
 import bravo.entities.Timesheet;
 import bravo.entities.TimesheetEntry;
 
@@ -10,19 +11,19 @@ import java.util.List;
 
 public interface TimesheetLogic {
 
-    double getReportedHours(Timesheet timesheet);
+    double getReportedHours(TimesheetDTO timesheet);
 
-    void signByEmployee(Timesheet timesheet, LocalDate date);
+    void signByEmployee(TimesheetDTO timesheetdto, LocalDate date);
 
-    void revokeEmployeeSignature(Timesheet timesheet);
+    void revokeEmployeeSignature(TimesheetDTO timesheet);
 
-    void signBySupervisor(Timesheet timesheet, LocalDate date);
+    void signBySupervisor(TimesheetDTO timesheetdto, LocalDate date);
 
-    void archive(Timesheet timesheet);
+    void archive(TimesheetDTO timesheet);
 
-    void addEntry(Timesheet timesheet, TimesheetEntry e);
+    void addEntry(Timesheet timesheet, TimesheetEntry e );
 
-    void removeEntry(Timesheet timesheet, TimesheetEntry e);
+    void removeEntry(TimesheetDTO timesheetdto, TimesheetEntryDTO entryDTO);
 
     void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries);
 
