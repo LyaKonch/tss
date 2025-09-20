@@ -48,10 +48,6 @@ public class Timesheet extends AbstractEntity {
         super();
     }
 
-    public Timesheet(boolean NewEntity) {
-        super(NewEntity);
-    }
-
 
     public TimesheetStatus getStatus() {
         return status;

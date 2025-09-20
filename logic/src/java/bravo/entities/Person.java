@@ -1,16 +1,14 @@
 package bravo.entities;
 
 import bravo.enums.FederalState;
-
-import static bravo.enums.FederalState.RHINELAND_PALATINATE;
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+
+import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 
 @Entity
 @Table(name = "person")
@@ -36,8 +34,7 @@ public class Person extends AbstractEntity {
 
     private LocalDate dateOfBirth;
 
-    @Email
-    @NotBlank
+    @Column(unique = true, nullable = false)
     private String emailAddress;
 
     private boolean consent;
@@ -48,25 +45,21 @@ public class Person extends AbstractEntity {
     private FederalState state = RHINELAND_PALATINATE;
 
     // Person 1 < --- > 0..* Role
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "person", orphanRemoval = true)
     private Set<Role> roles = new HashSet<>();
+
 
     public Person() {
         super();
     }
 
-    public Person(boolean NewEntity) {
-        super(NewEntity);
-    }
 
     public FederalState getState() {
         return state;
     }
 
     public void setState(FederalState state) {
-        if (!state.equals(null)) {
-            this.state = state;
-        }
+        if (state != null) this.state = state;
     }
 
     public String getFirstName() {
@@ -114,16 +107,29 @@ public class Person extends AbstractEntity {
     }
 
     public void setRoles(Set<Role> roles) {
-        this.roles.forEach(role -> role.setPerson(null));
         this.roles.clear();
         if (roles == null) return;
         this.roles.addAll(roles);
         roles.forEach(role -> role.setPerson(this));
     }
 
+    /**
+     * Bidirectional update for adding a new role.
+     * Updates the new role's person reference.
+     * Doesn't remove the old role from this person.
+     */
     public void addRole(Role role) {
-        role.setPerson(this);
-        roles.add(role);
+        if (role == null) return;
+        boolean wasAdded = roles.add(role);
+        if (wasAdded) role.setPerson(this);
+    }
+
+    /**
+     * Remove the role from the person's collection.
+     */
+    public void removeRole(Role role) {
+        if (role == null) return;
+        roles.remove(role);
     }
 
 

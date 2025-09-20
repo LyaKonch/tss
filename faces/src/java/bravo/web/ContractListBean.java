@@ -14,9 +14,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Backing bean for contract list view.
@@ -29,9 +31,7 @@ public class ContractListBean implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-    private static final Logger logger = Logger.getLogger(ContractListBean.class.getName());
+    private final ResourceBundle locale = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
     @EJB
     private ContractLogic contractLogic;
@@ -39,26 +39,22 @@ public class ContractListBean implements Serializable {
     @Inject
     private ContractDetailsBean contractDetailsBean;
 
-    private String searchText;
+    @Inject
+    private ContractEditBean contractEditBean;
 
     private List<ContractDTO> contractList;
 
     /**
-     * Initializes the bean.
+     * Initializes the bean by loading contracts.
      */
     @PostConstruct
     public void init() {
-        try {
-            // Initialize the contract list
-            loadContracts();
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error initializing bean: " + e.getMessage(), null));
-        }
+        // TODO: Get user from session once those new beans are merged
+        loadContracts();
     }
 
     /**
-     * Loads all contracts from the database.
+     * Loads all contracts from the database relevant to the logged-in user.
      */
     private void loadContracts() {
         try {
@@ -66,33 +62,7 @@ public class ContractListBean implements Serializable {
         } catch (Exception e) {
             contractList = new ArrayList<>();
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error loading contracts: " + e.getMessage(), null));
-        }
-    }
-
-    /**
-     * Searches for contracts based on the search text.
-     * If the search text is empty, all contracts are loaded.
-     */
-    public void search() {
-        try {
-            if (searchText == null || searchText.trim().isEmpty()) {
-                loadContracts();
-            } else {
-                // Filter contracts by string
-                List<ContractDTO> allContracts = contractLogic.findAll();
-                contractList = new ArrayList<>();
-
-                for (ContractDTO c : allContracts) {
-                    if (c.getName() != null && c.getName().toLowerCase().contains(searchText.toLowerCase())) {
-                        contractList.add(c);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            contractList = new ArrayList<>();
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error searching contracts: " + e.getMessage(), null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNoMatches"), e.getMessage()));
         }
     }
 
@@ -100,23 +70,25 @@ public class ContractListBean implements Serializable {
         contractDetailsBean.init(contract);
     }
 
+    public void prepareEdit(ContractDTO contract) {
+        contractEditBean.prepareEdit(contract);
+    }
+
+    public void prepareCreate() {
+        contractEditBean.prepareCreate();
+    }
+
     public String formatDate(LocalDate date) {
-        return (date != null ? date.format(formatter) : "Invalid");  // TODO: Use locale and maybe localized date format
-    }
-
-
-    public String getSearchText() {
-        return searchText;
-    }
-
-    public void setSearchText(String searchText) {
-        this.searchText = searchText;
+        if (date == null) return "Invalid";
+        Locale currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(currentLocale);
+        return date.format(formatter);
     }
 
     public List<ContractDTO> getContractList() {
-        if (contractList == null) {
-            loadContracts();
-        }
+        if (contractList == null) loadContracts();
         return contractList;
     }
 

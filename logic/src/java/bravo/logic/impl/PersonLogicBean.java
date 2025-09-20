@@ -42,6 +42,12 @@ public class PersonLogicBean implements PersonLogic {
     }
 
     @Override
+    public PersonDTO findByEmail(String email) {
+        Person entity = personDAO.findByEmailAddress(email).orElseThrow(() -> new IllegalArgumentException("Person with email " + email + " not found."));
+        return personMapper.toDto(entity);
+    }
+
+    @Override
     public List<PersonDTO> findAll() {
         List<Person> entities = personDAO.findAll();
         List<PersonDTO> dtos = new java.util.ArrayList<>(entities.size());

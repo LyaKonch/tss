@@ -5,7 +5,6 @@ import bravo.dao.RoleDAO;
 import bravo.dto.PersonDTO;
 import bravo.entities.Person;
 import bravo.entities.Role;
-import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -15,14 +14,17 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
-    @Inject
-    RoleDAO roleDAO;
 
-    /*Map dto to NEW ENTITY if it doesn't exist, otherwise it returns existent*/
+    @Inject
+    private PersonDAO personDAO;
+
+    @Inject
+    private RoleDAO roleDAO;
+
     @Override
     public Person toEntity(PersonDTO dto) {
-
-        Person entity = new Person();
+        // If id is null, we are creating a new entity, otherwise we are updating the existing one
+        Person entity = dto.getId() == null ? new Person() : personDAO.findByUuid(dto.getUuid());
 
         if (dto.getId() != null) entity.setId(dto.getId());
         if (dto.getUuid() != null) entity.setUuid(UUID.fromString(dto.getUuid()));
@@ -34,13 +36,10 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
         entity.setConsent(dto.isConsent());
         entity.setState(dto.getState());
 
-        // roleDAO here is expedient
-        if (dto.getRoleUuids() != null) {
-            Set<Role> roles = dto.getRoleUuids().stream()
-                    .map(uuid -> roleDAO.findByUuid(uuid))
-                    .collect(Collectors.toSet());
-            entity.setRoles(roles);
-        }
+        Set<Role> roles = dto.getRoleUuids().stream()
+                .map(uuid -> roleDAO.findByUuid(uuid))
+                .collect(Collectors.toSet());
+        entity.setRoles(roles);
 
         return entity;
     }
@@ -59,12 +58,10 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
         dto.setConsent(entity.isConsent());
         dto.setState(entity.getState());
 
-        if (entity.getRoles() != null && !entity.getRoles().isEmpty()) {
-            Set<String> roles = entity.getRoles().stream()
-                    .map(role -> role.getUuid().toString())
-                    .collect(Collectors.toSet());
-            dto.setRoleUuids(roles);
-        }
+        Set<String> roles = entity.getRoles().stream()
+                .map(role -> role.getUuid().toString())
+                .collect(Collectors.toSet());
+        dto.setRoleUuids(roles);
 
         return dto;
     }
@@ -91,7 +88,8 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
         // Remove old roles from the person's set and unlink the person
         rolesToRemove.forEach(role -> {
             roleDAO.delete(role);
-            existingPerson.getRoles().remove(role);});
+            existingPerson.getRoles().remove(role);
+        });
 
         // Find roles to add
         Set<String> oldRoleUuids = oldRoles.stream()

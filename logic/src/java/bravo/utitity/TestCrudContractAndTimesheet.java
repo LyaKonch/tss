@@ -1,30 +1,24 @@
 package bravo.utitity;
 
 import bravo.dao.ContractDAO;
-import bravo.dao.PersonDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
-import bravo.entities.*;
+import bravo.entities.Contract;
+import bravo.entities.Timesheet;
+import bravo.entities.TimesheetEntry;
 import bravo.enums.*;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
-import bravo.logic.impl.TimesheetLogicBean;
 import bravo.logic.TimesheetLogic;
-import bravo.logic.impl.TimesheetLogicBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
-import jakarta.ejb.Startup;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 //@Startup
 @Singleton
@@ -47,8 +41,11 @@ public class TestCrudContractAndTimesheet {
     private TimesheetDAO timesheetDAO;
 
     private String employeeUuid;
+
     private String supervisorUuid;
+
     private String secretaryUuid;
+
     private String assistantUuid;
 
     public void runTests() {
@@ -304,7 +301,7 @@ public class TestCrudContractAndTimesheet {
         Contract entity = contractDAO.findByUuid(started.getUuid());
         Timesheet ts = entity.getTimesheets().get(0);
 
-        TimesheetEntry entry = new TimesheetEntry(true);
+        TimesheetEntry entry = new TimesheetEntry();
         entry.setEntryDate(LocalDate.of(2025, 1, 2));
         entry.setStartTime(LocalTime.of(9, 0));
         entry.setEndTime(LocalTime.of(13, 0));
@@ -353,7 +350,7 @@ public class TestCrudContractAndTimesheet {
         Timesheet ts = entity.getTimesheets().get(0);
 
         // Add an entry so signing is meaningful
-        TimesheetEntry entry = new TimesheetEntry(true);
+        TimesheetEntry entry = new TimesheetEntry();
         entry.setEntryDate(LocalDate.of(2025, 1, 2));
         entry.setStartTime(LocalTime.of(9, 0));
         entry.setEndTime(LocalTime.of(13, 0));

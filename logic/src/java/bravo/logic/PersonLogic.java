@@ -15,5 +15,7 @@ public interface PersonLogic {
 
     PersonDTO findByUuid(String uuid);
 
+    PersonDTO findByEmail(String email);
+
     List<PersonDTO> findAll();
 }

@@ -2,15 +2,12 @@ package bravo.web;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
-import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
-import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.context.Flash;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
@@ -18,9 +15,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -31,13 +26,16 @@ import java.util.stream.Collectors;
  */
 @Named
 @ViewScoped
-public class ContractFormBean implements Serializable {
+public class ContractEditBean implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = Logger.getLogger(ContractFormBean.class.getName());
+    private static final Logger logger = Logger.getLogger(ContractEditBean.class.getName());
 
+    private final EnumSet<TimesheetFrequency> frequencies = EnumSet.allOf(TimesheetFrequency.class);
+
+    private final ResourceBundle locale = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
     @EJB
     private ContractLogic contractLogic;
@@ -47,100 +45,84 @@ public class ContractFormBean implements Serializable {
 
     private ContractDTO contract;
 
-    private List<ContractStatus> statuses;
-
-    private List<TimesheetFrequency> frequencies;
-
     private PersonDTO employee;
 
     private PersonDTO supervisor;
 
-    private List<PersonDTO> secretaries;
+    private List<PersonDTO> secretaries = new ArrayList<>();
 
-    private List<PersonDTO> assistants;
-
-    @PostConstruct
-    public void init() {
-        try {
-            logger.info("Logger initialized");
-
-            statuses = Arrays.asList(ContractStatus.values());
-            frequencies = Arrays.asList(TimesheetFrequency.values());
-
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error initializing bean: " + e.getMessage(), null));
-        }
-    }
+    private List<PersonDTO> assistants = new ArrayList<>();
 
     /**
      * Prepares a new contract for creation.
-     *
-     * @return the navigation outcome
      */
-    public String prepareCreate() {
+    public void prepareCreate() {
+        resetBean();
+
         // Include required and sensible defaults
         contract = new ContractDTO();
-        contract.setStatus(ContractStatus.PREPARED);
         contract.setFrequency(TimesheetFrequency.WEEKLY);
         contract.setStartDate(LocalDate.now().withDayOfMonth(1));
         contract.setEndDate(LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()));
         contract.setHoursPerWeek(40.0);
         contract.setWorkingDaysPerWeek(5);
         contract.setVacationDaysPerYear(20);
-        return "contractForm?faces-redirect=true";
     }
 
     /**
-     * Loads a contract for editing.
+     * Prepare bean to edit a contract.
      *
-     * @param uuid the UUID of the contract to edit
-     * @return the navigation outcome
+     * @param dto the contract to edit
      */
-    public String prepareEdit(String uuid) {
-        if (uuid == null || uuid.isEmpty() || "new".equals(uuid)) {
-            return prepareCreate();
-        }
+    public void prepareEdit(ContractDTO dto) {
+        resetBean();
 
-//        contract = contractLogic.findByUuid(uuid);
-        if (contract == null) {
+        if (dto == null) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
-            return "contractList?faces-redirect=true";
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNotFound"), null));
+            throw new IllegalArgumentException("Tried to edit a null contract.");
         }
 
-        return null; // Stay on the same page since we're already on the edit page
+        contract = dto;
+        employee = personLogic.findByUuid(contract.getEmployeeUuid());
+        supervisor = personLogic.findByUuid(contract.getSupervisorUuid());
+        for (String uuid : contract.getSecretaryUuids()) secretaries.add(personLogic.findByUuid(uuid));
+        for (String uuid : contract.getAssistantUuids()) assistants.add(personLogic.findByUuid(uuid));
     }
 
     /**
-     * Saves the current contract.
-     *
-     * @return the navigation outcome
+     * Save or update the current contract.
      */
-    public String save() {
-        logger.warning("Saving contract: " + contract);
+    public void save() {
+        logger.info("Saving contract:\n" + contract);
         try {
             if (contract.isNew()) {
                 contractLogic.create(contract);
                 FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Contract created successfully", null));
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractSaveSuccess"), null));
             } else {
                 contractLogic.update(contract);
                 FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Contract updated successfully", null));
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractUpdateSuccess"), null));
             }
 
-            // Store the message in flash scope so it's available after the redirect
-            Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-            flash.setKeepMessages(true);
-
-            return "contractList?faces-redirect=true";
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error saving contract: " + e.getMessage(), null));
-            return null;
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractSaveError"), e.getMessage()));
         }
     }
+
+    /**
+     * Resets the bean to its initial state.
+     */
+    private void resetBean() {
+        contract = null;
+        employee = null;
+        supervisor = null;
+        secretaries.clear();
+        assistants.clear();
+    }
+
 
     public String getFullName(PersonDTO person) {
         if (person == null) return "";
@@ -167,17 +149,7 @@ public class ContractFormBean implements Serializable {
         this.contract = contract;
     }
 
-    public List<ContractStatus> getStatuses() {
-        if (statuses == null) {
-            statuses = Arrays.asList(ContractStatus.values());
-        }
-        return statuses;
-    }
-
-    public List<TimesheetFrequency> getFrequencies() {
-        if (frequencies == null) {
-            frequencies = Arrays.asList(TimesheetFrequency.values());
-        }
+    public EnumSet<TimesheetFrequency> getFrequencies() {
         return frequencies;
     }
 
