@@ -14,8 +14,10 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -28,8 +30,6 @@ public class ContractListBean implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
-
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     private final ResourceBundle locale = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
@@ -84,7 +84,12 @@ public class ContractListBean implements Serializable {
     }
 
     public String formatDate(LocalDate date) {
-        return (date != null ? date.format(formatter) : "Invalid");  // TODO: Use locale and maybe localized date format
+        if (date == null) return "Invalid";
+        Locale currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(currentLocale);
+        return date.format(formatter);
     }
 
     public List<ContractDTO> getContractList() {
