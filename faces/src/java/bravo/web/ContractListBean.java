@@ -45,17 +45,12 @@ public class ContractListBean implements Serializable {
     private List<ContractDTO> contractList;
 
     /**
-     * Initializes the bean by loading contracts. //TODO can just be load, no need to init, right?
+     * Initializes the bean by loading contracts.
      */
     @PostConstruct
     public void init() {
-        try {
-            // Initialize the contract list
-            loadContracts();
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNoMatches"), e.getMessage()));
-        }
+        // TODO: Get user from session once those new beans are merged
+        loadContracts();
     }
 
     /**
