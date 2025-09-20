@@ -8,7 +8,6 @@ import bravo.logic.PersonLogic;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.context.Flash;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
@@ -16,10 +15,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -38,6 +34,8 @@ public class ContractEditBean implements Serializable {
     private static final Logger logger = Logger.getLogger(ContractEditBean.class.getName());
 
     private final EnumSet<TimesheetFrequency> frequencies = EnumSet.allOf(TimesheetFrequency.class);
+
+    private final ResourceBundle locale = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
     @EJB
     private ContractLogic contractLogic;
@@ -81,7 +79,7 @@ public class ContractEditBean implements Serializable {
 
         if (dto == null) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Contract not found", null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNotFound"), null));
             throw new IllegalArgumentException("Tried to edit a null contract.");
         }
 
@@ -93,32 +91,24 @@ public class ContractEditBean implements Serializable {
     }
 
     /**
-     * Saves the current contract.
-     *
-     * @return the navigation outcome
+     * Save or update the current contract.
      */
-    public String save() {
+    public void save() {
         logger.info("Saving contract:\n" + contract);
         try {
             if (contract.isNew()) {
                 contractLogic.create(contract);
                 FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Contract created successfully", null));
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractSaveSuccess"), null));
             } else {
                 contractLogic.update(contract);
                 FacesContext.getCurrentInstance().addMessage(null,
-                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Contract updated successfully", null));
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractUpdateSuccess"), null));
             }
 
-            // Store the message in flash scope so it's available after the redirect
-            Flash flash = FacesContext.getCurrentInstance().getExternalContext().getFlash();
-            flash.setKeepMessages(true);
-
-            return "contractList?faces-redirect=true";
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error saving contract: " + e.getMessage(), null));
-            return null;
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractSaveError"), e.getMessage()));
         }
     }
 

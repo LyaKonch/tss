@@ -23,7 +23,7 @@
             </div>
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="status" value="Status:" styleClass="label-headline" />
+                <p:outputLabel for="status" value="${msg.contractStatusLabel}" styleClass="label-headline" />
                 <comp:coloredLabel id="status" color="#{contractDetailsBean.contract.status.color}">
                     #{contractDetailsBean.contract.status.displayName}
                 </comp:coloredLabel>
@@ -31,46 +31,49 @@
 
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="startDate" value="Start Date:" styleClass="label-headline" />
+                <p:outputLabel for="startDate" value="${msg.contractStartDateLabel}" styleClass="label-headline" />
                 <p:outputLabel id="startDate"
                                value="#{contractDetailsBean.formatDate(contractDetailsBean.contract.startDate)}" />
             </div>
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="endDate" value="End Date:" styleClass="label-headline" />
+                <p:outputLabel for="endDate" value="${msg.contractEndDateLabel}" styleClass="label-headline" />
                 <p:outputLabel id="endDate"
                                value="#{contractDetailsBean.formatDate(contractDetailsBean.contract.endDate)}" />
             </div>
 
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="frequency" value="Timesheet Frequency:" styleClass="label-headline" />
+                <p:outputLabel for="frequency" value="${msg.contractFrequencyLabel}" styleClass="label-headline" />
                 <p:outputLabel id="frequency"
                                value="#{contractDetailsBean.contract.frequency.displayName}" />
             </div>
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="hoursPerWeek" value="Weekly Hours:" styleClass="label-headline" />
+                <p:outputLabel for="hoursPerWeek" value="${msg.contractHoursPerWeekLabel}"
+                               styleClass="label-headline" />
                 <p:outputLabel id="hoursPerWeek"
                                value="#{contractDetailsBean.contract.hoursPerWeek}" />
             </div>
 
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="workingDaysPerWeek" value="Weekly Workdays:" styleClass="label-headline" />
+                <p:outputLabel for="workingDaysPerWeek" value="${msg.contractWorkingDaysPerWeekLabel}"
+                               styleClass="label-headline" />
                 <p:outputLabel id="workingDaysPerWeek"
                                value="#{contractDetailsBean.contract.workingDaysPerWeek}" />
             </div>
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="vacationDaysPerYear" value="Yearly Vacation Days:" styleClass="label-headline" />
+                <p:outputLabel for="vacationDaysPerYear" value="${msg.contractVacationDaysPerYearLabel}"
+                               styleClass="label-headline" />
                 <p:outputLabel id="vacationDaysPerYear"
                                value="#{contractDetailsBean.contract.vacationDaysPerYear}" />
             </div>
 
 
             <div class="field col-12 md:col-10">
-                <p:outputLabel value="Contacts:" styleClass="label-headline" />
+                <p:outputLabel value="${msg.contractContactsLabel}" styleClass="label-headline" />
                 <p:importEnum type="bravo.enums.RoleType" var="RoleType" />
 
                 <div class="contact-box">
