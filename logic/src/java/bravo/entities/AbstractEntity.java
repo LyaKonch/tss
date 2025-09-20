@@ -51,11 +51,14 @@ public abstract class AbstractEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + Objects.hashCode(this.uuid);
-        return hash;
+        return Objects.hash(this.uuid);
     }
 
+    /**
+     * Equality is based on UUID, not field content.
+     *
+     * @param obj the object with which to compare
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
