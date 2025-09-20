@@ -33,12 +33,7 @@ public class LoginBean {
     private WhoAmI whoAmI;
     private static final Logger logger = Logger.getLogger(LoginBean.class.getName());
 
-    @Inject
-    private AuthorizationService auth;
-
-
-    private List<String> groups;
-    private String username;
+ 
 
     // getters / setters
 
@@ -133,36 +128,38 @@ public class LoginBean {
 
         return securityRole;
     }
+    public String getEmailAddress() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        Principal principal = request.getUserPrincipal();
+
+        if (principal == null) {
+            return null; // User is not authenticated
+        }
+        return principal.getName();
+    }
 
     public void setSecurityRole(String securityRole) {
         this.securityRole = securityRole;
     }
     
     public boolean isIsLoggedIn(){
-        return whoAmI!=null;
+                FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        Principal principal = request.getUserPrincipal();
+
+        if (principal == null) {
+            return false; // User is not authenticated
+        }
+        return true;
     }
 
     
 
-    public void load() {
-        logger.info("Invocation load() in WhoAmIBean.");
-        username = auth.getCurrentEmail();
-        auth.logPrincipalAndRoles();
-        groups = new ArrayList<>();
-        if(auth.isUserInRole("ADMIN")) groups.add("ADMIN");
-        if(auth.isUserInRole("USER")) groups.add("USER");
-        if(auth.isUserInRole("STAFF")) groups.add("STAFF");
-        if (groups != null) {
-            logger.info("User Groups: " + groups);
-        } else {
-            logger.warning("Groups returned null.");
-            groups = Collections.emptyList();
-        }
-    }
+  
 
     // getters
-    public List<String> getGroups() { return groups; }
-    public String getUsername() { return username; }
+
 
 
     public class WhoAmI {
