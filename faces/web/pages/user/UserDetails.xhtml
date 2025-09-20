@@ -7,12 +7,9 @@
                 xmlns:p="http://primefaces.org/ui">
 
   <f:metadata>
-    <!-- Falls du wirklich per ?id=... laden willst -->
-    <!-- <f:viewParam name="id" value="#{userDetailsBean.userId}" /> -->
     <f:viewAction action="#{userDetailsBean.load}" />
   </f:metadata>
 
-  <!-- Titel/Head für das Template -->
   <ui:define name="title">
     #{msg['app.title']}
   </ui:define>
@@ -42,17 +39,19 @@
     </style>
   </ui:define>
 
-  <!-- Sichtbarer Seiteninhalt -->
+  
   <ui:define name="content">
 
     <h:form id="userForm">
-      <!-- globale Messages -->
-      <p:messages id="msgs" showDetail="true" closable="true"><p:autoUpdate/></p:messages>
+      
+      <p:messages id="msgs" showDetail="true" closable="true">
+          <p:autoUpdate/>
+      </p:messages>
 
       <div class="page-wrap">
         <div class="card">
 
-          <!-- Header -->
+          <!-- h -->
           <div class="card-head">
             <span class="icon-circle"><i class="pi pi-user"></i></span>
             <div>
@@ -61,7 +60,7 @@
             </div>
           </div>
 
-          <!-- Body -->
+          <!-- b -->
           <div class="card-body">
             <div class="cols">
 
@@ -85,7 +84,7 @@
                 </div>
               </div>
 
-              <!-- Birthday -->
+              <!-- Birth -->
               <div class="field-col">
                 <div class="label-row">
                   <i class="pi pi-calendar"></i>
@@ -96,7 +95,7 @@
                 </div>
               </div>
 
-              <!-- Default Role -->
+              
               <div class="field-col">
                 <div class="label-row">
                   <i class="pi pi-shield"></i>
@@ -108,7 +107,7 @@
               </div>
 
             </div>
-          </div> <!-- /.card-body -->
+          </div> 
 
         </div>
       </div>
