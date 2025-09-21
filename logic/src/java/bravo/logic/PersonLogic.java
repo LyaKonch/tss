@@ -18,4 +18,10 @@ public interface PersonLogic {
     PersonDTO findByEmail(String email);
 
     List<PersonDTO> findAll();
+
+    List<String> findPersonRoles(PersonDTO person);
+
+    PersonDTO findByRole(String roleUuid);
+
+    List<PersonDTO> findByRole(List<String> roleUuid);
 }

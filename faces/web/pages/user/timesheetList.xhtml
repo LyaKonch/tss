@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition template="/WEB-INF/templates/page-layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:comp="jakarta.faces.composite/comp">
+
+    <ui:param name="pageHeadline" value="${msg.timesheetListHeadline}" />
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="description" value="Shows a list of timesheets the user is involved in." />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+
+        <h:form id="contractSelectForm">
+            <ui:include src="contractSelect.xhtml" />
+            <f:event type="preRenderView" listener="#{timesheetListBean.prepareContractSelect}" />
+        </h:form>
+
+        <h:form id="tableForm">
+            <p:panel>
+                <p:dataTable id="timesheetTable" var="timesheet" reflow="true" stripedRows="true"
+                             value="#{timesheetListBean.timesheetList}">
+
+                    <p:column headerText="${msg.timesheetWotY}" filterMatchMode="contains"
+                              filterBy="#{timesheet.startDate}" sortable="false">
+                        #{timesheetListBean.getWeekOfYear(timesheet.startDate)}
+                    </p:column>
+
+                    <p:column field="startDate" headerText="${msg.contractStartDateLabel}"
+                              filterBy="#{timesheetListBean.formatDate(timesheet.startDate)}"
+                              filterMatchMode="contains" sortable="false">
+                        #{timesheetListBean.formatDate(timesheet.startDate)}
+                    </p:column>
+
+                    <p:column field="endDate" headerText="${msg.contractEndDateLabel}" filterMatchMode="contains"
+                              filterBy="#{timesheetListBean.formatDate(timesheet.endDate)}" sortable="false">
+                        #{timesheetListBean.formatDate(timesheet.endDate)}
+                    </p:column>
+
+                    <p:column field="status" headerText="${msg.contractStatusLabel}" filterMatchMode="contains"
+                              sortable="false">
+                        <comp:coloredLabel
+                                color="#{timesheet.status.color}">#{timesheet.status.displayName}
+                        </comp:coloredLabel>
+                    </p:column>
+
+                    <p:column headerText="${msg.contractActionsLabel}" styleClass="flex align-items-center gap-2">
+                        <p:commandButton icon="pi pi-pencil" value="${msg.contractEmployee}"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{timesheetListBean.canEmployeeSign(timesheet)}"
+                                         action="#{timesheetListBean.signAsEmployee(timesheet)}"
+                                         update=":tableForm" title="${msg.timesheetSignedByEmployeeTooltip}" />
+                        <p:commandButton icon="pi pi-undo" value="${msg.timesheetUndoSignEmployee}"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{timesheetListBean.canRevokeEmployeeSign(timesheet)}"
+                                         action="#{timesheetListBean.revokeSignAsEmployee(timesheet)}"
+                                         update=":tableForm" title="${msg.timesheetRevokeSignedByEmployeeTooltip}" />
+                        <p:commandButton icon="pi pi-pencil" value="${msg.contractSupervisor}"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{timesheetListBean.canSupervisorSign(timesheet)}"
+                                         action="#{timesheetListBean.signAsSupervisor(timesheet)}"
+                                         update=":tableForm" title="${msg.timesheetSignedBySupervisorTooltip}" />
+                        <p:commandButton icon="pi pi-inbox" value="${msg.timesheetArchiveLabel}"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{timesheetListBean.canArchive(timesheet)}"
+                                         action="#{timesheetListBean.archiveTimesheet(timesheet)}"
+                                         update=":tableForm" title="${msg.timesheetArchiveTooltip}" />
+                        <p:commandButton icon="pi pi-print" value="${msg.timesheetPrintLabel}"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{timesheetListBean.canPrint()}"
+                                         onclick="window.print()"
+                                         update=":tableForm" title="${msg.timesheetPrintTooltip}" />
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

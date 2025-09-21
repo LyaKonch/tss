@@ -71,6 +71,12 @@
                                value="#{contractDetailsBean.contract.vacationDaysPerYear}" />
             </div>
 
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="archivationDuration" value="Archivation (Years):"
+                               styleClass="label-headline" />
+                <p:outputLabel id="archivationDuration"
+                               value="#{contractDetailsBean.contract.archivationDuration}" />
+            </div>
 
             <div class="field col-12 md:col-10">
                 <p:outputLabel value="${msg.contractContactsLabel}" styleClass="label-headline" />

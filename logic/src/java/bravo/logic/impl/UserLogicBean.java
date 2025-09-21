@@ -8,6 +8,7 @@ import bravo.entities.Person;
 import bravo.entities.User;
 
 import bravo.enums.GroupName;
+import bravo.utitity.AuthorizationService;
 import bravo.utitity.HashUtils;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -24,6 +25,9 @@ import bravo.logic.UserLogic;
 public class UserLogicBean implements UserLogic {
 
     @Inject
+    private AuthorizationService authService;
+
+    @Inject
     private UserDAO userDAO;
 
     @Inject
@@ -34,23 +38,38 @@ public class UserLogicBean implements UserLogic {
 
     @Override
     public UserDTO findById(Long id) {
+        if (!authService.isUserInRole("ADMIN")) {
+            throw new SecurityException("Only ADMIN can get users info.");
+        }
         User u = userDAO.findById(id);
+        u.setPassword(null);
         return toDTO(u);
     }
 
     @Override
     public UserDTO findByEmail(String username) {
+        //if (!authService.isUserInRole("ADMIN")) {
+        //    throw new SecurityException("Only ADMIN can get users info.");
+        //}
         User u = userDAO.findByEmail(username);
         return toDTO(u);
     }
 
+    @Override
     public List<UserDTO> findAll() {
+        if (!authService.isUserInRole("ADMIN")) {
+            throw new SecurityException("Only ADMIN can get users info.");
+        }
         return userDAO.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public UserDTO createUser(UserDTO dto) {
+        // for default user creation at startup, normally we have it
+        //if (!authService.isUserInRole("ADMIN")) {
+        //    throw new SecurityException("Only ADMIN can create user.");
+        //}
         if (dto == null) throw new IllegalArgumentException("dto is null");
         if (dto.getPassword() == null || dto.getPassword().isBlank()) throw new IllegalArgumentException("password required");
 
@@ -68,12 +87,12 @@ public class UserLogicBean implements UserLogic {
         }
 
         // groupName from dto
-        GroupName groupName;
-        try {
-            groupName = GroupName.valueOf(dto.getGroupName());
-        } catch (Exception ex) {
-            throw new IllegalArgumentException("Invalid groupName: " + dto.getGroupName());
+        if (dto.getGroupName() == null || dto.getGroupName().isEmpty()) {
+            throw new IllegalArgumentException("At least one user group is required.");
         }
+        List<GroupName> groupNames = dto.getGroupName().stream()
+                .map(GroupName::valueOf)
+                .collect(Collectors.toList());
 
 
         User user = new User();
@@ -85,7 +104,9 @@ public class UserLogicBean implements UserLogic {
         user = userDAO.save(user);
 
         // add mapping user->group
-        userGroupDAO.addMapping(user.getEmail(), groupName);
+        for (GroupName groupName : groupNames) {
+            userGroupDAO.addMapping(user.getEmail(), groupName);
+        }
 
         return toDTO(user);
     }
@@ -93,6 +114,9 @@ public class UserLogicBean implements UserLogic {
     @Override
     @Transactional
     public UserDTO updateUser(UserDTO dto) {
+        if (!authService.isUserInRole("ADMIN")) {
+            throw new SecurityException("Only ADMIN can update user.");
+        }
         if (dto == null) throw new IllegalArgumentException("dto is null");
         User user = userDAO.findByEmail(dto.getEmail());
         if (user == null) throw new IllegalArgumentException("User not found: " + dto.getId());
@@ -114,16 +138,15 @@ public class UserLogicBean implements UserLogic {
             user.setPassword(HashUtils.sha256Hex(dto.getPassword()));
         }
 
-        if (dto.getGroupName() != null && !dto.getGroupName().isBlank()) {
-            GroupName newGroup;
-            try {
-                newGroup = GroupName.valueOf(dto.getGroupName());
-            } catch (Exception ex) {
-                throw new IllegalArgumentException("Invalid groupName: " + dto.getGroupName());
-            }
+        if (dto.getGroupName() != null && !dto.getGroupName().isEmpty()) {
+            List<GroupName> newGroups = dto.getGroupName().stream()
+                    .map(GroupName::valueOf)
+                    .collect(Collectors.toList());
 
             userGroupDAO.deleteAllMappingsForUser(user.getEmail());
-            userGroupDAO.addMapping(user.getEmail(), newGroup);
+            for (GroupName groupName : newGroups) {
+                userGroupDAO.addMapping(user.getEmail(), groupName);
+            }
         }
 
         user = userDAO.save(user);
@@ -133,11 +156,16 @@ public class UserLogicBean implements UserLogic {
     @Override
     @Transactional
     public void deleteUser(Long id) {
+        if (!authService.isUserInRole("ADMIN")) {
+            throw new SecurityException("Only ADMIN can delete user.");
+        }
         User user = userDAO.findById(id);
         if (user == null) return;
 
+        personDAO.delete(personDAO.findByEmailAddress(user.getEmail()).get());
         userGroupDAO.deleteAllMappingsForUser(user.getEmail());
         userDAO.deleteById(id);
+
     }
 
     private UserDTO toDTO(User user) {
@@ -146,9 +174,12 @@ public class UserLogicBean implements UserLogic {
         dto.setId(user.getId());
         dto.setUuid(user.getUuid() != null ? user.getUuid().toString() : null);
         dto.setEmail(user.getEmail());
-        // get groups for dto (if you want single group, take first or null)
+        // we dont even send hashed password to front beans, so we are good.
+        // even admin can't see password, only update
         List<GroupName> groups = userGroupDAO.findGroupsByEmail(user.getEmail());
-        dto.setGroupName(groups.isEmpty() ? null : groups.get(0).name());
+        dto.setGroupName(groups.stream()
+                .map(GroupName::name)
+                .collect(Collectors.toList()));
         return dto;
     }
 

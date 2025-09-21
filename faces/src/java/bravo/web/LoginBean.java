@@ -1,28 +1,22 @@
 package bravo.web;
 
-import bravo.logic.UserLogic;
-import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
-import jakarta.inject.Inject;
+
 import jakarta.inject.Named;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.logging.Logger;
 
 @Named
 @RequestScoped
 public class LoginBean {
 
-    @EJB
-    UserLogic userLogicBean;
+    private static final Logger logger = Logger.getLogger(LoginBean.class.getName());
 
     private String email;
 
@@ -31,9 +25,6 @@ public class LoginBean {
     private String securityRole;
 
     private WhoAmI whoAmI;
-    private static final Logger logger = Logger.getLogger(LoginBean.class.getName());
-
- 
 
     // getters / setters
 
@@ -74,7 +65,6 @@ public class LoginBean {
             return null; // stay on page
         }
     }
-    
 
     public String logout() {
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -142,7 +132,7 @@ public class LoginBean {
     public void setSecurityRole(String securityRole) {
         this.securityRole = securityRole;
     }
-    
+
     public boolean isIsLoggedIn(){
                 FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -153,14 +143,6 @@ public class LoginBean {
         }
         return true;
     }
-
-    
-
-  
-
-    // getters
-
-
 
     public class WhoAmI {
         public String email;
@@ -205,7 +187,6 @@ public class LoginBean {
         public boolean getStuff() {
             return stuff;
         }
-       
 
     }
 

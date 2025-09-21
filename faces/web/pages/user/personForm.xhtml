@@ -1,0 +1,97 @@
+<ui:composition template="/WEB-INF/templates/page-layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="title">#{msg['persons.title']}</ui:define>
+
+    <ui:define name="content">
+        <h:form id="personsForm">
+            <p:growl id="msgs" showDetail="true" />
+
+            <p:panel header="#{msg['persons.title']}">
+                <p:dataTable id="personsTable" var="person" value="#{personFormBean.allPersons}" paginator="true" rows="10">
+                    <f:facet name="header">
+                        <p:commandButton value="#{msg['persons.add']}" icon="pi pi-plus"
+                                         actionListener="#{personFormBean.prepareNewPerson}"
+                                         process="@this"
+                                         update=":personsForm:personDialog"
+                                         oncomplete="PF('personDialog').show()" />
+                    </f:facet>
+
+                    <p:column headerText="#{msg['persons.firstName']}">
+                        <h:outputText value="#{person.firstName}" />
+                    </p:column>
+                    <p:column headerText="#{msg['persons.lastName']}">
+                        <h:outputText value="#{person.lastName}" />
+                    </p:column>
+                    <p:column headerText="#{msg['persons.email']}">
+                        <h:outputText value="#{person.emailAddress}" />
+                    </p:column>
+                    <p:column headerText="#{msg['persons.groups']}">
+                        <ui:repeat value="#{personFormBean.getGroupsForPerson(person)}" var="group">
+                            <p:tag value="#{group}" style="margin-right: 4px;" />
+                        </ui:repeat>
+                    </p:column>
+                    <p:column style="width:100px;text-align: center">
+                        <p:commandButton icon="pi pi-pencil"
+                                         actionListener="#{personFormBean.prepareEditPerson(person)}"
+                                         process="@this"
+                                         update=":personsForm:personDialog"
+                                         oncomplete="PF('personDialog').show()" />
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- Dialog always present in component tree (dynamic="false" or dynamic="true" + update beforehand) -->
+            <p:dialog id="personDialog"
+                      header="#{empty personFormBean.selectedPerson.id ? msg['dialog.create'] : msg['dialog.edit']}"
+                      widgetVar="personDialog" modal="true" dynamic="true" resizable="false" closeOnEscape="true" appendTo="@(body)">
+
+                <p:panelGrid columns="2" styleClass="ui-fluid ui-noborder">
+                    <p:outputLabel for="firstName" value="#{msg['persons.firstName']}:" />
+                    <p:inputText id="firstName" value="#{personFormBean.selectedPerson.firstName}" required="true" />
+
+                    <p:outputLabel for="lastName" value="#{msg['persons.lastName']}:" />
+                    <p:inputText id="lastName" value="#{personFormBean.selectedPerson.lastName}" required="true" />
+
+                    <p:outputLabel for="emailAddress" value="#{msg['persons.email']}:" />
+                    <p:inputText id="emailAddress" value="#{personFormBean.selectedPerson.emailAddress}" required="true"
+                                 disabled="#{not empty personFormBean.selectedPerson.id}" />
+
+                    <p:outputLabel for="dateOfBirth" value="#{msg['persons.dateOfBirth']}:" />
+                    <p:datePicker id="dateOfBirth" value="#{personFormBean.selectedPerson.dateOfBirth}" pattern="yyyy-MM-dd" showIcon="true" />
+
+                    <p:outputLabel for="federalState" value="#{msg['persons.federalState']}:" />
+                    <p:selectOneMenu id="federalState" value="#{personFormBean.selectedPerson.state}" required="true">
+                        <f:selectItems value="#{personFormBean.federalStates}" var="state" itemLabel="#{state.name()}" itemValue="#{state}" />
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="password" value="#{msg['persons.password']}:" />
+                    <p:password id="password" value="#{personFormBean.password}"
+                                placeholder="#{empty personFormBean.selectedPerson.id ? '' : 'Leave blank to keep unchanged'}"
+                                required="#{empty personFormBean.selectedPerson.id}" />
+
+                    <p:outputLabel for="userGroups" value="#{msg['persons.userGroups']}:" />
+                    <p:selectManyMenu id="userGroups" value="#{personFormBean.selectedGroups}" showCheckbox="true" required="true">
+                        <f:selectItems value="#{personFormBean.groupNames}" var="group" itemLabel="#{group.name()}" itemValue="#{group}" />
+                    </p:selectManyMenu>
+                </p:panelGrid>
+
+                <f:facet name="footer">
+                    <p:commandButton value="#{msg['persons.save']}" icon="pi pi-check"
+                                     action="#{personFormBean.savePerson}"
+                                     process="@form"
+                                     update=":personsForm:personsTable :personsForm:msgs"
+                                     oncomplete="if (!args.validationFailed) PF('personDialog').hide();" />
+                    <p:commandButton value="#{msg['persons.cancel']}" icon="pi pi-times"
+                                     onclick="PF('personDialog').hide()" type="button"
+                                     styleClass="ui-button-secondary" />
+                </f:facet>
+            </p:dialog>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

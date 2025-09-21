@@ -6,10 +6,8 @@ import bravo.dto.TimesheetEntryDTO;
 import bravo.enums.ContractStatus;
 import bravo.enums.ReportType;
 import bravo.enums.TimesheetStatus;
-import bravo.logic.ContractLogic;
 import bravo.logic.TimesheetEntryLogic;
 import bravo.logic.TimesheetLogic;
-import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
@@ -21,8 +19,11 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -38,9 +39,6 @@ public class EntryBlockBean implements Serializable {
     ResourceBundle msg = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
     @Inject
-    private ContractLogic contractLogic;
-
-    @Inject
     private TimesheetLogic timesheetLogic;
 
     @Inject
@@ -54,23 +52,30 @@ public class EntryBlockBean implements Serializable {
 
     private List<TimesheetEntryDTO> entries = new ArrayList<>();
 
-    public EntryBlockBean() {
-    }
 
-    @PostConstruct
-    public void init() {
-        // TODO: we will eventually know who is logged in, using Alice is ofc only for dummy purposes
-        List<ContractDTO> contracts = contractLogic.findActiveEmployeeContractsByEmail("alice@example.com");
-        // TODO: If we get multiple the user has to select which one - which should in turn load the entries etc and update linked sheet
-        contract = contracts.isEmpty() ? null : contracts.getFirst();
-        if (contract == null) return;
-        timesheet = timesheetLogic.getCurrent(contract);
+    public void init(ContractDTO contract) {
+        if (contract == null || contract.getUuid() == null) return;
+        if (contract.getTimesheetUuids().isEmpty()) {
+            logger.info("No timesheets found for contract " + contract.getName());
+            return;
+        }
+
+        this.contract = contract;
+        try {
+            timesheet = timesheetLogic.getCurrent(contract);
+            if (timesheet == null) return;
+        } catch (Exception e) {
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg.getString("entry.noCurrentTimesheetFound"), e.getMessage()));
+            return;
+        }
+
         entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
 
         newEntryWithDefaults();
         recalcTimesheetHoursDue();
 
-        logger.info("Initialized EntryBlockBean.");
+        logger.info("Initialized EntryBlockBean for contract " + contract.getName());
     }
 
     /**
@@ -103,7 +108,7 @@ public class EntryBlockBean implements Serializable {
     public String save() {
         if (!isEditable()) {
             addError("Timesheet nicht editierbar.");
-           
+
             return null;
         }
         try {
@@ -177,6 +182,15 @@ public class EntryBlockBean implements Serializable {
                 );
             }
         }
+    }
+
+    public String formatDate(LocalDate date) {
+        if (date == null) return "Invalid";
+        Locale currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(currentLocale);
+        return date.format(formatter);
     }
 
     public double calcHours(TimesheetEntryDTO e) {

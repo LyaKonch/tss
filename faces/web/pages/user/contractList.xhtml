@@ -58,8 +58,29 @@
                         <p:commandButton icon="pi pi-pencil"
                                          styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
                                          action="#{contractListBean.prepareEdit(contract)}"
+                                         rendered="#{contractListBean.canEdit(contract)}"
                                          update=":editForm"
                                          oncomplete="PF('editDialog').show();" />
+                        <p:commandButton icon="pi pi-play"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{contractListBean.canStart(contract)}"
+                                         action="#{contractListBean.startContract(contract)}"
+                                         update=":tableForm" title="${msg.contractStartTooltip}" />
+                        <p:commandButton icon="pi pi-stop"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{contractListBean.canTerminate(contract)}"
+                                         action="#{contractListBean.terminateContract(contract)}"
+                                         update=":tableForm" title="${msg.contractTerminateTooltip}" />
+                        <p:commandButton icon="pi pi-trash"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{contractListBean.canDelete(contract)}"
+                                         action="#{contractListBean.deleteContract(contract)}"
+                                         update=":tableForm" title="${msg.contractDeleteTooltip}" />
+                        <p:commandButton icon="pi pi-times"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{contractListBean.canAbort(contract)}"
+                                         action="#{contractListBean.abortContract(contract)}"
+                                         update=":tableForm" title="${msg.contractAbortTooltip}" />
                     </p:column>
 
                 </p:dataTable>
@@ -69,6 +90,7 @@
         <h:form id="buttonForm">
             <p:panel>
                 <p:commandButton icon="pi pi-plus" value="${msg.contractEditNew}"
+                                 rendered="#{authorization.isUserInRole('ADMIN') or authorization.isUserInRole('STAFF')}"
                                  action="#{contractListBean.prepareCreate()}"
                                  update=":editForm"
                                  oncomplete="PF('editDialog').show();" />
