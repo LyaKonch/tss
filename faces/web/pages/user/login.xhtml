@@ -1,25 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
-    <title>Login</title>
+    <title>Login - Bravo TSS</title>
+
+    <h:outputStylesheet>
+        /* layout */
+        .btss-page { min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        background:#f4f5f7; margin:0; padding:0; }
+        .btss-card { width:100%; max-width:420px; background: #fff; border-radius:12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08); padding: 1.25rem; box-sizing: border-box; }
+        .btss-header { display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-bottom:1rem; }
+        .btss-title { margin:0; font-size:1.25rem; font-weight:600; }
+        .btss-field { margin-bottom:0.875rem; display:block; }
+        .btss-label { display:block; margin-bottom:0.25rem; font-size:0.9rem; color:#333; }
+        .btss-full { width:100% !important; }
+        .btss-btn { width:100%; max-width:320px; margin:0 auto; display:block; }
+        /* small helpers */
+        .mb-3 { margin-bottom:1rem; }
+    </h:outputStylesheet>
+
 </h:head>
 <h:body>
-    <h:form>
-        <h:panelGrid columns="2" cellpadding="5">
+    <div class="btss-page">
+        <!-- note: use styleClass on JSF components -->
+        <h:form id="loginForm" styleClass="btss-form" autocomplete="off">
+            <p:growl id="msgs" showDetail="true" life="5000" styleClass="mb-3"/>
 
-            <h:outputLabel for="email" value="E-Mail:"/>
-            <h:inputText id="email" value="#{loginBean.email}" required="true"/>
+            <div class="btss-card">
+                <div class="btss-header">
+                    <!-- іконка: якщо primeicons не підключені, просто буде порожньо -->
+                    <i class="pi pi-user" style="font-size:1.4rem;"></i>
+                    <h3 class="btss-title">Welcome to Bravo TSS</h3>
+                </div>
 
-            <h:outputLabel for="password" value="Passwort:"/>
-            <h:inputSecret id="password" value="#{loginBean.password}" required="true"/>
+                <p:message severity="error" text="Incorrect email or password."
+                           rendered="#{param['error'] == 'true'}" styleClass="mb-3" />
 
-            <h:outputLabel />
-            <p:commandButton value="Login" action="#{loginBean.login}" update="@form"/>
+                <div>
+                    <div class="btss-field">
+                        <label for="email" class="btss-label">Email</label>
+                        <p:inputText id="email" value="#{loginBean.email}" required="true"
+                                     requiredMessage="Email is required."
+                                     placeholder="example@mail.com" styleClass="btss-full"/>
+                    </div>
 
-        </h:panelGrid>
-    </h:form>
+                    <div class="btss-field">
+                        <label for="password" class="btss-label">Password</label>
+                        <p:password id="password" value="#{loginBean.password}" required="true"
+                                    requiredMessage="Password is required." placeholder="••••••••"
+                                    toggleMask="true" redisplay="true" styleClass="btss-full"/>
+                    </div>
+
+                    <div style="margin-top:0.5rem;">
+                        <p:commandButton value="Login" action="#{loginBean.login}"
+                                         update="@form" icon="pi pi-sign-in"
+                                         styleClass="btss-btn p-button-raised p-button-rounded"/>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+    </div>
 </h:body>
 </html>
