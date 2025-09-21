@@ -40,6 +40,24 @@ people can access the data.</p>
 <p>Prior to using the system, users have to give consent store their data, and confirm that they understand
 the regulations and the protection measures that protect their data. The operating environment of the 
 system servers is secured in a way that only trusted personnel can gain access to hardware, server software and 
-databases.</p></body>
+databases.</p>
+        <div>
+        <h:form id="buttonBack">
+            <p:panel>
+                <p:commandButton id="getBack"
+                                 icon="pi pi-arrow-circle-left"
+                                 rendered="${loginBean.isLoggedIn}"
+                                 action="timesheetEntry"
+                                 value="Back" />
+            </p:panel>
+        </h:form>
+    <h:form id="buttonLogin">
+            <p:panel>
+                <p:commandButton id="getLogin"
+                                 icon="pi pi-arrow-circle-left"
+                                 action="login"
+                                 value="Back to Login" />
+            </p:panel>
+    </h:form></div></body>
 
 </html>
