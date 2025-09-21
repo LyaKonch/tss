@@ -28,13 +28,13 @@ import java.util.logging.Logger;
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
 
-    @Inject
-    private AuthorizationService authService;
-
     private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
 
     @Inject
     TimesheetEntryMapper timesheetEntryMapper;
+
+    @Inject
+    private AuthorizationService authService;
 
     @EJB
     private PublicHolidayService holidayChecker;
@@ -79,7 +79,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
         return timesheet.getSignedByEmployee() != null;
     }
 
-    private void addEntry(Timesheet timesheet, TimesheetEntry e ) {
+    public void addEntry(Timesheet timesheet, TimesheetEntry e) {
 
         requireEditable(timesheet);
         if (e == null) {
@@ -94,7 +94,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void removeEntry(TimesheetDTO timesheetdto, TimesheetEntryDTO entryDTO) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         if (!authService.canEditTimesheetEntry(timesheet)) {
             throw new SecurityException("User is not authorized to remove entries from this timesheet.");
         }
@@ -112,7 +112,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void signByEmployee(TimesheetDTO timesheetdto, LocalDate date) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         if (!authService.canSignTimesheetAsEmployee(timesheet.getContract())) {
             throw new SecurityException("User not authorized to sign as Employee for this contract.");
         }
@@ -124,7 +124,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void revokeEmployeeSignature(TimesheetDTO timesheetdto) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         if (!authService.canSignTimesheetAsEmployee(timesheet.getContract())) {
             throw new SecurityException("User not authorized to revoke as Employee for this contract.");
         }
@@ -136,7 +136,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void signBySupervisor(TimesheetDTO timesheetdto, LocalDate date) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         if (!authService.canSignTimesheetAsSupervisor(timesheet.getContract())) {
             throw new SecurityException("User not authorized to sign as Supervisor for this contract.");
         }
@@ -148,7 +148,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void archive(TimesheetDTO timesheetdto) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         // if the person is secretary to the contract than he can archive all timesheets.
         if (!authService.canArchiveContract(timesheet.getContract())) {
             throw new SecurityException("User not authorized to archive this timesheet.");
@@ -181,7 +181,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
         if (!authService.isAuthorized()) {
             throw new SecurityException("Unauthorized parties can't retrieve information.");
         }
-        if(timesheetDAO.findCurrent(contract.getUuid())== null) { return null; }
+        if (timesheetDAO.findCurrent(contract.getUuid()) == null) return null;
         Timesheet entity = timesheetDAO.findCurrent(contract.getUuid());
         TimesheetDTO dto = timesheetMapper.toDto(entity);
         dto.setHoursDue(hoursDue(dto.getUuid()));
