@@ -24,6 +24,13 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
                 getResultList();
     }
 
+    public List<Timesheet> findByContractUuid(String uuid) {
+        return em.createNamedQuery("Timesheet.findByContractUuid", Timesheet.class).
+                setParameter("uuid", UUID.fromString(uuid)).
+                getResultList();
+    }
+
+
     public List<Timesheet> findbyStatus(TimesheetStatus status) {
         return em.createNamedQuery("Timesheet.findByStatus", Timesheet.class).
                 setParameter("status", status).

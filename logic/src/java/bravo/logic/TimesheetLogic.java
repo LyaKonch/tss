@@ -21,8 +21,6 @@ public interface TimesheetLogic {
 
     void archive(TimesheetDTO timesheet);
 
-    void addEntry(Timesheet timesheet, TimesheetEntry e);
-
     void removeEntry(TimesheetDTO timesheetdto, TimesheetEntryDTO entryDTO);
 
     void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries);

@@ -66,7 +66,7 @@ public class ContractListBean implements Serializable {
     /**
      * Loads all contracts from the database relevant to the logged-in user.
      */
-    private void loadContracts() {
+    public void loadContracts() {
         try {
             if (auth.isUserInRole("ADMIN")) contractList = contractLogic.findAll();
             if (
@@ -86,11 +86,11 @@ public class ContractListBean implements Serializable {
     }
 
     public boolean canEdit(ContractDTO contract) {
-        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+        return contract.getStatus() == ContractStatus.PREPARED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
     }
 
     public boolean canStart(ContractDTO contract) {
-        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+        return contract.getStatus() == ContractStatus.PREPARED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
     }
 
     public void startContract(ContractDTO contract) {
@@ -107,7 +107,7 @@ public class ContractListBean implements Serializable {
     }
 
     public boolean canTerminate(ContractDTO contract) {
-        return contract.getStatus() == ContractStatus.STARTED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+        return contract.getStatus() == ContractStatus.STARTED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
     }
 
     public void terminateContract(ContractDTO contract) {
@@ -124,7 +124,7 @@ public class ContractListBean implements Serializable {
     }
 
     public boolean canDelete(ContractDTO contract) {
-        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+        return contract.getStatus() == ContractStatus.PREPARED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
     }
 
     public void deleteContract(ContractDTO contract) {
