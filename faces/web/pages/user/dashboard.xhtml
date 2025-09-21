@@ -10,8 +10,6 @@
 
     <ui:define name="content">
 
-        <p:growl id="msgs" showDetail="true" skipDetailIfEqualsSummary="true" />
-
         <h:form id="contractSelectForm">
             <ui:include src="contractSelect.xhtml" />
             <f:event type="preRenderView" listener="#{dashboardBean.prepareContractSelect}" />
