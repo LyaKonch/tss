@@ -6,26 +6,68 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Data Transfer Object (DTO) for {@link bravo.entities.Person} information.
+ * <p>
+ * Extends {@link AbstractDTO} to inherit common DTO properties such as {@code id}, {@code uuid}, and {@code version}.
+ * Contains personal details, consent information, state, and associated role UUIDs.
+ */
 public class PersonDTO extends AbstractDTO {
 
+    /**
+     * First name of the person.
+     */
     private String firstName;
 
+    /**
+     * Last name of the person.
+     */
     private String lastName;
 
+    /**
+     * Date of birth of the person.
+     */
     private LocalDate dateOfBirth;
 
+    /**
+     * Email address of the person.
+     */
     private String emailAddress;
 
+    /**
+     * Federal state of residence.
+     */
     private FederalState state;
 
+    /**
+     * Indicates whether the person has given consent.
+     */
     private boolean consent;
 
+    /**
+     * UUIDs of roles associated with this person.
+     */
     private Set<String> roleUuids = new HashSet<>();
 
+    /**
+     * Default constructor.
+     */
     public PersonDTO() {
         super();
     }
 
+    /**
+     * Constructor with full initialization.
+     *
+     * @param uuid         UUID of the person
+     * @param jpaVersion   JPA version number
+     * @param firstName    first name
+     * @param lastName     last name
+     * @param emailAddress email address
+     * @param dateOfBirth  date of birth
+     * @param consent      consent flag
+     * @param roleUuids    set of associated role UUIDs
+     */
     public PersonDTO(String uuid, int jpaVersion, String firstName, String lastName, String emailAddress, LocalDate dateOfBirth, boolean consent, Set<String> roleUuids) {
         super(uuid, jpaVersion);
         this.firstName = firstName;
@@ -41,7 +83,7 @@ public class PersonDTO extends AbstractDTO {
         return "PersonDTO{" + "firstName=" + firstName + ", lastName=" + lastName + ", dateOfBirth=" + dateOfBirth + ", emailAddress=" + emailAddress + ", consent=" + consent + ", roleUuids=" + roleUuids + '}';
     }
 
-    // Getters and Setters
+    // --- Getters and Setters ---
     public String getFirstName() {
         return firstName;
     }

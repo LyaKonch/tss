@@ -2,20 +2,48 @@ package bravo.dto;
 
 import java.util.List;
 
+/**
+ * Data Transfer Object (DTO) for {@link bravo.entities.User} information.
+ * <p>
+ * Extends {@link AbstractDTO} to inherit common DTO properties such as {@code id}, {@code uuid}, and {@code version}.
+ * Contains basic user details such as email, group, and password.
+ */
 public class UserDTO extends AbstractDTO {
+
+    /**
+     * Email of the user, used as username.
+     */
     private String email;
+
+    /**
+     * Name of the user group this user belongs to.
+     */
     private List<String> groupName;
+
+    /**
+     * Password for authentication purposes.
+     */
     private String password;
 
+    /**
+     * Default constructor.
+     */
     public UserDTO() {
     }
 
-    public UserDTO(String email, Long personId,  List<String> groupName) {
+    /**
+     * Constructor with partial initialization.
+     *
+     * @param email     email of the user
+     * @param personId  associated person ID (not used in this DTO)
+     * @param groupName name of the group
+     */
+    public UserDTO(String email, Long personId, List<String> groupName) {
         this.email = email;
         this.groupName = groupName;
     }
 
-    // getters / setters
+    // --- Getters and Setters ---
     public String getEmail() {
         return email;
     }
@@ -32,11 +60,11 @@ public class UserDTO extends AbstractDTO {
         return password;
     }
 
-    public  List<String> getGroupName() {
+    public List<String> getGroupName() {
         return groupName;
     }
 
-    public void setGroupName( List<String> groupName) {
+    public void setGroupName(List<String> groupName) {
         this.groupName = groupName;
     }
 }

@@ -2,25 +2,19 @@ package bravo.dao;
 
 import bravo.entities.Contract;
 import bravo.enums.ContractStatus;
-
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
-import java.util.List;
-import java.util.Optional;
 
-import java.util.logging.Logger;
+import java.util.List;
+
 @LocalBean
 @Stateless
 public class ContractDAO extends AbstractDAO<Contract> {
 
-    private static final Logger logger = Logger.getLogger(ContractDAO.class.getName());
-
     public ContractDAO() {
         super(Contract.class);
     }
-
 
 
     /**

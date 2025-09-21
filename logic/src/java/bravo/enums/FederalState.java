@@ -1,5 +1,5 @@
-package bravo.enums; 
-        
+package bravo.enums;
+
 public enum FederalState {
     BADEN_WURTTEMBERG("BW", "Baden-Württemberg"),
     BAVARIA("BY", "Bavaria"),
@@ -19,6 +19,7 @@ public enum FederalState {
     THURINGIA("TH", "Thuringia");
 
     private final String abbreviation;
+
     private final String name;
 
     FederalState(String abbreviation, String name) {
@@ -26,6 +27,7 @@ public enum FederalState {
         this.name = name;
     }
 
+    // --- Getters and Setters ---
     public String getAbbreviation() {
         return abbreviation;
     }
