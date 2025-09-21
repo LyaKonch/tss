@@ -172,8 +172,11 @@ public class TimesheetListBean implements Serializable {
     }
 
     public boolean canArchive(TimesheetDTO timesheet) {
-        ContractDTO contract = contractList.stream().findFirst().filter(c -> c.getUuid().equals(timesheet.getContractUuid())).orElse(null);
-        return timesheet.getStatus() == TimesheetStatus.SIGNED_BY_SUPERVISOR && authorization.isSecretary(contract);
+        return timesheet.getStatus() == TimesheetStatus.SIGNED_BY_SUPERVISOR && authorization.isSecretary(selectedContract);
+    }
+
+    public boolean canPrint() {
+        return authorization.isSecretary(selectedContract);
     }
 
     public void archiveTimesheet(TimesheetDTO currentTimesheet) {

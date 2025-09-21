@@ -76,6 +76,11 @@
                                          rendered="#{contractListBean.canDelete(contract)}"
                                          action="#{contractListBean.deleteContract(contract)}"
                                          update=":tableForm" title="${msg.contractDeleteTooltip}" />
+                        <p:commandButton icon="pi pi-times"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{contractListBean.canAbort(contract)}"
+                                         action="#{contractListBean.abortContract(contract)}"
+                                         update=":tableForm" title="${msg.contractAbortTooltip}" />
                     </p:column>
 
                 </p:dataTable>
@@ -85,6 +90,7 @@
         <h:form id="buttonForm">
             <p:panel>
                 <p:commandButton icon="pi pi-plus" value="${msg.contractEditNew}"
+                                 rendered="#{authorization.isUserInRole('ADMIN') or authorization.isUserInRole('STAFF')}"
                                  action="#{contractListBean.prepareCreate()}"
                                  update=":editForm"
                                  oncomplete="PF('editDialog').show();" />

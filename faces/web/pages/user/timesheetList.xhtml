@@ -71,6 +71,11 @@
                                          rendered="#{timesheetListBean.canArchive(timesheet)}"
                                          action="#{timesheetListBean.archiveTimesheet(timesheet)}"
                                          update=":tableForm" title="${msg.timesheetArchiveTooltip}" />
+                        <p:commandButton icon="pi pi-print" value="${msg.timesheetPrintLabel}"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{timesheetListBean.canPrint()}"
+                                         onclick="window.print()"
+                                         update=":tableForm" title="${msg.timesheetPrintTooltip}" />
                     </p:column>
 
                 </p:dataTable>

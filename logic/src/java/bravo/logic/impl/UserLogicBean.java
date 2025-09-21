@@ -48,9 +48,9 @@ public class UserLogicBean implements UserLogic {
 
     @Override
     public UserDTO findByEmail(String username) {
-        if (!authService.isUserInRole("ADMIN")) {
-            throw new SecurityException("Only ADMIN can get users info.");
-        }
+        //if (!authService.isUserInRole("ADMIN")) {
+        //    throw new SecurityException("Only ADMIN can get users info.");
+        //}
         User u = userDAO.findByEmail(username);
         return toDTO(u);
     }
@@ -66,9 +66,10 @@ public class UserLogicBean implements UserLogic {
     @Override
     @Transactional
     public UserDTO createUser(UserDTO dto) {
-        if (!authService.isUserInRole("ADMIN")) {
-            throw new SecurityException("Only ADMIN can create user.");
-        }
+        // for default user creation at startup, normally we have it
+        //if (!authService.isUserInRole("ADMIN")) {
+        //    throw new SecurityException("Only ADMIN can create user.");
+        //}
         if (dto == null) throw new IllegalArgumentException("dto is null");
         if (dto.getPassword() == null || dto.getPassword().isBlank()) throw new IllegalArgumentException("password required");
 

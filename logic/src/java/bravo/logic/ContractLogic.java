@@ -2,6 +2,7 @@ package bravo.logic;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
+import bravo.dto.TimesheetDTO;
 import jakarta.ejb.Local;
 
 import java.time.LocalDate;
@@ -88,4 +89,6 @@ public interface ContractLogic {
     List<ContractDTO> findContractsAssociatedWithPerson(PersonDTO person);
 
     ContractDTO abortContract(String uuid);
+
+    List<TimesheetDTO> getAllTimesheetsForContract(String uuid);
 }
