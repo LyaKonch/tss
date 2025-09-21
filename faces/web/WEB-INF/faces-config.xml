@@ -40,7 +40,12 @@
         </navigation-case>
         <navigation-case>
             <from-outcome>aboutTSS</from-outcome>
-            <to-view-id>/pages/user/about.xhtml</to-view-id>
+            <to-view-id>/pages/about.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>login</from-outcome>
+            <to-view-id>/pages/user/login.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
     </navigation-rule>
