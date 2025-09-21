@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import static bravo.enums.FederalState.RHINELAND_PALATINATE;
@@ -110,7 +111,7 @@ public class Person extends AbstractEntity {
         this.roles.clear();
         if (roles == null) return;
         this.roles.addAll(roles);
-        roles.forEach(role -> role.setPerson(this));
+        roles.stream().filter(Objects::nonNull).forEach(role -> role.setPerson(this));
     }
 
     /**
