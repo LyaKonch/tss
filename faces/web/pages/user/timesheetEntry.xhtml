@@ -94,6 +94,14 @@
         <div style="margin-top:16px">
             <p:commandButton id="addBtn"
                              value="#{msg['btn.add']}"
+                             rendered="#{not entryBlockBean.editMode}"
+                             action="#{entryBlockBean.save}"
+                             process="@form"
+                             update="@form msgs entries"
+                             styleClass="btn-primary" />
+            <p:commandButton id="editBtn"
+                             value="#{msg['btn.edit']}"
+                             rendered="#{entryBlockBean.editMode}"
                              action="#{entryBlockBean.save}"
                              process="@form"
                              update="@form msgs entries"
@@ -111,6 +119,18 @@
             <p:column headerText="#{msg['col.type']}">#{entry.type.displayName}</p:column>
             <p:column headerText="#{msg['col.hours']}">#{entryBlockBean.calcHours(entry)}</p:column>
             <p:column headerText="#{msg['col.desc']}">#{entry.description}</p:column>
+            <p:column headerText="#{msg['contractActionsLabel']}" styleClass="flex align-items-center gap-2">
+                <p:commandButton icon="pi pi-pencil"
+                                 styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                 rendered="#{entryBlockBean.editable}"
+                                 action="#{entryBlockBean.edit(entry)}"
+                                 update=":entriesForm" title="${msg.timesheetSignedByEmployeeTooltip}" />
+                <p:commandButton icon="pi pi-trash"
+                                 styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                 rendered="#{entryBlockBean.editable}"
+                                 action="#{entryBlockBean.deleteSelected(entry)}"
+                                 update=":entriesForm" title="${msg.timesheetSignedByEmployeeTooltip}" />
+            </p:column>
         </p:dataTable>
     </p:panel>
 

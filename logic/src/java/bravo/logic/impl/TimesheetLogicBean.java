@@ -10,6 +10,7 @@ import bravo.entities.TimesheetEntry;
 import bravo.enums.ContractStatus;
 import bravo.enums.FederalState;
 import bravo.enums.TimesheetStatus;
+import bravo.logic.ContractLogic;
 import bravo.logic.TimesheetLogic;
 import bravo.mapper.TimesheetEntryMapper;
 import bravo.mapper.TimesheetMapper;
@@ -38,6 +39,9 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @EJB
     private PublicHolidayService holidayChecker;
+
+    @Inject
+    private ContractLogic contractLogic;
 
     @EJB
     private TimesheetEntryDAO entryDAO;
@@ -154,9 +158,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
             throw new SecurityException("User not authorized to archive this timesheet.");
         }
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_SUPERVISOR);
-        // maybe some actions here
         timesheet.setStatus(TimesheetStatus.ARCHIVED);
         timesheetDAO.save(timesheet);
+        if (timesheet.getContract().getTimesheets().stream().allMatch(ts -> ts.getStatus() == TimesheetStatus.ARCHIVED)) {
+            contractLogic.archiveContract(timesheet.getContract().getUuid().toString());
+        }
     }
 
     @Override

@@ -56,16 +56,16 @@
                                          rendered="#{timesheetListBean.canEmployeeSign(timesheet)}"
                                          action="#{timesheetListBean.signAsEmployee(timesheet)}"
                                          update=":tableForm" title="${msg.timesheetSignedByEmployeeTooltip}" />
-                        <p:commandButton icon="pi pi-undo" value="${msg.timesheetUndoSignEmployee}"
-                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
-                                         rendered="#{timesheetListBean.canRevokeEmployeeSign(timesheet)}"
-                                         action="#{timesheetListBean.revokeSignAsEmployee(timesheet)}"
-                                         update=":tableForm" title="${msg.timesheetRevokeSignedByEmployeeTooltip}" />
                         <p:commandButton icon="pi pi-pencil" value="${msg.contractSupervisor}"
                                          styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
                                          rendered="#{timesheetListBean.canSupervisorSign(timesheet)}"
                                          action="#{timesheetListBean.signAsSupervisor(timesheet)}"
                                          update=":tableForm" title="${msg.timesheetSignedBySupervisorTooltip}" />
+                        <p:commandButton icon="pi pi-undo" value="${msg.timesheetUndoSignEmployee}"
+                                         styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
+                                         rendered="#{timesheetListBean.canRevokeEmployeeSign(timesheet)}"
+                                         action="#{timesheetListBean.revokeSignAsEmployee(timesheet)}"
+                                         update=":tableForm" title="${msg.timesheetRevokeSignedByEmployeeTooltip}" />
                         <p:commandButton icon="pi pi-inbox" value="${msg.timesheetArchiveLabel}"
                                          styleClass="ui-button-secondary ui-button-rounded ui-button-outlined icon-fix"
                                          rendered="#{timesheetListBean.canArchive(timesheet)}"

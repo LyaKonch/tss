@@ -6,20 +6,18 @@ import bravo.dao.UserGroupDAO;
 import bravo.dto.UserDTO;
 import bravo.entities.Person;
 import bravo.entities.User;
-
 import bravo.enums.GroupName;
+import bravo.logic.UserLogic;
 import bravo.utitity.AuthorizationService;
 import bravo.utitity.HashUtils;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-
-import bravo.logic.UserLogic;
 
 @Stateless
 public class UserLogicBean implements UserLogic {
@@ -71,14 +69,15 @@ public class UserLogicBean implements UserLogic {
         //    throw new SecurityException("Only ADMIN can create user.");
         //}
         if (dto == null) throw new IllegalArgumentException("dto is null");
-        if (dto.getPassword() == null || dto.getPassword().isBlank()) throw new IllegalArgumentException("password required");
+        if (dto.getPassword() == null || dto.getPassword().isBlank())
+            throw new IllegalArgumentException("password required");
 
         Optional<Person> personOptional = personDAO.findByEmailAddress(dto.getEmail());
         Person person;
 
-        try{
+        try {
             person = personOptional.get();
-        }catch(NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             throw new IllegalArgumentException("Person wasn't not found by email");
         }
 
@@ -92,7 +91,7 @@ public class UserLogicBean implements UserLogic {
         }
         List<GroupName> groupNames = dto.getGroupName().stream()
                 .map(GroupName::valueOf)
-                .collect(Collectors.toList());
+                .toList();
 
 
         User user = new User();
@@ -124,9 +123,9 @@ public class UserLogicBean implements UserLogic {
         Optional<Person> personOptional = personDAO.findByEmailAddress(dto.getEmail());
         Person person;
 
-        try{
+        try {
             person = personOptional.get();
-        }catch(NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             throw new IllegalArgumentException("Person wasn't not found by email");
         }
 
@@ -141,7 +140,7 @@ public class UserLogicBean implements UserLogic {
         if (dto.getGroupName() != null && !dto.getGroupName().isEmpty()) {
             List<GroupName> newGroups = dto.getGroupName().stream()
                     .map(GroupName::valueOf)
-                    .collect(Collectors.toList());
+                    .toList();
 
             userGroupDAO.deleteAllMappingsForUser(user.getEmail());
             for (GroupName groupName : newGroups) {
