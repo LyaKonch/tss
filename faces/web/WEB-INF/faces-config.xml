@@ -20,22 +20,27 @@
         <!-- dashboard points to whatever ends up as our start page after login -->
         <navigation-case>
             <from-outcome>dashboard</from-outcome>
-            <to-view-id>/pages/user/timesheetEntry.xhtml</to-view-id>
+            <to-view-id>/pages/user/dashboard.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>entries</from-outcome>
-            <to-view-id>/pages/user/timesheetEntry.xhtml</to-view-id>
-            <redirect/>
-        </navigation-case>
-        <navigation-case>
-            <from-outcome>contractForm</from-outcome>
-            <to-view-id>/pages/user/contractForm.xhtml</to-view-id>
+            <from-outcome>timesheetList</from-outcome>
+            <to-view-id>/pages/user/timesheetList.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
         <navigation-case>
             <from-outcome>contractList</from-outcome>
             <to-view-id>/pages/user/contractList.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>personForm</from-outcome>
+            <to-view-id>/pages/user/personForm.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>toLoginForm</from-outcome>
+            <to-view-id>/pages/user/login.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
     </navigation-rule>

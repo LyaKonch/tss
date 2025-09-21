@@ -1,23 +1,22 @@
 package bravo.web;
 
-import bravo.logic.UserLogic;
-import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
+
 import jakarta.inject.Named;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.security.Principal;
+import java.util.logging.Logger;
 
 @Named
 @RequestScoped
 public class LoginBean {
 
-    @EJB
-    UserLogic userLogicBean;
+    private static final Logger logger = Logger.getLogger(LoginBean.class.getName());
 
     private String email;
 
@@ -119,9 +118,30 @@ public class LoginBean {
 
         return securityRole;
     }
+    public String getEmailAddress() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        Principal principal = request.getUserPrincipal();
+
+        if (principal == null) {
+            return null; // User is not authenticated
+        }
+        return principal.getName();
+    }
 
     public void setSecurityRole(String securityRole) {
         this.securityRole = securityRole;
+    }
+
+    public boolean isIsLoggedIn(){
+                FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        Principal principal = request.getUserPrincipal();
+
+        if (principal == null) {
+            return false; // User is not authenticated
+        }
+        return true;
     }
 
     public class WhoAmI {

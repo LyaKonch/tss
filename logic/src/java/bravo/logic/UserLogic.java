@@ -2,6 +2,8 @@ package bravo.logic;
 
 import bravo.dto.UserDTO;
 
+import java.util.List;
+
 public interface UserLogic {
 
     UserDTO createUser(UserDTO dto);
@@ -13,4 +15,6 @@ public interface UserLogic {
     UserDTO findByEmail(String email);
 
     UserDTO findById(Long id);
+
+    List<UserDTO> findAll();
 }

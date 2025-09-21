@@ -1,18 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ui="jakarta.faces.facelets"
-                xmlns:h="jakarta.faces.html"
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:comp="jakarta.faces.composite/comp">
 
-    <f:metadata />    <!-- Use jakarta.faces.core - else might be autoremoved by IntelliJ -->
+    <f:facet name="" />  <!-- Use jakarta.faces.core - else might be autoremoved by IntelliJ -->
 
+    <p:dialog header="#{contractDetailsBean.contract.name}" widgetVar="detailsDialog" modal="true"
+              closable="true" resizable="true" responsive="true" closeOnEscape="true"
+              rendered="#{not empty contractDetailsBean.contract}">
 
-    <!--        <ui:param name="pageHeadline" value="${msg.contractDetailsHeadline}" por contract Name />-->
-
-    <h:form id="contractForm">
-        <div class="ui-fluid formgrid grid">
+        <div class="ui-fluid formgrid grid" style="max-width: 600px;">
 
             <div class="field col-12 md:col-6 flex flex-column">
                 <p:outputLabel value="Your Role:" styleClass="label-headline" />
@@ -24,7 +23,7 @@
             </div>
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="status" value="Status:" styleClass="label-headline" />
+                <p:outputLabel for="status" value="${msg.contractStatusLabel}" styleClass="label-headline" />
                 <comp:coloredLabel id="status" color="#{contractDetailsBean.contract.status.color}">
                     #{contractDetailsBean.contract.status.displayName}
                 </comp:coloredLabel>
@@ -32,20 +31,55 @@
 
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="startDate" value="Start Date:" styleClass="label-headline" />
+                <p:outputLabel for="startDate" value="${msg.contractStartDateLabel}" styleClass="label-headline" />
                 <p:outputLabel id="startDate"
                                value="#{contractDetailsBean.formatDate(contractDetailsBean.contract.startDate)}" />
             </div>
 
             <div class="field col-12 md:col-6 flex flex-column">
-                <p:outputLabel for="endDate" value="End Date:" styleClass="label-headline" />
+                <p:outputLabel for="endDate" value="${msg.contractEndDateLabel}" styleClass="label-headline" />
                 <p:outputLabel id="endDate"
                                value="#{contractDetailsBean.formatDate(contractDetailsBean.contract.endDate)}" />
             </div>
 
 
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="frequency" value="${msg.contractFrequencyLabel}" styleClass="label-headline" />
+                <p:outputLabel id="frequency"
+                               value="#{contractDetailsBean.contract.frequency.displayName}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="hoursPerWeek" value="${msg.contractHoursPerWeekLabel}"
+                               styleClass="label-headline" />
+                <p:outputLabel id="hoursPerWeek"
+                               value="#{contractDetailsBean.contract.hoursPerWeek}" />
+            </div>
+
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="workingDaysPerWeek" value="${msg.contractWorkingDaysPerWeekLabel}"
+                               styleClass="label-headline" />
+                <p:outputLabel id="workingDaysPerWeek"
+                               value="#{contractDetailsBean.contract.workingDaysPerWeek}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="vacationDaysPerYear" value="${msg.contractVacationDaysPerYearLabel}"
+                               styleClass="label-headline" />
+                <p:outputLabel id="vacationDaysPerYear"
+                               value="#{contractDetailsBean.contract.vacationDaysPerYear}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="archivationDuration" value="Archivation (Years):"
+                               styleClass="label-headline" />
+                <p:outputLabel id="archivationDuration"
+                               value="#{contractDetailsBean.contract.archivationDuration}" />
+            </div>
+
             <div class="field col-12 md:col-10">
-                <p:outputLabel value="Contacts:" styleClass="label-headline" />
+                <p:outputLabel value="${msg.contractContactsLabel}" styleClass="label-headline" />
                 <p:importEnum type="bravo.enums.RoleType" var="RoleType" />
 
                 <div class="contact-box">
@@ -80,11 +114,8 @@
                     </div>
                 </ui:repeat>
             </div>
-
-            <!--        <p:commandButton value="Save" action="#{contractDetailsBean}" update=":mainForm"-->
-            <!--                         oncomplete="PF('contractDialog').hide();" />-->
         </div>
 
-    </h:form>
+    </p:dialog>
 
 </ui:composition>

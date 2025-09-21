@@ -17,6 +17,8 @@ import java.util.List;
                 query = "SELECT e FROM Timesheet e"),
         @NamedQuery(name = "Timesheet.findByContract",
                 query = "SELECT e FROM Timesheet e WHERE e.contract = :contract"),
+        @NamedQuery(name = "Timesheet.findByContractUuid",
+                query = "SELECT e FROM Timesheet e WHERE e.contract.uuid = :uuid"),
         @NamedQuery(name = "Timesheet.findByStatus",
                 query = "SELECT e FROM Timesheet e WHERE e.status = :status"),
         @NamedQuery(name = "Timesheet.findBetweenDates",
@@ -46,10 +48,6 @@ public class Timesheet extends AbstractEntity {
 
     public Timesheet() {
         super();
-    }
-
-    public Timesheet(boolean NewEntity) {
-        super(NewEntity);
     }
 
 

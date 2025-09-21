@@ -10,8 +10,11 @@ import bravo.entities.TimesheetEntry;
 import bravo.enums.ContractStatus;
 import bravo.enums.FederalState;
 import bravo.enums.TimesheetStatus;
+import bravo.logic.ContractLogic;
 import bravo.logic.TimesheetLogic;
+import bravo.mapper.TimesheetEntryMapper;
 import bravo.mapper.TimesheetMapper;
+import bravo.utitity.AuthorizationService;
 import bravo.utitity.PublicHolidayService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -26,8 +29,19 @@ import java.util.logging.Logger;
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
 
+    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
+
+    @Inject
+    TimesheetEntryMapper timesheetEntryMapper;
+
+    @Inject
+    private AuthorizationService authService;
+
     @EJB
     private PublicHolidayService holidayChecker;
+
+    @Inject
+    private ContractLogic contractLogic;
 
     @EJB
     private TimesheetEntryDAO entryDAO;
@@ -38,17 +52,17 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Inject
     private TimesheetMapper timesheetMapper;
 
-    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
-
-
     public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUuid(entryDto.getUuid());
+        if (!authService.canEditTimesheetEntry(timesheet)) {
+            throw new SecurityException("User is not authorized to add entries to this timesheet.");
+        }
         if (timesheet == null) {
             throw new IllegalArgumentException("Timesheet with" + entryDto.getUuid() + "is not found");
         }
 
         // true means a new object, it's supposed to generate new UUID for new objects;
-        TimesheetEntry newEntry = new TimesheetEntry(true);
+        TimesheetEntry newEntry = new TimesheetEntry();
         if (entryDto.getEntryDate().isBefore(timesheet.getEndDate())
                 || entryDto.getEntryDate().equals(timesheet.getEndDate())
                 || entryDto.getEntryDate().isAfter(timesheet.getStartDate())
@@ -69,8 +83,8 @@ public class TimesheetLogicBean implements TimesheetLogic {
         return timesheet.getSignedByEmployee() != null;
     }
 
-    @Override
     public void addEntry(Timesheet timesheet, TimesheetEntry e) {
+
         requireEditable(timesheet);
         if (e == null) {
             logger.warning("Attempted to add null entry to timesheet " + timesheet.getUuid());
@@ -83,7 +97,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     @Override
-    public void removeEntry(Timesheet timesheet, TimesheetEntry e) {
+    public void removeEntry(TimesheetDTO timesheetdto, TimesheetEntryDTO entryDTO) {
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
+        if (!authService.canEditTimesheetEntry(timesheet)) {
+            throw new SecurityException("User is not authorized to remove entries from this timesheet.");
+        }
+        TimesheetEntry e = timesheetEntryMapper.toEntity(entryDTO);
         requireEditable(timesheet);
         if (e == null) {
             logger.warning("Attempted to add null entry to timesheet " + timesheet.getUuid());
@@ -96,7 +115,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     @Override
-    public void signByEmployee(Timesheet timesheet, LocalDate date) {
+    public void signByEmployee(TimesheetDTO timesheetdto, LocalDate date) {
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
+        if (!authService.canSignTimesheetAsEmployee(timesheet.getContract())) {
+            throw new SecurityException("User not authorized to sign as Employee for this contract.");
+        }
         requireStatus(timesheet, TimesheetStatus.IN_PROGRESS);
         timesheet.setSignedByEmployee((date != null) ? date : LocalDate.now());
         timesheet.setStatus(TimesheetStatus.SIGNED_BY_EMPLOYEE);
@@ -104,7 +127,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     @Override
-    public void revokeEmployeeSignature(Timesheet timesheet) {
+    public void revokeEmployeeSignature(TimesheetDTO timesheetdto) {
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
+        if (!authService.canSignTimesheetAsEmployee(timesheet.getContract())) {
+            throw new SecurityException("User not authorized to revoke as Employee for this contract.");
+        }
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_EMPLOYEE);
         timesheet.setSignedByEmployee(null);
         timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
@@ -112,7 +139,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     @Override
-    public void signBySupervisor(Timesheet timesheet, LocalDate date) {
+    public void signBySupervisor(TimesheetDTO timesheetdto, LocalDate date) {
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
+        if (!authService.canSignTimesheetAsSupervisor(timesheet.getContract())) {
+            throw new SecurityException("User not authorized to sign as Supervisor for this contract.");
+        }
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_EMPLOYEE);
         timesheet.setSignedBySupervisor((date != null) ? date : LocalDate.now());
         timesheet.setStatus(TimesheetStatus.SIGNED_BY_SUPERVISOR);
@@ -120,25 +151,43 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     @Override
-    public void archive(Timesheet timesheet) {
+    public void archive(TimesheetDTO timesheetdto) {
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
+        // if the person is secretary to the contract than he can archive all timesheets.
+        if (!authService.canArchiveContract(timesheet.getContract())) {
+            throw new SecurityException("User not authorized to archive this timesheet.");
+        }
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_SUPERVISOR);
-        // maybe some actions here
         timesheet.setStatus(TimesheetStatus.ARCHIVED);
         timesheetDAO.save(timesheet);
+        if (timesheet.getContract().getTimesheets().stream().allMatch(ts -> ts.getStatus() == TimesheetStatus.ARCHIVED)) {
+            contractLogic.archiveContract(timesheet.getContract().getUuid().toString());
+        }
     }
 
     @Override
-    public double getReportedHours(Timesheet timesheet) {
+    public double getReportedHours(TimesheetDTO timesheetdto) {
+        if (!authService.isAuthorized()) {
+            throw new SecurityException("Unauthorized parties can't retrieve information.");
+        }
+        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
         return timesheet.getEntries().stream().mapToDouble(TimesheetEntry::getHours).sum();
     }
 
     @Override
     public List<TimesheetEntry> getEntries(Timesheet timesheet) {
+        if (!authService.isAuthorized()) {
+            throw new SecurityException("Unauthorized parties can't retrieve information.");
+        }
         return Collections.unmodifiableList(timesheet.getEntries());
     }
 
     @Override
     public TimesheetDTO getCurrent(ContractDTO contract) {
+        if (!authService.isAuthorized()) {
+            throw new SecurityException("Unauthorized parties can't retrieve information.");
+        }
+        if (timesheetDAO.findCurrent(contract.getUuid()) == null) return null;
         Timesheet entity = timesheetDAO.findCurrent(contract.getUuid());
         TimesheetDTO dto = timesheetMapper.toDto(entity);
         dto.setHoursDue(hoursDue(dto.getUuid()));
@@ -146,7 +195,15 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     @Override
+    public List<TimesheetDTO> findByContractUuid(String contractUuid) {
+        return timesheetDAO.findByContractUuid(contractUuid).stream().map(timesheetMapper::toDto).toList();
+    }
+
+    @Override
     public void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries) {
+        if (!authService.isAuthorized()) {
+            throw new SecurityException("Unauthorized parties can't retrieve information.");
+        }
         requireEditable(timesheet);
         timesheet.getEntries().clear();
         if (newEntries != null) {
@@ -166,6 +223,9 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     private void requireEditable(Timesheet timesheet) {
         // TS2 MIN
+        if (timesheet.getStatus() == TimesheetStatus.ARCHIVED) {
+            throw new IllegalStateException("Archived timesheets cannot be changed.");
+        }
         if (timesheet.getStatus() != TimesheetStatus.IN_PROGRESS && timesheet.getContract().getStatus() != ContractStatus.STARTED) {
             throw new IllegalStateException("Einträge nur im Status IN_PROGRESS änderbar.");
         }
@@ -178,6 +238,9 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     public double hoursDue(String uuid) {
         Timesheet timesheet = timesheetDAO.findByUuid(uuid);
+        if (!authService.isAuthorized()) {
+            throw new SecurityException("Unauthorized parties can't retrieve information.");
+        }
         FederalState state = timesheet.getContract().getEmployee().getPerson().getState();
         if (timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
             return 0.0;

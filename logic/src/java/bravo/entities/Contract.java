@@ -1,10 +1,7 @@
 package bravo.entities;
 
 import bravo.enums.ContractStatus;
-import bravo.enums.FederalState;
-import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 import bravo.enums.TimesheetFrequency;
-import bravo.logic.TimesheetLogic;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -18,9 +15,12 @@ import java.util.List;
 @Entity
 @Table(name = "contract")
 @NamedQueries({
-        @NamedQuery(name = "Contract.findByName", query = "SELECT c FROM Contract c WHERE c.name = :name"),
-        @NamedQuery(name = "Contract.findAll", query = "SELECT c FROM Contract c ORDER BY c.startDate DESC"),
-        @NamedQuery(name = "Contract.findByUuid", query = "SELECT c FROM Contract c WHERE c.uuid = :uuid")
+        @NamedQuery(name = "Contract.findByName",
+                query = "SELECT c FROM Contract c WHERE c.name = :name"),
+        @NamedQuery(name = "Contract.findAll",
+                query = "SELECT c FROM Contract c ORDER BY c.startDate DESC"),
+        @NamedQuery(name = "Contract.findByUuid",
+                query = "SELECT c FROM Contract c WHERE c.uuid = :uuid")
 })
 public class Contract extends AbstractEntity {
 
@@ -37,9 +37,13 @@ public class Contract extends AbstractEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TimesheetFrequency frequency = TimesheetFrequency.MONTHLY;
-    
+
     @Nullable
     private LocalDate terminationDate = null;
+
+    @Column(nullable = false)
+    @Min(0) // 0 means it wont be deleted automatically
+    private Integer archiveDurationInYears = 2;
 
     @Positive
     private Double hoursPerWeek;
@@ -54,7 +58,6 @@ public class Contract extends AbstractEntity {
     @Max(365)
     private int vacationDaysPerYear = 20;
 
-    
 
     // Contract 1 < --- > 1 Employee
     @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -83,10 +86,6 @@ public class Contract extends AbstractEntity {
         super();
     }
 
-    public Contract(boolean newEntity) {
-        super(newEntity);
-    }
-
 
     @Transient
     private double vacationHours() {
@@ -106,6 +105,7 @@ public class Contract extends AbstractEntity {
     }
 
     public void setStatus(ContractStatus status) {
+        if (status == null) throw new IllegalArgumentException("Status must not be null");
         this.status = status;
     }
 
@@ -114,6 +114,7 @@ public class Contract extends AbstractEntity {
     }
 
     public void setName(String name) {
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Name must not be null or blank");
         this.name = name;
     }
 
@@ -183,9 +184,13 @@ public class Contract extends AbstractEntity {
         return employee;
     }
 
+    /**
+     * Bidirectional update for setting a new employee.
+     * Updates the employee's contract reference.
+     */
     public void setEmployee(Employee employee) {
         if (employee == null) throw new IllegalArgumentException("Employee must not be null");
-        if (this.employee != null) this.employee.setContract(null);
+        if (employee.equals(this.employee)) return;
         this.employee = employee;
         employee.setContract(this);
     }
@@ -196,7 +201,7 @@ public class Contract extends AbstractEntity {
 
     public void setSupervisor(Supervisor supervisor) {
         if (supervisor == null) throw new IllegalArgumentException("Supervisor must not be null");
-        if (this.supervisor != null) this.supervisor.setContract(null);
+        if (supervisor.equals(this.supervisor)) return;
         this.supervisor = supervisor;
         supervisor.setContract(this);
     }
@@ -206,25 +211,22 @@ public class Contract extends AbstractEntity {
     }
 
     public void setSecretaries(List<Secretary> secretaries) {
-        this.secretaries.forEach(s -> s.setContract(null));
+        if (secretaries.size() <= 1) throw new IllegalArgumentException("Need at least one Secretary");
         this.secretaries.clear();
-        if (secretaries != null) {
-            this.secretaries.addAll(secretaries);
-            secretaries.forEach(s -> s.setContract(this));
-        }
+        this.secretaries.addAll(secretaries);
+        secretaries.forEach(secretary -> secretary.setContract(this));
     }
 
     public void addSecretary(Secretary secretary) {
-        if (secretary != null) {
-            secretaries.add(secretary);
-            secretary.setContract(this);
-        }
+        if (secretary == null) return;
+        if (secretaries.contains(secretary)) return;
+        secretaries.add(secretary);
+        secretary.setContract(this);
     }
 
     public void removeSecretary(Secretary secretary) {
         if (secretary == null) return;
         secretaries.remove(secretary);
-        secretary.setContract(null);
     }
 
     public List<Assistant> getAssistants() {
@@ -232,15 +234,15 @@ public class Contract extends AbstractEntity {
     }
 
     public void setAssistants(List<Assistant> assistants) {
-        this.assistants.forEach(a -> a.setContract(null));
-        this.assistants.clear();
         if (assistants == null) return;
+        this.assistants.clear();
         this.assistants.addAll(assistants);
-        assistants.forEach(a -> a.setContract(this));
+        assistants.forEach(assistant -> assistant.setContract(this));
     }
 
     public void addAssistant(Assistant assistant) {
         if (assistant == null) return;
+        if (assistants.contains(assistant)) return;
         assistants.add(assistant);
         assistant.setContract(this);
     }
@@ -248,7 +250,6 @@ public class Contract extends AbstractEntity {
     public void removeAssistant(Assistant assistant) {
         if (assistant == null) return;
         assistants.remove(assistant);
-        assistant.setContract(null);
     }
 
     public List<Timesheet> getTimesheets() {
@@ -256,10 +257,10 @@ public class Contract extends AbstractEntity {
     }
 
     public void setTimesheets(List<Timesheet> timesheets) {
-        this.timesheets.forEach(t -> t.setContract(null));
+        if (timesheets == null) return;
         this.timesheets.clear();
         this.timesheets.addAll(timesheets);
-        timesheets.forEach(t -> t.setContract(this));
+        timesheets.forEach(timesheet -> timesheet.setContract(this));
     }
 
     public void addTimesheet(Timesheet timesheet) {
@@ -273,13 +274,19 @@ public class Contract extends AbstractEntity {
         return vacationHours();
     }
 
-    
+
     public void removeTimesheet(Timesheet timesheet) {
         if (timesheet != null) {
             timesheets.remove(timesheet);
             timesheet.setContract(null); // this removes the reference  
         }
     }
-    
-    
+
+    public Integer getArchiveDurationInYears() {
+        return archiveDurationInYears;
+    }
+
+    public void setArchiveDurationInYears(Integer archiveDurationInYears) {
+        this.archiveDurationInYears = archiveDurationInYears;
+    }
 }

@@ -14,27 +14,14 @@ public abstract class AbstractEntity implements Serializable {
     private Long id;
 
     @Column(unique = true, length = 36)
-    private UUID uuid; // program level identifier just in case
+    private UUID uuid;
 
     @Version
     private int version;
 
 
     public AbstractEntity() {
-    }
-
-    public AbstractEntity(boolean newEntity) {
-        if (newEntity) {
-            uuid = UUID.randomUUID();
-        }
-    }
-
-
-    @PrePersist
-    private void generateUuidOnPersist() {
-        if (uuid == null) {
-            uuid = UUID.randomUUID();
-        }
+        uuid = UUID.randomUUID();
     }
 
 
@@ -64,11 +51,14 @@ public abstract class AbstractEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + Objects.hashCode(this.uuid);
-        return hash;
+        return Objects.hash(this.uuid);
     }
 
+    /**
+     * Equality is based on UUID, not field content.
+     *
+     * @param obj the object with which to compare
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

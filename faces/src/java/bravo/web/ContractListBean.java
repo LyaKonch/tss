@@ -1,7 +1,15 @@
 package bravo.web;
 
 import bravo.dto.ContractDTO;
+import bravo.dto.PersonDTO;
+import bravo.dto.PersonDTO;
+import bravo.dto.TimesheetDTO;
+import bravo.entities.Contract;
+import bravo.entities.Timesheet;
+import bravo.enums.ContractStatus;
+import bravo.enums.TimesheetStatus;
 import bravo.logic.ContractLogic;
+import bravo.logic.PersonLogic;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
@@ -14,13 +22,15 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Backing bean for contract list view.
- * This bean provides functionality for viewing and searching lists of contracts.
+ * This bean provides functionality for viewing, searching and interacting with contracts.
  */
 @Named
 @ViewScoped
@@ -29,94 +39,153 @@ public class ContractListBean implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-    private static final Logger logger = Logger.getLogger(ContractListBean.class.getName());
+    private final ResourceBundle locale = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
     @EJB
     private ContractLogic contractLogic;
 
+    @EJB
+    private PersonLogic personLogic;
+
+    @Inject
+    private Authorization auth;
+
     @Inject
     private ContractDetailsBean contractDetailsBean;
 
-    private String searchText;
+    @Inject
+    private ContractEditBean contractEditBean;
 
     private List<ContractDTO> contractList;
 
     /**
-     * Initializes the bean.
+     * Initializes the bean by loading contracts.
      */
     @PostConstruct
     public void init() {
-        try {
-            // Initialize the contract list
-            loadContracts();
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error initializing bean: " + e.getMessage(), null));
-        }
+        // TODO: Get user from session once those new beans are merged
+        loadContracts();
     }
 
     /**
-     * Loads all contracts from the database.
+     * Loads all contracts from the database relevant to the logged-in user.
      */
-    private void loadContracts() {
+    public void loadContracts() {
         try {
-            contractList = contractLogic.findAll();
-        } catch (Exception e) {
-            contractList = new ArrayList<>();
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error loading contracts: " + e.getMessage(), null));
-        }
-    }
+            if (auth.isUserInRole("ADMIN")) contractList = contractLogic.findAll();
+            if (
+                    auth.isUserInRole("USER")
+                            || auth.isUserInRole("STAFF")
+                            && auth.isUserInRole("ADMIN")) {
 
-    /**
-     * Searches for contracts based on the search text.
-     * If the search text is empty, all contracts are loaded.
-     */
-    public void search() {
-        try {
-            if (searchText == null || searchText.trim().isEmpty()) {
-                loadContracts();
-            } else {
-                // Filter contracts by string
-                List<ContractDTO> allContracts = contractLogic.findAll();
-                contractList = new ArrayList<>();
-
-                for (ContractDTO c : allContracts) {
-                    if (c.getName() != null && c.getName().toLowerCase().contains(searchText.toLowerCase())) {
-                        contractList.add(c);
-                    }
-                }
+                PersonDTO person = personLogic.findByEmail(auth.getUserEmail());
+                contractList = contractLogic.findContractsAssociatedWithPerson(person);
             }
+
         } catch (Exception e) {
             contractList = new ArrayList<>();
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error searching contracts: " + e.getMessage(), null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNoMatches"), e.getMessage()));
         }
     }
+
+    public boolean canEdit(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
+    }
+
+    public boolean canStart(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
+    }
+
+    public void startContract(ContractDTO contract) {
+        try {
+            contractLogic.startContract(contract);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractStarted"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractStartFailed"), e.getMessage()));
+            return;
+        }
+        loadContracts();
+    }
+
+    public boolean canTerminate(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.STARTED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
+    }
+
+    public boolean canAbort(ContractDTO contract) {
+       return contractLogic.getAllTimesheetsForContract(contract.getUuid()).stream()
+               .noneMatch(timesheet -> timesheet.getStatus() == TimesheetStatus.SIGNED_BY_EMPLOYEE) && (auth.isSupervisor(contract) || auth.isAssistant(contract));
+    }
+
+    public void abortContract(ContractDTO contract) {
+        try {
+            contractLogic.abortContract(contract.getUuid());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractTerminated"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractTerminationFailed"), e.getMessage()));
+            return;
+        }
+        loadContracts();
+    }
+
+    public void terminateContract(ContractDTO contract) {
+        try {
+            contractLogic.terminate(contract.getUuid(), LocalDate.now());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractTerminated"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractTerminationFailed"), e.getMessage()));
+            return;
+        }
+        loadContracts();
+    }
+
+    public boolean canDelete(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (auth.isSupervisor(contract) || auth.isAssistant(contract));
+    }
+
+    public void deleteContract(ContractDTO contract) {
+        try {
+            contractLogic.deleteContract(contract.getUuid());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractDeleted"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractDeletionFailed"), e.getMessage()));
+            return;
+        }
+        loadContracts();
+    }
+
 
     public void prepareDetails(ContractDTO contract) {
         contractDetailsBean.init(contract);
     }
 
+    public void prepareEdit(ContractDTO contract) {
+        contractEditBean.prepareEdit(contract);
+    }
+
+    public void prepareCreate() {
+        contractEditBean.prepareCreate();
+    }
+
     public String formatDate(LocalDate date) {
-        return (date != null ? date.format(formatter) : "Invalid");  // TODO: Use locale and maybe localized date format
-    }
-
-
-    public String getSearchText() {
-        return searchText;
-    }
-
-    public void setSearchText(String searchText) {
-        this.searchText = searchText;
+        if (date == null) return "Invalid";
+        Locale currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(currentLocale);
+        return date.format(formatter);
     }
 
     public List<ContractDTO> getContractList() {
-        if (contractList == null) {
-            loadContracts();
-        }
+        if (contractList == null) loadContracts();
         return contractList;
     }
 

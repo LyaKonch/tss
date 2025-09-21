@@ -8,6 +8,7 @@ import bravo.entities.Contract;
 import bravo.entities.Person;
 import bravo.entities.Secretary;
 import bravo.entities.Timesheet;
+import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetStatus;
 import bravo.logic.EmailService;
 import com.sun.istack.logging.Logger;
@@ -53,7 +54,7 @@ public class ReminderScheduler {
     private EmailService emailService;
 
     //RE4 remind every day
-    @Schedule(hour = "10", minute = "0", persistent = false)
+    @Schedule(hour = "15", minute = "0", persistent = false)
     public void sendReminders() {
         LOGGER.info("ReminderScheduler: Checking for overdue timesheets...");
         LocalDate today = LocalDate.now();
@@ -62,7 +63,6 @@ public class ReminderScheduler {
         // I've chosen the structure of hashmap: key(email of a person)-> value(email body)
         // then i iterate through this map in the end of this function, accumulate all email bodys and send only one mail per person
         Map<String, StringBuilder> Reminders = new HashMap<>();
-
         // RE1 remind employee for IN_PROGRESS timesheet
         List<Timesheet> inProgressTimesheets = timesheetDAO.findbyStatus(TimesheetStatus.IN_PROGRESS);
         for (Timesheet timesheet : inProgressTimesheets) {
@@ -146,29 +146,41 @@ public class ReminderScheduler {
     @Schedule(hour = "2", minute = "0", persistent = false)
     @Transactional
     public void cleanupOldArchivedData() {
-        System.out.println("ReminderScheduler: Checking for timesheets archived for more thant two years...");
+        LOGGER.info("Scheduler: Starting cleanup of old archived timesheets and contracts...");
 
-        LocalDate twoYearsAgo = LocalDate.now().minus(2, ChronoUnit.YEARS);
+        List<Contract> allContracts = contractDAO.findAll();
 
-        List<Timesheet> timesheetsToDelete = timesheetDAO.findArchivedBefore(twoYearsAgo);
-        
-        System.out.println("Deleting of  " + timesheetsToDelete.size() + " stored for more than two years.");
-        for (Timesheet timesheet : timesheetsToDelete) {
-            timesheetDAO.delete(timesheet);
-        }
-        
-        List<Contract> allContracts = contractDAO.getAllContracts();
-        
+        //check for old timesheets
         for (Contract contract : allContracts) {
-            List<Timesheet> remainingTimesheets = timesheetDAO.findByContract(contract);
-            
-            // if contract doesn't have any timesheets, it gets deleted.
-            if (remainingTimesheets.isEmpty()) {
-                System.out.println("Deleting contract with UUID: " + contract.getUuid() + ", since there is no more timesheets related to it.");
-                contractDAO.delete(contract);
+            int archiveDurationYears = contract.getArchiveDurationInYears();
+            if (archiveDurationYears <= 0) {
+                // if 0 we skip deletion
+                continue;
+            }
+
+            LocalDate deletionDate = LocalDate.now().minusYears(archiveDurationYears);
+            LOGGER.info("deletionDate " + deletionDate);
+            List<Timesheet> timesheetsToDelete = timesheetDAO.findArchivedByContractBeforeDate(contract, deletionDate);
+            if (!timesheetsToDelete.isEmpty()) {
+                LOGGER.info("Deleting " + timesheetsToDelete.size() + " old timesheets for contract UUID: " + contract.getUuid());
+                for (Timesheet timesheet : timesheetsToDelete) {
+                    contract.removeTimesheet(timesheet);
+                }
+                contractDAO.save(contract);
             }
         }
-        
-        System.out.println("Finishing deleting task.");
+
+        // another check if there is no timesheets in contract
+        List<Contract> contractsAfterCleanup = contractDAO.findAll();
+        for(Contract contract : contractsAfterCleanup) {
+            if (contract.getTimesheets().isEmpty()) {
+                if(contract.getStatus() == ContractStatus.ARCHIVED || contract.getStatus() == ContractStatus.TERMINATED) {
+                    LOGGER.info("Deleting contract with UUID: " + contract.getUuid() + " as it has no more timesheets.");
+                    contractDAO.delete(contract);
+                }
+            }
+        }
+
+        LOGGER.info("Scheduler: Cleanup task finished.");
     }
 }

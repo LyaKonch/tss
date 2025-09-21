@@ -25,5 +25,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="logic" />
     <orderEntry type="library" scope="PROVIDED" name="JakartaEE 10" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="primefaces-15.0.5-jakarta" level="project" />
   </component>
 </module>

@@ -3,9 +3,9 @@ package bravo.web;
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
 import bravo.enums.RoleType;
-import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
 import jakarta.ejb.EJB;
+import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
@@ -13,8 +13,10 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 
@@ -30,12 +32,6 @@ public class ContractDetailsBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(ContractDetailsBean.class.getName());
-
-    // Move to upcoming user bean or sth? since it could be a user setting and then its not duplicated with listBean
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-    @EJB
-    private ContractLogic contractLogic;
 
     @EJB
     private PersonLogic personLogic;
@@ -53,15 +49,13 @@ public class ContractDetailsBean implements Serializable {
 
     private List<PersonDTO> assistants = new ArrayList<>();
 
-    //    @PostConstruct
     public void init(ContractDTO contract) {
-        // Reset lists before initializing with a new contract
-        roles.clear();
-        secretaries.clear();
-        assistants.clear();
+        resetBean();
 
-        // TODO: Get user + user person and make them main person, not employee
-        PersonDTO user = personLogic.findAll().getFirst();
+        // Find the logged-in user's Person
+        String username = FacesContext.getCurrentInstance().getExternalContext().getUserPrincipal().getName();
+        PersonDTO user = personLogic.findByEmail(username);
+        logger.info("User: " + user.getFirstName());
 
         // Load associated persons
         employee = personLogic.findByUuid(contract.getEmployeeUuid());
@@ -78,13 +72,30 @@ public class ContractDetailsBean implements Serializable {
         this.contract = contract;
     }
 
+    /**
+     * Resets the bean to its initial state.
+     */
+    private void resetBean() {
+        contract = null;
+        roles.clear();
+        employee = null;
+        supervisor = null;
+        secretaries.clear();
+        assistants.clear();
+    }
+
     public String getFullName(PersonDTO person) {
         if (person == null) return "";
         return (person.getFirstName() + " " + person.getLastName()).trim();
     }
 
     public String formatDate(LocalDate date) {
-        return (date != null ? date.format(formatter) : "Invalid");  // TODO: Use locale and maybe localized date format
+        if (date == null) return "Invalid";
+        Locale currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(currentLocale);
+        return date.format(formatter);
     }
 
     public ContractDTO getContract() {

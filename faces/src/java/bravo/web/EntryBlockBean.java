@@ -6,10 +6,8 @@ import bravo.dto.TimesheetEntryDTO;
 import bravo.enums.ContractStatus;
 import bravo.enums.ReportType;
 import bravo.enums.TimesheetStatus;
-import bravo.logic.ContractLogic;
 import bravo.logic.TimesheetEntryLogic;
 import bravo.logic.TimesheetLogic;
-import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
@@ -21,8 +19,11 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -38,9 +39,6 @@ public class EntryBlockBean implements Serializable {
     ResourceBundle msg = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
     @Inject
-    private ContractLogic contractLogic;
-
-    @Inject
     private TimesheetLogic timesheetLogic;
 
     @Inject
@@ -54,23 +52,29 @@ public class EntryBlockBean implements Serializable {
 
     private List<TimesheetEntryDTO> entries = new ArrayList<>();
 
-    public EntryBlockBean() {
-    }
+    private boolean editMode = false;
 
-    @PostConstruct
-    public void init() {
-        // TODO: we will eventually know who is logged in, using Alice is ofc only for dummy purposes
-        List<ContractDTO> contracts = contractLogic.findActiveEmployeeContractsByEmail("alice@example.com");
-        // TODO: If we get multiple the user has to select which one - which should in turn load the entries etc and update linked sheet
-        contract = contracts.isEmpty() ? null : contracts.getFirst();
-        if (contract == null) return;
-        timesheet = timesheetLogic.getCurrent(contract);
-        entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
 
-        newEntryWithDefaults();
-        recalcTimesheetHoursDue();
+    public void init(ContractDTO contract) {
+        if (contract == null || contract.getUuid() == null) return;
+        if (contract.getTimesheetUuids().isEmpty()) {
+            logger.info("No timesheets found for contract " + contract.getName());
+            return;
+        }
 
-        logger.info("Initialized EntryBlockBean.");
+        this.contract = contract;
+        try {
+            timesheet = timesheetLogic.getCurrent(contract);
+            if (timesheet == null) return;
+        } catch (Exception e) {
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg.getString("entry.noCurrentTimesheetFound"), e.getMessage()));
+            return;
+        }
+
+        reloadEntryList();
+
+        logger.info("Initialized EntryBlockBean for contract " + contract.getName());
     }
 
     /**
@@ -88,6 +92,8 @@ public class EntryBlockBean implements Serializable {
 
     public void reloadEntryList() {
         entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
+        newEntryWithDefaults();
+        recalcTimesheetHoursDue();
     }
 
     public void recalcFormHours() {
@@ -100,19 +106,31 @@ public class EntryBlockBean implements Serializable {
         currentEntry.setHours(hours);
     }
 
+    public void edit(TimesheetEntryDTO entry) {
+        reloadEntryList();
+        currentEntry = entry;
+        editMode = true;
+        addInfo(msg.getString("entry.preparedEdit"));
+    }
+
     public String save() {
         if (!isEditable()) {
-            addError("Timesheet nicht editierbar.");
-           
+            if (editMode) {
+                addError(msg.getString("entry.notEditable"));
+            } else {
+                addError(msg.getString("entry.cannotSave"));
+            }
             return null;
         }
         try {
             validateForm();
 
-            if (currentEntry.getUuid() == null) currentEntry = timesheetEntryLogic.create(currentEntry);
-            else currentEntry = timesheetEntryLogic.update(currentEntry);
+            if (currentEntry.getId() == null) timesheetEntryLogic.create(currentEntry);
+            else {
+                timesheetEntryLogic.update(currentEntry);
+                editMode = false;
+            }
 
-            recalcTimesheetHoursDue();
             reloadEntryList();
 
             addInfo(msg.getString("label.saved"));
@@ -124,16 +142,21 @@ public class EntryBlockBean implements Serializable {
         return null;
     }
 
-    public void deleteSelected() {
+    public void deleteSelected(TimesheetEntryDTO entry) {
         if (!isEditable()) {
-            addError(msg.getString("entry.notEditable"));
+            addError(msg.getString("entry.cannotDelete"));
             return;
         }
-        if (currentEntry == null) return;
-        entries.remove(currentEntry);
+        if (entry == null || entry.getId() == null) return;
+        try {
+            timesheetEntryLogic.delete(entry);
+            addInfo(msg.getString("entry.deleted"));
+        } catch (Exception e) {
+            addError(msg.getString("entry.deletionFail"));
+            return;
+        }
 
-        recalcTimesheetHoursDue();
-        newEntryWithDefaults();
+        reloadEntryList();
 
         addInfo(msg.getString("entry.deleted"));
     }
@@ -179,6 +202,15 @@ public class EntryBlockBean implements Serializable {
         }
     }
 
+    public String formatDate(LocalDate date) {
+        if (date == null) return "Invalid";
+        Locale currentLocale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(currentLocale);
+        return date.format(formatter);
+    }
+
     public double calcHours(TimesheetEntryDTO e) {
         if (e.getStartTime() == null || e.getEndTime() == null) return 0.0;
         return Duration.between(e.getStartTime(), e.getEndTime()).toMinutes() / 60.0;
@@ -199,9 +231,8 @@ public class EntryBlockBean implements Serializable {
     }
 
     public boolean isEditable() {
-        return timesheet != null
-                && timesheet.getStatus() == TimesheetStatus.IN_PROGRESS
-                && contract.getStatus() == ContractStatus.STARTED;
+        if (timesheet == null) return false;
+        return timesheet.getStatus() == TimesheetStatus.IN_PROGRESS && contract.getStatus() == ContractStatus.STARTED;
     }
 
     public boolean canSign() {
@@ -222,5 +253,13 @@ public class EntryBlockBean implements Serializable {
 
     public void setCurrentEntry(TimesheetEntryDTO currentEntry) {
         this.currentEntry = currentEntry;
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
     }
 }
