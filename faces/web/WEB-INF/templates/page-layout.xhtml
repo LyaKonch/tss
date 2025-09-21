@@ -48,8 +48,10 @@
                     <p:menuitem outcome="dashboard" value="Dashboard" icon="pi pi-th-large" />
                     <p:menuitem outcome="timesheetList" value="Timesheets" icon="pi pi-home" />
                     <p:menuitem outcome="contractList" value="Contract List" icon="pi pi-list" />
+                    <p:menuitem value="#{msg['menu.userDetails']}" outcome="userDetails" icon="pi pi-user" />
                     <p:menuitem outcome="personForm" value="Persons" icon="pi pi-users"
                                 rendered='#{authorization.isUserInRole("ADMIN")}' />
+                    <!-- New -->
                     <p:submenu label="Language" icon="pi pi-globe">
                         <p:menuitem value="Deutsch" action="#{userSessionBean.setLocale('de')}" update="@all" />
                         <p:menuitem value="English" action="#{userSessionBean.setLocale('en')}" update="@all" />

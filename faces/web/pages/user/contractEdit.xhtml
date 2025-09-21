@@ -46,9 +46,12 @@
             <p:inputNumber id="vacationDaysPerYear" value="#{contractEditBean.contract.vacationDaysPerYear}"
                            required="true" minValue="0" maxValue="365" decimalPlaces="0" />
 
-            <p:outputLabel for="archivationDuration" value="Archivation (Years):" />
+            <p:outputLabel for="archivationDuration" value="${msg.contractArchivation}" />
             <p:inputNumber id="archivationDuration" value="#{contractEditBean.contract.archivationDuration}"
                            required="true" minValue="0" decimalPlaces="0" />
+
+            <p:outputLabel for="emptyCell" />
+            <p:outputLabel id="emptyCell" />
 
             <p:outputLabel for="employee" value="${msg.contractEmployee}" />
             <p:autoComplete id="employee" value="#{contractEditBean.employee}" required="true"
