@@ -59,6 +59,12 @@ public class ContractSelectBean implements Serializable {
     }
 
     public void onContractSelect() {
+        if (selectedContract == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNotFound"), null));
+            logger.warning("Tried to select a null contract.");
+            return;
+        }
         logger.info("ContractSelectBean.onSelect: Selected Contract\n" + selectedContract);
         contractSelectedEvent.fire(selectedContract);
 
