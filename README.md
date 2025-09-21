@@ -17,3 +17,15 @@ bravo-tss/
 ├── .idea/         # IntelliJ IDEA project configuration
 └── docs/          # Documentation (here or wiki or ...)
 ```
+
+- [ ] CN 1
+
+- [ ] CN 2
+
+- [ ] CN 3
+
+- [ ] CN 4a
+
+- [ ] CN 4b
+
+- [ ] CN 4c
