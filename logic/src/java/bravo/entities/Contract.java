@@ -43,7 +43,7 @@ public class Contract extends AbstractEntity {
 
     @Column(nullable = false)
     @Min(0) // 0 means it wont be deleted automatically
-    private int archiveDurationInYears = 2;
+    private Integer archiveDurationInYears = 2;
 
     @Positive
     private Double hoursPerWeek;
@@ -282,11 +282,11 @@ public class Contract extends AbstractEntity {
         }
     }
 
-    public int getArchiveDurationInYears() {
+    public Integer getArchiveDurationInYears() {
         return archiveDurationInYears;
     }
 
-    public void setArchiveDurationInYears(int archiveDurationInYears) {
+    public void setArchiveDurationInYears(Integer archiveDurationInYears) {
         this.archiveDurationInYears = archiveDurationInYears;
     }
 }

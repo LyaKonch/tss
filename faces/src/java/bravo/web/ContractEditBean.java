@@ -71,6 +71,7 @@ public class ContractEditBean implements Serializable {
         contract.setHoursPerWeek(40.0);
         contract.setWorkingDaysPerWeek(5);
         contract.setVacationDaysPerYear(20);
+        contract.setArchivationDuration(2);
     }
 
     /**

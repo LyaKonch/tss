@@ -31,7 +31,7 @@ public class ContractDTO extends AbstractDTO {
 
     private LocalDate terminationDate;
 
-    private int archivationDuration;
+    private Integer archivationDuration;
 
     private Double hoursPerWeek;
 
@@ -226,7 +226,7 @@ public class ContractDTO extends AbstractDTO {
         return archivationDuration;
     }
 
-    public void setArchivationDuration(int archivationDuration) {
+    public void setArchivationDuration(Integer archivationDuration) {
         this.archivationDuration = archivationDuration;
     }
 }
