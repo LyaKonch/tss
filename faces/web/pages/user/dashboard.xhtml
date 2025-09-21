@@ -1,118 +1,38 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html>
 <ui:composition template="/WEB-INF/templates/page-layout.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui">
 
     <ui:define name="title">Dashboard</ui:define>
 
     <ui:define name="content">
-        <h:form id="dashboardForm">
-            <p:growl id="msgs" showDetail="true"/>
 
-            <p:panel header="Contract Selection">
-                <p:panelGrid columns="2" styleClass="ui-noborder">
-                    <p:outputLabel for="contractSelect" value="Select a contract to work with:"/>
-                    <p:selectOneMenu id="contractSelect" value="#{dashboardBean.selectedContractUuid}" style="width: 300px;">
-                        <f:selectItem itemLabel="Select Contract..." itemValue="#{null}" noSelectionOption="true"/>
-                        <f:selectItems value="#{dashboardBean.userContracts}" var="c"
-                                       itemLabel="#{c.name} - Role: #{dashboardBean.roleLabel(c)}"
-                                       itemValue="#{c.uuid}"/>
-                        <p:ajax listener="#{dashboardBean.onContractSelect}"
-                                process="@this"
-                                update="@form:contractContainer @form:msgs" />
-                    </p:selectOneMenu>
-                </p:panelGrid>
+        <p:growl id="msgs" showDetail="true" skipDetailIfEqualsSummary="true" />
+
+        <h:form id="contractSelectForm">
+            <ui:include src="contractSelect.xhtml" />
+            <f:event type="preRenderView" listener="#{dashboardBean.prepareContractSelect}" />
+        </h:form>
+
+        <p:divider />
+
+        <h:form id="entriesForm">
+            <ui:include src="timesheetEntry.xhtml" />
+        </h:form>
+
+        <h:form id="restInNeueListPage">
+            <p:panel header="Timesheet Actions"
+                     rendered="#{dashboardBean.currentTimesheet != null and (authorization.isEmployee(dashboardBean.selectedContract) or authorization.isSupervisor(dashboardBean.selectedContract) or authorization.isAssistant(dashboardBean.selectedContract) or authorization.isSecretary(dashboardBean.selectedContract))}">
+                <p>Current Timesheet Status: <strong>#{dashboardBean.currentTimesheet.status}</strong></p>
+                <p:commandButton value="Sign Timesheet" action="#{dashboardBean.signTimesheet}"
+                                 process="@form" update="@form" styleClass="ui-button-info" icon="pi pi-check"
+                                 rendered="#{dashboardBean.currentTimesheet.status == 'IN_PROGRESS' or (dashboardBean.currentTimesheet.status == 'SIGNED_BY_EMPLOYEE' and (authorization.isSupervisor(dashboardBean.selectedContract) or authorization.isAssistant(dashboardBean.selectedContract)))}" />
+                <p:commandButton value="View Statistics" type="button" icon="pi pi-chart-bar"
+                                 styleClass="ui-button-help" style="margin-left: 10px;" />
             </p:panel>
-
-            <p:divider/>
-            <h:panelGroup id="contractContainer" layout="block">
-
-                <h:panelGroup id="contractSpecificContent" layout="block"
-                              rendered="#{dashboardBean.selectedContract != null}">
-
-                    <h2>Details for: #{dashboardBean.selectedContract.name}</h2>
-                    <p>Status: #{dashboardBean.selectedContract.status}</p>
-
-                    <p:panel header="Timesheet Entry" toggleable="true"
-                             rendered="#{authorization.isEmployee(dashboardBean.selectedContract)}">
-
-                        <h:panelGroup rendered="#{dashboardBean.currentTimesheet != null}">
-                            <h3>Adding entry for timesheet: #{dashboardBean.currentTimesheet.startDate} to
-                                #{dashboardBean.currentTimesheet.endDate}</h3>
-
-                            <p:panelGrid columns="2" layout="grid" styleClass="ui-noborder ui-panelgrid-blank">
-                                <p:outputLabel for="entryDate" value="Date"/>
-                                <p:datePicker id="entryDate" value="#{dashboardBean.newEntry.entryDate}" required="true"/>
-
-                                <p:outputLabel for="startTime" value="Start Time"/>
-                                <p:datePicker id="startTime" value="#{dashboardBean.newEntry.startTime}" pattern="HH:mm"
-                                              timeOnly="true" required="true"/>
-
-                                <p:outputLabel for="endTime" value="End Time"/>
-                                <p:datePicker id="endTime" value="#{dashboardBean.newEntry.endTime}" pattern="HH:mm"
-                                              timeOnly="true" required="true"/>
-
-                                <p:outputLabel for="type" value="Type"/>
-                                <p:selectOneMenu id="type" value="#{dashboardBean.newEntry.type}">
-                                    <f:selectItems value="#{reportType.values()}" var="t" itemLabel="#{t}"
-                                                   itemValue="#{t}"/>
-                                </p:selectOneMenu>
-
-                                <p:outputLabel for="desc" value="Description"/>
-                                <p:inputTextarea id="desc" value="#{dashboardBean.newEntry.description}"/>
-                            </p:panelGrid>
-
-                            <p:commandButton value="Add Entry" action="#{dashboardBean.saveNewEntry}"
-                                             process="@form:contractSpecificContent"
-                                             update="@form:contractSpecificContent @form:msgs"
-                                             styleClass="ui-button-success" icon="pi pi-plus"
-                                             disabled="#{dashboardBean.currentTimesheet.status != 'IN_PROGRESS'}"/>
-
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{dashboardBean.currentTimesheet == null}">
-                            <p:outputLabel value="There is no active timesheet for the selected period."/>
-                        </h:panelGroup>
-                    </p:panel>
-
-                    <p:panel header="Timesheet Actions"
-                             rendered="#{dashboardBean.currentTimesheet != null and (authorization.isEmployee(dashboardBean.selectedContract) or authorization.isSupervisor(dashboardBean.selectedContract) or authorization.isAssistant(dashboardBean.selectedContract) or authorization.isSecretary(dashboardBean.selectedContract))}">
-                        <p>Current Timesheet Status: <strong>#{dashboardBean.currentTimesheet.status}</strong></p>
-                        <p:commandButton value="Sign Timesheet" action="#{dashboardBean.signTimesheet}"
-                                         process="@form" update="@form" styleClass="ui-button-info" icon="pi pi-check"
-                                         rendered="#{dashboardBean.currentTimesheet.status == 'IN_PROGRESS' or (dashboardBean.currentTimesheet.status == 'SIGNED_BY_EMPLOYEE' and (authorization.isSupervisor(dashboardBean.selectedContract) or authorization.isAssistant(dashboardBean.selectedContract)))}"/>
-                        <p:commandButton value="View Statistics" type="button" icon="pi pi-chart-bar"
-                                         styleClass="ui-button-help" style="margin-left: 10px;"/>
-                    </p:panel>
-
-                    <p:panel header="Contract Actions"
-                             rendered="#{authorization.isSupervisor(dashboardBean.selectedContract) or authorization.isAssistant(dashboardBean.selectedContract)}">
-
-                        <p:commandButton value="Start Contract" action="#{dashboardBean.startContract}"
-                                         process="@form" update="@form" styleClass="ui-button-success" icon="pi pi-play"
-                                         rendered="#{dashboardBean.selectedContract.status == 'PREPARED'}"/>
-
-                        <p:commandButton value="Terminate Contract" action="#{dashboardBean.terminateContract}"
-                                         process="@form" update="@form" styleClass="ui-button-danger"
-                                         icon="pi pi-stop-circle"
-                                         rendered="#{dashboardBean.selectedContract.status == 'STARTED'}">
-                            <p:confirm header="Confirmation" message="Are you sure you want to terminate this contract?"
-                                       icon="pi pi-exclamation-triangle"/>
-                        </p:commandButton>
-                    </p:panel>
-
-                </h:panelGroup>
-
-                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
-                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
-                                     icon="pi pi-times"/>
-                </p:confirmDialog>
-            </h:panelGroup>
         </h:form>
     </ui:define>
 </ui:composition>
