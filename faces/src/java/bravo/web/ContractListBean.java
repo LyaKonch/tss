@@ -2,10 +2,6 @@ package bravo.web;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
-import bravo.dto.PersonDTO;
-import bravo.dto.TimesheetDTO;
-import bravo.entities.Contract;
-import bravo.entities.Timesheet;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetStatus;
 import bravo.logic.ContractLogic;
@@ -115,18 +111,18 @@ public class ContractListBean implements Serializable {
     }
 
     public boolean canAbort(ContractDTO contract) {
-       return contractLogic.getAllTimesheetsForContract(contract.getUuid()).stream()
-               .noneMatch(timesheet -> timesheet.getStatus() == TimesheetStatus.SIGNED_BY_EMPLOYEE) && (auth.isSupervisor(contract) || auth.isAssistant(contract));
+        return contractLogic.getAllTimesheetsForContract(contract.getUuid()).stream()
+                .noneMatch(timesheet -> timesheet.getStatus() == TimesheetStatus.SIGNED_BY_EMPLOYEE) && (auth.isSupervisor(contract) || auth.isAssistant(contract));
     }
 
     public void abortContract(ContractDTO contract) {
         try {
             contractLogic.abortContract(contract.getUuid());
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractTerminated"), contract.getName()));
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractAbortSuccess"), contract.getName()));
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractTerminationFailed"), e.getMessage()));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractAbortFail"), e.getMessage()));
             return;
         }
         loadContracts();
