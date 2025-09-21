@@ -6,112 +6,90 @@
                 xmlns:f="jakarta.faces.core"
                 xmlns:p="http://primefaces.org/ui">
 
-  <f:metadata>
-    <f:viewAction action="#{userDetailsBean.load}" />
-  </f:metadata>
-
   <ui:define name="title">
     #{msg['app.title']}
   </ui:define>
 
-  <ui:define name="head">
-    <style>
-      .page-wrap   { max-width:980px; margin:32px auto; padding:0 16px; }
-      .card        { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
-      .card-head   { display:flex; align-items:center; gap:10px; padding:16px 18px; border-bottom:1px solid #eee; }
-      .card-body   { padding:18px; }
-      .field-col   { display:flex; flex-direction:column; gap:6px; }
-      .label-row   { display:flex; align-items:center; gap:8px; font-weight:600; color:#333; }
-      .muted       { color:#777; }
-      .ro-input {
-        width:100%; height:44px; border:1px solid #e5e7eb; border-radius:10px;
-        background:#f3f4f6; color:#111; padding:0 12px;
-        display:flex; align-items:center; box-sizing:border-box;
-        font-family:system-ui,"Segoe UI",Roboto,Arial,sans-serif; font-size:14px;
-      }
-      .pi { font-size:1rem; }
-      .icon-circle {
-        width:28px; height:28px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center;
-        background:#f3f4f6; color:#111;
-      }
-      .cols { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-      @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
-    </style>
-  </ui:define>
-
-  
   <ui:define name="content">
+    <style>
+    
+      .panel {
+        max-width: 900px;
+        margin: 20px auto;
+        border-radius: 14px;
+        padding: 18px; /* wirkt auf Content */
+        box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        border: 1px solid #e5e7eb;
+      }
+      .ui-panel .ui-panel-titlebar { padding: .6rem 1rem; }
+      .pf-title-wrap { display:flex; flex-direction:column; }
+      .pf-title { font-weight:700; line-height:1.1; }
+      .pf-subtitle { color:#777; font-size:.8rem; margin-top:2px; }
 
-    <h:form id="userForm">
-      
-      <p:messages id="msgs" showDetail="true" closable="true">
-          <p:autoUpdate/>
-      </p:messages>
+      .two-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 768px) { .two-cols { grid-template-columns: 1fr; } }
 
-      <div class="page-wrap">
-        <div class="card">
+      .field-label {
+        display:flex; align-items:center; gap:.5rem;
+        font-weight:600; color:#333; margin-bottom:.4rem;
+      }
 
-          <!-- h -->
-          <div class="card-head">
-            <span class="icon-circle"><i class="pi pi-user"></i></span>
-            <div>
-              <div style="font-weight:700;">#{msg['app.title']}</div>
-              <div class="muted" style="font-size:12px;">#{msg['view.subtitle']}</div>
-            </div>
+      .p-inputtext[readonly] { background:#f3f4f6; border-color:#e5e7eb; }
+
+      .readbox {
+        width:100%; height:44px; border:1px solid #e5e7eb; border-radius:10px;
+        background:#f3f4f6; color:#111; display:flex; align-items:center;
+        padding:0 12px; box-sizing:border-box;
+      }
+      .role-chip { display:inline-block; font-size:.75rem; line-height:1;
+                   padding:.35rem .6rem; border-radius:999px; background:#e9edf3; }
+    </style>
+
+    <h:form id="userForm" styleClass="ui-fluid">
+      <p:messages id="msgs" showDetail="true" closable="true"><p:autoUpdate/></p:messages>
+
+      <p:panel styleClass="panel">
+        <f:facet name="header">
+          <div class="pf-title-wrap">
+            <span class="pf-title">#{msg['app.title']}</span>
+            <span class="pf-subtitle">#{msg['view.subtitle']}</span>
+          </div>
+        </f:facet>
+
+        <div class="two-cols">
+
+          <!-- Name -->
+          <div>
+            <div class="field-label"><i class="pi pi-id-card"></i><span>#{msg['user.name']}</span></div>
+            <p:inputText id="fullName" value="#{userDetailsBean.fullName}" readonly="true" style="width:100%" />
           </div>
 
-          <!-- b -->
-          <div class="card-body">
-            <div class="cols">
+          <!-- Mail -->
+          <div>
+            <div class="field-label"><i class="pi pi-envelope"></i><span>#{msg['user.email']}</span></div>
+            <p:inputText id="email"
+                         value="#{empty userDetailsBean.person.email ? '-' : userDetailsBean.person.email}"
+                         readonly="true" style="width:100%" />
+          </div>
 
-              <!-- Name -->
-              <div class="field-col">
-                <div class="label-row">
-                  <i class="pi pi-id-card"></i>
-                  <span>#{msg['user.firstName']}</span>
-                </div>
-                <div class="ro-input">#{userDetailsBean.fullName}</div>
-              </div>
+          <!-- Birth -->
+          <div>
+            <div class="field-label"><i class="pi pi-calendar"></i><span>#{msg['user.birthDate']}</span></div>
+            <p:inputText id="birth" value="#{userDetailsBean.getbirthDate}" readonly="true" style="width:100%" />
+          </div>
 
-              <!-- Email -->
-              <div class="field-col">
-                <div class="label-row">
-                  <i class="pi pi-envelope"></i>
-                  <span>#{msg['user.email']}</span>
-                </div>
-                <div class="ro-input">
-                  #{empty userDetailsBean.user.email ? '-' : userDetailsBean.user.email}
-                </div>
-              </div>
-
-              <!-- Birth -->
-              <div class="field-col">
-                <div class="label-row">
-                  <i class="pi pi-calendar"></i>
-                  <span>#{msg['user.birthDate']}</span>
-                </div>
-                <div class="ro-input">
-                  #{userDetailsBean.birthDateFormatted}
-                </div>
-              </div>
-
-              
-              <div class="field-col">
-                <div class="label-row">
-                  <i class="pi pi-shield"></i>
-                  <span>#{msg['user.defaultRole']}</span>
-                </div>
-                <div class="ro-input">
-                  #{userDetailsBean.defaultRoleDisplay}
-                </div>
-              </div>
-
-            </div>
-          </div> 
+          <!-- Role -->
+          <div>
+            <div class="field-label"><i class="pi pi-shield"></i><span>#{msg['user.defaultRole']}</span></div>
+            <div class="readbox"><span class="role-chip">#{userDetailsBean.getRole}</span></div>
+          </div>
 
         </div>
-      </div>
+      </p:panel>
     </h:form>
-
   </ui:define>
 </ui:composition>
