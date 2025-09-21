@@ -54,7 +54,7 @@ public class ReminderScheduler {
     private EmailService emailService;
 
     //RE4 remind every day
-    @Schedule(hour = "10", minute = "0", persistent = false)
+    @Schedule(hour = "15", minute = "0", persistent = false)
     public void sendReminders() {
         LOGGER.info("ReminderScheduler: Checking for overdue timesheets...");
         LocalDate today = LocalDate.now();
@@ -63,7 +63,6 @@ public class ReminderScheduler {
         // I've chosen the structure of hashmap: key(email of a person)-> value(email body)
         // then i iterate through this map in the end of this function, accumulate all email bodys and send only one mail per person
         Map<String, StringBuilder> Reminders = new HashMap<>();
-
         // RE1 remind employee for IN_PROGRESS timesheet
         List<Timesheet> inProgressTimesheets = timesheetDAO.findbyStatus(TimesheetStatus.IN_PROGRESS);
         for (Timesheet timesheet : inProgressTimesheets) {
@@ -147,7 +146,7 @@ public class ReminderScheduler {
     @Schedule(hour = "2", minute = "0", persistent = false)
     @Transactional
     public void cleanupOldArchivedData() {
-        System.out.println("Scheduler: Starting cleanup of old archived timesheets and contracts...");
+        LOGGER.info("Scheduler: Starting cleanup of old archived timesheets and contracts...");
 
         List<Contract> allContracts = contractDAO.findAll();
 
@@ -160,11 +159,10 @@ public class ReminderScheduler {
             }
 
             LocalDate deletionDate = LocalDate.now().minusYears(archiveDurationYears);
-
+            LOGGER.info("deletionDate " + deletionDate);
             List<Timesheet> timesheetsToDelete = timesheetDAO.findArchivedByContractBeforeDate(contract, deletionDate);
-
             if (!timesheetsToDelete.isEmpty()) {
-                System.out.println("Deleting " + timesheetsToDelete.size() + " old timesheets for contract UUID: " + contract.getUuid());
+                LOGGER.info("Deleting " + timesheetsToDelete.size() + " old timesheets for contract UUID: " + contract.getUuid());
                 for (Timesheet timesheet : timesheetsToDelete) {
                     contract.removeTimesheet(timesheet);
                 }
@@ -177,12 +175,12 @@ public class ReminderScheduler {
         for(Contract contract : contractsAfterCleanup) {
             if (contract.getTimesheets().isEmpty()) {
                 if(contract.getStatus() == ContractStatus.ARCHIVED || contract.getStatus() == ContractStatus.TERMINATED) {
-                    System.out.println("Deleting contract with UUID: " + contract.getUuid() + " as it has no more timesheets.");
+                    LOGGER.info("Deleting contract with UUID: " + contract.getUuid() + " as it has no more timesheets.");
                     contractDAO.delete(contract);
                 }
             }
         }
 
-        System.out.println("Scheduler: Cleanup task finished.");
+        LOGGER.info("Scheduler: Cleanup task finished.");
     }
 }

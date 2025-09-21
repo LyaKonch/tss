@@ -49,7 +49,7 @@ public class ContractSelectBean implements Serializable {
 
         if (contracts.isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNotFound"), null));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNotAvailable"), null));
             logger.info("ContractSelectBean.init: No contracts found.");
             return;
         }

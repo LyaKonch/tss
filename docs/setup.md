@@ -31,6 +31,29 @@ You likely want to enable both read and write to repositories if you create a pe
             - password `APP` (the password you chose for the user you created when setting up all tools)
         - If you don't remember, look at your jakartaee-pool config from that initial setup
     - Create a JDBC resource `jdbc/bravo-tss` with the bravo-tss-pool
+    - Create a Security Configuration (Configurations->server-config->Security-> Realms there new...) with Name `realm/jdbcRealm`
+        and Class Name `com.sun.enterprice.security.ee.authentication.glassfish.jdbc.JDBCRealm`
+        - JAAS Context: `jdbcRealm`
+        - JNDI: `jdbc/bravo-tss`
+        - User Table: `users`
+        - User Name Column: `email`
+        - Group Name Column: `group_name`
+        - Password Encryption Algorithm: `SHA-256`
+        - Database User: `APP`
+        - Database Password: `APP`
+    - Create JavaMail Sessio (Resources-> JavaMail Sessions there new...)
+        - JNDI Name: `mail/TSSMailSession`
+        - Mail Host: `smtp.uni-koblenz.de``
+        - Default User: `your Username`
+        - Default Sender Address: `your email`
+    - Add Property on the same page (Name;Value)
+        - `mail.smtp.starttls.enable`;`false`
+        - `mail.smtp.ssl.enable`;`true`
+        - `mail.smtp.port`;`465``
+        - `mail.smtp.password`; your password
+        - `mail.smtp.user`;your username
+        - `mail.smtp.auth`;`true`
+
 
 - Finish project import/setup for your IDE (see below for hints)
 

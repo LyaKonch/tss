@@ -5,6 +5,7 @@ import bravo.dao.RoleDAO;
 import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
+import bravo.dto.TimesheetDTO;
 import bravo.entities.*;
 import bravo.enums.ContractStatus;
 import bravo.enums.TimesheetFrequency;
@@ -161,14 +162,16 @@ public class ContractLogicBean implements ContractLogic {
                 throw new IllegalStateException("Contract is allowed for termination only in STARTED state.");
             }
 
-            if (terminationDate.isBefore(LocalDate.now())) entity.setStatus(ContractStatus.TERMINATED);
+            entity.setStatus(ContractStatus.TERMINATED);
             entity.setTerminationDate(terminationDate);
+            logger.info("I am here");
             List<Timesheet> timesheetsToRemove = new ArrayList<>();
             for (Timesheet ts : entity.getTimesheets()) {
                 if (ts.getStatus() == TimesheetStatus.IN_PROGRESS) {
                     timesheetsToRemove.add(ts);
                 }
             }
+            logger.info("Removing timesheets " + timesheetsToRemove.size() + " from timesheets list.");
             for (Timesheet ts : timesheetsToRemove) {
                 entity.removeTimesheet(ts);
             }
@@ -284,6 +287,10 @@ public class ContractLogicBean implements ContractLogic {
         return ContractMapper.toDto(entity);
     }
 
+    @Override
+    public List<TimesheetDTO> getAllTimesheetsForContract(String uuid){
+        return timesheetBean.findByContractUuid(uuid);
+    }
     /**
      * Deletes a contract from the database. This is the final step in the
      * contract lifecycle.

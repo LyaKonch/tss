@@ -176,6 +176,10 @@ public class TimesheetListBean implements Serializable {
         return timesheet.getStatus() == TimesheetStatus.SIGNED_BY_SUPERVISOR && authorization.isSecretary(selectedContract);
     }
 
+    public boolean canPrint() {
+        return authorization.isSecretary(selectedContract);
+    }
+
     public void archiveTimesheet(TimesheetDTO currentTimesheet) {
         if (currentTimesheet == null) {
             addError("entry.noCurrentTimesheetFound");
