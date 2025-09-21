@@ -61,8 +61,8 @@ public class LoginBean {
 
             return "dashboard";
         } catch (ServletException e) {
-            fc.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Login failed", "Invalid credentials"));
-            return null; // stay on page
+            
+            return "aboutTSS"; // stay on page
         }
     }
 
