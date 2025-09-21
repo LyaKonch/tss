@@ -16,6 +16,8 @@ public interface TimesheetEntryLogic {
      */
     TimesheetEntryDTO update(TimesheetEntryDTO timesheetEntry);
 
+    void delete(TimesheetEntryDTO timesheetEntry);
+
     /**
      * Get all entry DTOs for a timesheet.
      */
