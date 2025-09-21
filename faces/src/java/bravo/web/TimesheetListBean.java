@@ -107,7 +107,6 @@ public class TimesheetListBean implements Serializable {
     }
 
     public void onContractSelect(@Observes ContractDTO selected) {
-        this.timesheetList.clear();
         this.selectedContract = selected;
         logger.info("DashboardBean.onSelect: Chosen contract:\n" + selectedContract);
         loadTimesheets();
