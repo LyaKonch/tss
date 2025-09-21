@@ -7,30 +7,79 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Data Transfer Object (DTO) for {@link bravo.entities.Timesheet} information.
+ * <p>
+ * Extends {@link AbstractDTO} to inherit common DTO properties such as {@code id}, {@code uuid}, and {@code version}.
+ * Contains timesheet details, associated contract, entries, and signing information.
+ */
 public class TimesheetDTO extends AbstractDTO {
 
+    /**
+     * Status of the timesheet (e.g., OPEN, SUBMITTED, APPROVED, ARCHIVED).
+     */
     private TimesheetStatus status;
 
+    /**
+     * Start date of the timesheet period.
+     */
     private LocalDate startDate;
 
+    /**
+     * End date of the timesheet period.
+     */
     private LocalDate endDate;
 
+    /**
+     * Total hours due for the timesheet period.
+     */
     private double hoursDue;
 
+    /**
+     * Date when the employee signed the timesheet, if applicable.
+     */
     private LocalDate signedByEmployee;
 
+    /**
+     * Date when the supervisor signed the timesheet, if applicable.
+     */
     private LocalDate signedBySupervisor;
 
+    /**
+     * UUID of the associated contract.
+     */
     private String contractUuid;
 
+    /**
+     * List of timesheet entries associated with this timesheet.
+     */
     private List<TimesheetEntryDTO> entries;
 
+    /**
+     * List of UUIDs for the timesheet entries.
+     */
     private List<String> timesheetEntryUuids = new ArrayList<>();
 
+    /**
+     * Default constructor.
+     */
     public TimesheetDTO() {
         super();
     }
 
+    /**
+     * Constructor with full initialization.
+     *
+     * @param uuid               UUID of the timesheet
+     * @param jpaVersion         JPA version number
+     * @param contractUuid       UUID of the associated contract
+     * @param startDate          start date of the timesheet period
+     * @param endDate            end date of the timesheet period
+     * @param status             timesheet status
+     * @param signedByEmployee   date signed by employee
+     * @param signedBySupervisor date signed by supervisor
+     * @param entries            list of associated timesheet entries
+     */
     public TimesheetDTO(String uuid, int jpaVersion, String contractUuid, LocalDate startDate, LocalDate endDate, TimesheetStatus status, LocalDate signedByEmployee, LocalDate signedBySupervisor, List<TimesheetEntryDTO> entries) {
         super(uuid, jpaVersion);
         this.startDate = startDate;
@@ -43,6 +92,8 @@ public class TimesheetDTO extends AbstractDTO {
         this.timesheetEntryUuids = entries.stream().map(TimesheetEntryDTO::getUuid).toList();
     }
 
+
+    // --- Getters and Setters ---
 
     public TimesheetStatus getStatus() {
         return status;

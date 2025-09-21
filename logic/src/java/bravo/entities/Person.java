@@ -11,6 +11,12 @@ import java.util.Set;
 
 import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 
+/**
+ * JPA Entity representing a Person.
+ * <p>
+ * A Person can have multiple Roles (Employee, Supervisor, Secretary, Assistant, etc.)
+ * and is associated with attributes like name, date of birth, email, consent, and federal state.
+ */
 @Entity
 @Table(name = "person")
 @NamedQueries({
@@ -27,25 +33,44 @@ import static bravo.enums.FederalState.RHINELAND_PALATINATE;
 })
 public class Person extends AbstractEntity {
 
+    /**
+     * The first name of the person. Cannot be blank.
+     */
     @NotBlank
     private String firstName;
 
+    /**
+     * The last name of the person. Cannot be blank.
+     */
     @NotBlank
     private String lastName;
 
+    /**
+     * The date of birth of the person.
+     */
     private LocalDate dateOfBirth;
 
+    /**
+     * Unique email address for the person. Cannot be null.
+     */
     @Column(unique = true, nullable = false)
     private String emailAddress;
 
+    /**
+     * Whether the person has given consent.
+     */
     private boolean consent;
 
-    // state should be chosen by user.
+    /**
+     * Federal state of the person. Default is RHINELAND_PALATINATE.
+     */
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private FederalState state = RHINELAND_PALATINATE;
 
-    // Person 1 < --- > 0..* Role
+    /**
+     * Roles associated with the person (one-to-many).
+     */
     @OneToMany(mappedBy = "person", orphanRemoval = true)
     private Set<Role> roles = new HashSet<>();
 
@@ -54,6 +79,10 @@ public class Person extends AbstractEntity {
         super();
     }
 
+
+    /**
+     * -- Getter and Setter --
+     */
 
     public FederalState getState() {
         return state;
@@ -107,6 +136,12 @@ public class Person extends AbstractEntity {
         return roles;
     }
 
+    /**
+     * Sets the roles for this person.
+     * Clears the current roles and assigns new roles with bidirectional update.
+     *
+     * @param roles the new set of roles
+     */
     public void setRoles(Set<Role> roles) {
         this.roles.clear();
         if (roles == null) return;
@@ -115,9 +150,10 @@ public class Person extends AbstractEntity {
     }
 
     /**
-     * Bidirectional update for adding a new role.
-     * Updates the new role's person reference.
-     * Doesn't remove the old role from this person.
+     * Adds a role to this person and updates the role's person reference.
+     * Does not remove existing roles.
+     *
+     * @param role the role to add
      */
     public void addRole(Role role) {
         if (role == null) return;
@@ -126,14 +162,12 @@ public class Person extends AbstractEntity {
     }
 
     /**
-     * Remove the role from the person's collection.
+     * Removes a role from this person's collection.
+     *
+     * @param role the role to remove
      */
     public void removeRole(Role role) {
         if (role == null) return;
         roles.remove(role);
     }
-
-
 }
-
-

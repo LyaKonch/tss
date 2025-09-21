@@ -6,25 +6,50 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Base class for all JPA entities.
+ * <p>
+ * Provides common fields such as:
+ * <ul>
+ *     <li>{@code id} - primary key (auto-generated)</li>
+ *     <li>{@code uuid} - unique identifier across instances</li>
+ *     <li>{@code version} - for optimistic locking</li>
+ * </ul>
+ * <p>
+ * Equality and hashCode are based on the {@code uuid} field.
+ */
 @MappedSuperclass
 public abstract class AbstractEntity implements Serializable {
 
+    /**
+     * Primary key for the entity.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Globally unique identifier (UUID).
+     */
     @Column(unique = true, length = 36)
     private UUID uuid;
 
+    /**
+     * Version field for optimistic locking.
+     */
     @Version
     private int version;
 
 
+    /**
+     * Default constructor that initializes a new UUID.
+     */
     public AbstractEntity() {
         uuid = UUID.randomUUID();
     }
 
 
+    // --- Getters and Setters ---
     public Long getId() {
         return id;
     }
@@ -55,9 +80,10 @@ public abstract class AbstractEntity implements Serializable {
     }
 
     /**
-     * Equality is based on UUID, not field content.
+     * Equality is based on UUID, not other field contents.
      *
-     * @param obj the object with which to compare
+     * @param obj the object to compare with
+     * @return {@code true} if the UUIDs are equal; {@code false} otherwise
      */
     @Override
     public boolean equals(Object obj) {

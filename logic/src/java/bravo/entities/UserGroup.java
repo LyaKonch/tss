@@ -5,6 +5,12 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
+/**
+ * Entity representing a mapping between a user and a group.
+ * Uses a composite primary key (UserGroupId).
+ *
+ * <p>Includes convenience getters for email and group name.</p>
+ */
 @Entity
 @Table(name = "user_groups")
 public class UserGroup {
@@ -23,6 +29,7 @@ public class UserGroup {
         this.id = new UserGroupId(username, groupName);
     }
 
+    // Getter and setter for the composite ID
     public UserGroupId getId() {
         return id;
     }

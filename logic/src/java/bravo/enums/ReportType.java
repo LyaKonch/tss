@@ -14,6 +14,7 @@ public enum ReportType {
         this.color = color;
     }
 
+    // --- Getters and Setters ---
     public String getDisplayName() {
         return displayName;
     }

@@ -1,14 +1,18 @@
 package bravo.entities;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import bravo.enums.GroupName;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
+import java.io.Serializable;
+import java.util.Objects;
+
+/**
+ * Composite primary key for UserGroup entity.
+ * Consists of user email and group name.
+ */
 @Embeddable
 public class UserGroupId implements Serializable {
 
@@ -21,19 +25,30 @@ public class UserGroupId implements Serializable {
     @Enumerated(EnumType.STRING)
     private GroupName groupName;
 
-    public UserGroupId() {}
+    public UserGroupId() {
+    }
 
     public UserGroupId(String email, GroupName groupName) {
         this.email = email;
         this.groupName = groupName;
     }
 
-    // getters / setters
-    public String getEmail() { return email; }
-    public void setUsername(String email) { this.email = email; }
+    // --getter and setter--
+    public String getEmail() {
+        return email;
+    }
 
-    public GroupName getGroupName() { return groupName; }
-    public void setGroupName(GroupName groupName) { this.groupName = groupName; }
+    public void setUsername(String email) {
+        this.email = email;
+    }
+
+    public GroupName getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(GroupName groupName) {
+        this.groupName = groupName;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -2,10 +2,11 @@ package bravo.entities;
 
 import jakarta.persistence.*;
 
-
 /**
  * Entity class for the 'users' database table.
  * Represents a user and their associated groups.
+ *
+ * <p>Standard getters and setters provide access to the email and password fields.</p>
  */
 @Entity
 @Table(name = "users")
@@ -21,6 +22,8 @@ public class User extends AbstractEntity {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    // -- Getters and Setters --
 
     public String getEmail() {
         return email;

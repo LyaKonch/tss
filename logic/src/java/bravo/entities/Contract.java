@@ -12,6 +12,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * JPA Entity representing a Contract.
+ * <p>
+ * A Contract has a status, associated employee and supervisor, secretaries, assistants, and timesheets.
+ * Provides calculated fields such as vacation hours.
+ */
 @Entity
 @Table(name = "contract")
 @NamedQueries({
@@ -59,25 +65,37 @@ public class Contract extends AbstractEntity {
     private int vacationDaysPerYear = 20;
 
 
-    // Contract 1 < --- > 1 Employee
+    // --- Role Associations ---
+
+    /**
+     * Contract 1 < --- > 1 Employee
+     */
     @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private Employee employee;
 
-    // Contract 1 < --- > 1 Supervisor
+    /**
+     * Contract 1 < --- > 1 Supervisor
+     */
     @OneToOne(mappedBy = "contract", optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private Supervisor supervisor;
 
-    // Contract 1 < --- > 1..* Secretary
+    /**
+     * Contract 1 < --- > 1..* Secretary
+     */
     @NotNull
     @Size(min = 1, message = "Every Contract needs at least one Secretary.")
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Secretary> secretaries = new ArrayList<>();
 
-    // Contract 1 < --- > 0..* Assistant
+    /**
+     * Contract 1 < --- > 0..* Assistant
+     */
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Assistant> assistants = new ArrayList<>();
 
-    // Contract 1 < --- > * Timesheet
+    /**
+     * Contract 1 < --- > * Timesheet
+     */
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Timesheet> timesheets = new ArrayList<>();
 
@@ -86,6 +104,7 @@ public class Contract extends AbstractEntity {
         super();
     }
 
+    // --- Transient Calculated Fields ---
 
     @Transient
     private double vacationHours() {
@@ -99,6 +118,7 @@ public class Contract extends AbstractEntity {
         return (int) ChronoUnit.MONTHS.between(startDate.withDayOfMonth(1), endDate.withDayOfMonth(1)) + 1;
     }
 
+    // --- Getters and Setters ---
 
     public ContractStatus getStatus() {
         return status;
@@ -270,6 +290,11 @@ public class Contract extends AbstractEntity {
         }
     }
 
+    /**
+     * Calculates the total vacation hours for this contract based on working days and hours per week.
+     *
+     * @return calculated vacation hours
+     */
     public double getVacationHours() {
         return vacationHours();
     }
