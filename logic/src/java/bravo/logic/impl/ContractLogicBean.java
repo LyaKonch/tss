@@ -129,9 +129,10 @@ public class ContractLogicBean implements ContractLogic {
                 throw new IllegalStateException("Contract is allowed for termination only in STARTED state.");
             }
 
-            if (terminationDate.isBefore(LocalDate.now())) entity.setStatus(ContractStatus.TERMINATED);
+            entity.setStatus(ContractStatus.TERMINATED);
             entity.setTerminationDate(terminationDate);
-            entity.getTimesheets().removeIf(ts -> ts.getStatus() == TimesheetStatus.IN_PROGRESS);
+            List<Timesheet> toDelete = entity.getTimesheets().stream().filter(ts -> ts.getStatus() == TimesheetStatus.IN_PROGRESS).toList();
+            for (Timesheet ts : toDelete) entity.removeTimesheet(ts);
             contractDAO.save(entity);
             return ContractMapper.toDto(entity);
         } else {

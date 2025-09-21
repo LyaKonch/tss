@@ -25,7 +25,7 @@ import java.util.ResourceBundle;
 
 /**
  * Backing bean for contract list view.
- * This bean provides functionality for viewing and searching lists of contracts.
+ * This bean provides functionality for viewing, searching and interacting with contracts.
  */
 @Named
 @ViewScoped
@@ -103,7 +103,9 @@ public class ContractListBean implements Serializable {
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractStartFailed"), e.getMessage()));
+            return;
         }
+        loadContracts();
     }
 
     public boolean canTerminate(ContractDTO contract) {
@@ -118,7 +120,9 @@ public class ContractListBean implements Serializable {
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractTerminationFailed"), e.getMessage()));
+            return;
         }
+        loadContracts();
     }
 
     public boolean canDelete(ContractDTO contract) {
@@ -133,7 +137,9 @@ public class ContractListBean implements Serializable {
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractDeletionFailed"), e.getMessage()));
+            return;
         }
+        loadContracts();
     }
 
 
