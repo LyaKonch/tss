@@ -1,7 +1,9 @@
 package bravo.web;
 
 import bravo.dto.ContractDTO;
+import bravo.dto.PersonDTO;
 import bravo.enums.RoleType;
+import bravo.logic.PersonLogic;
 import jakarta.enterprise.event.Event;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -24,6 +26,9 @@ public class ContractSelectBean implements Serializable {
     private final ResourceBundle locale = FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
 
     @Inject
+    private PersonLogic personLogic;
+
+    @Inject
     private EntryBlockBean entryBlockBean;
 
     @Inject
@@ -36,8 +41,10 @@ public class ContractSelectBean implements Serializable {
 
     private List<ContractDTO> contracts = new ArrayList<>();
 
+    private List<RoleType> roles = new ArrayList<>();
+
+
     public void init(List<ContractDTO> contracts) {
-        logger.info("ContractSelectBean.init: Start...");
         if (contracts == null) contracts = new ArrayList<>();
         this.contracts = contracts;
         logger.info("ContractSelectBean.init: Got " + contracts.size() + " contracts.");
@@ -50,6 +57,21 @@ public class ContractSelectBean implements Serializable {
         }
 
         selectedContract = contracts.getFirst();
+        PersonDTO user = authorization.getLoggedInPerson();
+        List<PersonDTO> secretaries = new ArrayList<>();
+        List<PersonDTO> assistants = new ArrayList<>();
+
+        // Load associated persons
+        PersonDTO employee = personLogic.findByUuid(selectedContract.getEmployeeUuid());
+        PersonDTO supervisor = personLogic.findByUuid(selectedContract.getSupervisorUuid());
+        for (String uuid : selectedContract.getSecretaryUuids()) secretaries.add(personLogic.findByUuid(uuid));
+        for (String uuid : selectedContract.getAssistantUuids()) assistants.add(personLogic.findByUuid(uuid));
+
+        // Add all roles of the logged-in user to the list for the "Your role" display
+        if (user.equals(employee)) roles.add(RoleType.Employee);
+        if (user.equals(supervisor)) roles.add(RoleType.Supervisor);
+        if (secretaries.contains(user)) roles.add(RoleType.Secretary);
+        if (assistants.contains(user)) roles.add(RoleType.Assistant);
         onContractSelect();
     }
 
@@ -87,6 +109,14 @@ public class ContractSelectBean implements Serializable {
     public void setContracts(List<ContractDTO> contracts) {
         if (contracts == null) return;
         this.contracts = contracts;
+    }
+
+    public List<RoleType> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<RoleType> roles) {
+        this.roles = roles;
     }
 
 }

@@ -24,6 +24,12 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
                 getResultList();
     }
 
+    public List<Timesheet> findByContractUuid(String uuid) {
+        return em.createNamedQuery("Timesheet.findByContractUuid", Timesheet.class).
+                setParameter("uuid", UUID.fromString(uuid)).
+                getResultList();
+    }
+
     public List<Timesheet> findbyStatus(TimesheetStatus status) {
         return em.createNamedQuery("Timesheet.findByStatus", Timesheet.class).
                 setParameter("status", status).
@@ -33,13 +39,13 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
     public Timesheet findCurrent(String contractUuid) {
         LocalDate today = LocalDate.now();
         return getSingleResultOrNull(em.createQuery(
-                        "SELECT t FROM Timesheet t " +
-                                "WHERE t.contract.uuid = :contractUuid " +
-                                "AND :today BETWEEN t.startDate AND t.endDate",
-                        Timesheet.class
-                ).setParameter("contractUuid", UUID.fromString(contractUuid))
-                .setParameter("today", today)
-                );
+                                "SELECT t FROM Timesheet t " +
+                                        "WHERE t.contract.uuid = :contractUuid " +
+                                        "AND :today BETWEEN t.startDate AND t.endDate",
+                                Timesheet.class
+                        ).setParameter("contractUuid", UUID.fromString(contractUuid))
+                        .setParameter("today", today)
+        );
     }
 
     public List<Timesheet> findTimesheetsBetweenDates(LocalDate startDate, LocalDate endDate) {

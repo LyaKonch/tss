@@ -36,6 +36,11 @@ public class PersonDTO extends AbstractDTO {
         this.roleUuids = roleUuids;
     }
 
+    @Override
+    public String toString() {
+        return "PersonDTO{" + "firstName=" + firstName + ", lastName=" + lastName + ", dateOfBirth=" + dateOfBirth + ", emailAddress=" + emailAddress + ", consent=" + consent + ", roleUuids=" + roleUuids + '}';
+    }
+
     // Getters and Setters
     public String getFirstName() {
         return firstName;

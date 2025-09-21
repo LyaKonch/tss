@@ -84,7 +84,8 @@ public class ContractEditBean implements Serializable {
         if (dto == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNotFound"), null));
-            throw new IllegalArgumentException("Tried to edit a null contract.");
+            logger.warning("Tried to edit a null contract.");
+            return;
         }
 
         contract = dto;

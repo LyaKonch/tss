@@ -145,6 +145,8 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
                 .map(assistant -> assistant.getPerson().getUuid().toString())
                 .toList());
 
+        dto.setTimesheetUuids(entity.getTimesheets().stream().map(Timesheet::getUuid).map(UUID::toString).toList());
+
         return dto;
     }
 }

@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:comp="jakarta.faces.composite/comp">
 
-    <p:card header="Contract Selection" styleClass="panel ui-fluid">
+    <p:card header="Contract Selection" styleClass="panel ui-fluid bold label-headline">
 
         <p:panelGrid columns="1" styleClass="ui-noborder">
             <p:selectOneMenu id="contractSelect" value="#{contractSelectBean.selectedContract}" var="listVar"
@@ -38,6 +38,11 @@
                                   style="font-weight:bold;" styleClass="py-1 block" />
                 </f:facet>
             </p:selectOneMenu>
+            <ui:repeat value="#{contractSelectBean.roles}" var="role">
+                <comp:coloredLabel color="#{role.color}">
+                    #{role.displayName}
+                </comp:coloredLabel>
+            </ui:repeat>
         </p:panelGrid>
     </p:card>
 </ui:composition>

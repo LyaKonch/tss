@@ -1,8 +1,12 @@
+/**
+ * Authorization serves as a logged-in user hub.
+ * It provides functionality for checking various attributes of the logged-in user.
+ * DO NOT use this class on the login page or other pages where the user is not yet logged in.
+ */
 package bravo.web;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
-import bravo.entities.Person;
 import bravo.logic.PersonLogic;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.RequestScoped;
@@ -10,9 +14,11 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.core.Context;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Named
@@ -23,6 +29,8 @@ public class Authorization {
 
     @Inject
     PersonLogic personLogic;
+
+    private PersonDTO loggedInPerson;
 
     private Boolean userHasConsent;
 
@@ -36,15 +44,18 @@ public class Authorization {
     public void init() {
         userHasConsent = hasUserConsent();
         userEmail = getEmail();
-        if (userEmail != null) {
-            PersonDTO p = personLogic.findByEmail(userEmail);
-            currentUserRoles = personLogic.findPersonRoles(p);
-            Logger.getLogger(getClass().getName()).info("currentUserRoles" + currentUserRoles);
-            currentPersonUuid = (p != null) ? p.getUuid() : null;
-        } else {
-            currentPersonUuid = null;
-        }
-        Logger.getLogger(getClass().getName()).info("init: userHasConsent=" + userHasConsent);
+        if (userEmail == null) return;
+
+        loggedInPerson = personLogic.findByEmail(userEmail);
+        currentUserRoles = personLogic.findPersonRoles(loggedInPerson);
+        currentPersonUuid = loggedInPerson != null ? loggedInPerson.getUuid() : null;
+
+        logger.info("Authorization.init: userEmail=" + userEmail + " has " + currentUserRoles.size() + " roles.\nloggedInPerson=" + loggedInPerson);
+
+    }
+
+    public PersonDTO getLoggedInPerson() {
+        return loggedInPerson;
     }
 
     public String getUserEmail() {
@@ -75,7 +86,7 @@ public class Authorization {
         String username = getEmail();
         if (username == null) return false;
         PersonDTO currentPerson = personLogic.findByEmail(username);
-        return currentPerson != null && Boolean.TRUE.equals(currentPerson.isConsent());
+        return currentPerson != null && currentPerson.isConsent();
     }
 
     public void updateUserConsent() {
@@ -121,5 +132,4 @@ public class Authorization {
 
         return secretaryRoleUuids.contains(currentPersonUuid);
     }
-
 }

@@ -27,6 +27,11 @@ import java.util.logging.Logger;
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
 
+    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
+
+    @Inject
+    TimesheetEntryMapper timesheetEntryMapper;
+
     @EJB
     private PublicHolidayService holidayChecker;
 
@@ -38,12 +43,6 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Inject
     private TimesheetMapper timesheetMapper;
-
-    @Inject
-    TimesheetEntryMapper timesheetEntryMapper;
-
-    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
-
 
     public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUuid(entryDto.getUuid());
@@ -74,7 +73,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
     }
 
     @Override
-    public void addEntry(Timesheet timesheet, TimesheetEntry e ) {
+    public void addEntry(Timesheet timesheet, TimesheetEntry e) {
 
         requireEditable(timesheet);
         if (e == null) {
@@ -89,7 +88,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void removeEntry(TimesheetDTO timesheetdto, TimesheetEntryDTO entryDTO) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         TimesheetEntry e = timesheetEntryMapper.toEntity(entryDTO);
         requireEditable(timesheet);
         if (e == null) {
@@ -104,7 +103,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void signByEmployee(TimesheetDTO timesheetdto, LocalDate date) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         requireStatus(timesheet, TimesheetStatus.IN_PROGRESS);
         timesheet.setSignedByEmployee((date != null) ? date : LocalDate.now());
         timesheet.setStatus(TimesheetStatus.SIGNED_BY_EMPLOYEE);
@@ -113,7 +112,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void revokeEmployeeSignature(TimesheetDTO timesheetdto) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_EMPLOYEE);
         timesheet.setSignedByEmployee(null);
         timesheet.setStatus(TimesheetStatus.IN_PROGRESS);
@@ -122,7 +121,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void signBySupervisor(TimesheetDTO timesheetdto, LocalDate date) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_EMPLOYEE);
         timesheet.setSignedBySupervisor((date != null) ? date : LocalDate.now());
         timesheet.setStatus(TimesheetStatus.SIGNED_BY_SUPERVISOR);
@@ -131,7 +130,7 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public void archive(TimesheetDTO timesheetdto) {
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
+        Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
         requireStatus(timesheet, TimesheetStatus.SIGNED_BY_SUPERVISOR);
         // maybe some actions here
         timesheet.setStatus(TimesheetStatus.ARCHIVED);
@@ -151,11 +150,16 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Override
     public TimesheetDTO getCurrent(ContractDTO contract) {
-        if(timesheetDAO.findCurrent(contract.getUuid())== null) { return null; }
+        if (timesheetDAO.findCurrent(contract.getUuid()) == null) return null;
         Timesheet entity = timesheetDAO.findCurrent(contract.getUuid());
         TimesheetDTO dto = timesheetMapper.toDto(entity);
         dto.setHoursDue(hoursDue(dto.getUuid()));
         return dto;
+    }
+
+    @Override
+    public List<TimesheetDTO> findByContractUuid(String contractUuid) {
+        return timesheetDAO.findByContractUuid(contractUuid).stream().map(timesheetMapper::toDto).toList();
     }
 
     @Override

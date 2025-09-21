@@ -9,6 +9,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <h:outputStylesheet library="css" name="primeflex.css" />
     <h:outputStylesheet library="css" name="contracts.css" />
+    <h:outputStylesheet library="css" name="entry.css" />
     <title>Bravo TSS - <ui:insert name="title">Default Title</ui:insert></title>
 </h:head>
 <h:body>
@@ -21,8 +22,9 @@
                           closable="false"
                           modal="true"
                           rendered="#{not authorization.userHasConsent}">
-                    <h:outputText value="As a user, I agree to the use of this system. Do you agree to the use of your information?"/>
-                    <p:separator/>
+                    <h:outputText
+                            value="As a user, I agree to the use of this system. Do you agree to the use of your information?" />
+                    <p:separator />
                     <p:commandButton value="Yes"
                                      action="#{authorization.updateUserConsent}"
                                      oncomplete="window.location.reload()" />
@@ -33,18 +35,18 @@
                 </p:dialog>
                 <h:outputScript rendered="#{not authorization.userHasConsent}" target="body">
                     if (typeof PF !== 'undefined' &amp;&amp; PF('consentDialog')) {
-                    PF('consentDialog').show();
+                        PF('consentDialog').show();
                     } else {
-                    setTimeout(function(){
-                    if (typeof PF !== 'undefined' &amp;&amp; PF('consentDialog')) {
-                    PF('consentDialog').show();
-                    }
-                    }, 200);
+                        setTimeout(function () {
+                            if (typeof PF !== 'undefined' &amp;&amp; PF('consentDialog')) {
+                                PF('consentDialog').show();
+                            }
+                        }, 200);
                     }
                 </h:outputScript>
                 <p:menubar>
-                    <p:menuitem outcome="mainPage" value="Dashboard" icon="pi pi-th-large" />
-                    <p:menuitem outcome="entries" value="Entries" icon="pi pi-home" />
+                    <p:menuitem outcome="dashboard" value="Dashboard" icon="pi pi-th-large" />
+                    <p:menuitem outcome="timesheetList" value="Timesheets" icon="pi pi-home" />
                     <p:menuitem outcome="contractList" value="Contract List" icon="pi pi-list" />
                     <p:menuitem outcome="personForm" value="Persons" icon="pi pi-users"
                                 rendered='#{authorization.isUserInRole("ADMIN")}' />
@@ -66,32 +68,33 @@
             <ui:insert name="content" />
         </div>
 
-       
-            <div id="footer">
-                    <p:panel>
-                        <div>
-                            ${msg.footerCurrentUserLabel}
-                           
-                            <p:chip label="${loginBean.isLoggedIn ? loginBean.emailAddress : msg.notLoggedIn}" styleClass="mr-22"/>
-                           
-                            <p:chip  label="${loginBean.securityRole}" styleClass="mr-22"/>
-                        </div>
-                        <h:form id="localeForm">
-                          
-                        </h:form>
-                        <div class="topsep">
-                            
-                            <h:outputText value="${userSessionBean.currentDate}">
-                                <f:convertDateTime/>
-                            </h:outputText>
-                        </div>
-                        <div class="topsep">
-                            <h:outputFormat value="${msg.footerLabel}"/>
-                           
-                        </div>
-                    </p:panel>
+
+        <div id="footer">
+            <p:panel>
+                <div>
+                    ${msg.footerCurrentUserLabel}
+
+                    <p:chip label="${loginBean.isLoggedIn ? loginBean.emailAddress : msg.notLoggedIn}"
+                            styleClass="mr-22" />
+
+                    <p:chip label="${loginBean.securityRole}" styleClass="mr-22" />
                 </div>
-       
+                <h:form id="localeForm">
+
+                </h:form>
+                <div class="topsep">
+
+                    <h:outputText value="${userSessionBean.currentDate}">
+                        <f:convertDateTime />
+                    </h:outputText>
+                </div>
+                <div class="topsep">
+                    <h:outputFormat value="${msg.footerLabel}" />
+
+                </div>
+            </p:panel>
+        </div>
+
     </f:view>
 </h:body>
 </html>
