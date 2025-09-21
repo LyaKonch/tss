@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="primefaces-15.0.5-jakarta">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/faces/web/WEB-INF/lib/primefaces-15.0.5-jakarta.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="https://javadoc.io/doc/org.primefaces/primefaces" />
+    </JAVADOC>
+    <SOURCES />
+  </library>
+</component>

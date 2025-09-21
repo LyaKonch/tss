@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application version="10" xmlns="https://jakarta.ee/xml/ns/jakartaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/application_10.xsd">
+    <display-name>bravo-tss</display-name>
+    <module>
+        <web>
+            <web-uri>faces</web-uri>
+            <context-root>/bravo-tss</context-root>
+        </web>
+    </module>
+    <module>
+        <ejb>logic</ejb>
+    </module>
+</application>

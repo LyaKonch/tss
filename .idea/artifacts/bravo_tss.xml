@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-ear" build-on-make="true" name="bravo-tss">
+    <output-path>$PROJECT_DIR$/out/artifacts/bravo-tss</output-path>
+    <root id="root">
+      <element id="directory" name="faces">
+        <element id="artifact" artifact-name="faces:war" />
+      </element>
+      <element id="directory" name="logic">
+        <element id="artifact" artifact-name="logic:ejb" />
+      </element>
+      <element id="javaee-facet-resources" facet="bravo-tss/javaeeApplication/javaEEApplication" />
+      <element id="directory" name="lib">
+        <element id="library" level="project" name="holiday-calculator-0.2.1" />
+        <element id="library" level="project" name="slf4j-api-2.0.17" />
+      </element>
+    </root>
+  </artifact>
+</component>

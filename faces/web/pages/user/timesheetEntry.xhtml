@@ -1,0 +1,117 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <p:panel header="#{msg['title.entry']}" styleClass="panel">
+
+        <h:panelGrid columns="3" columnClasses="w-16rem,w-16rem,w-16rem"
+                     styleClass="grid-gap" cellpadding="4">
+
+            <h:panelGroup layout="block" styleClass="field-col">
+
+                <h:outputLabel for="date" value="#{msg['label.date']}" />
+                <p:datePicker id="date"
+                              value="#{entryBlockBean.currentEntry.entryDate}"
+                              pattern="dd.MM.yyyy"
+                              placeholder="#{msg['placeholder.date']}"
+                              showIcon="true"
+                              required="true"
+                              requiredMessage="#{msg['error.dateRequired']}"
+                              converterMessage="#{msg['error.dateFormat']}" />
+            </h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="field-col">
+                <h:outputLabel for="start" value="#{msg['label.start']}" />
+                <p:datePicker id="start"
+                              value="#{entryBlockBean.currentEntry.startTime}"
+                              pattern="HH:mm"
+                              timeOnly="true"
+                              hourFormat="24"
+                              placeholder="#{msg['placeholder.start']}"
+                              showIcon="true"
+                              required="true"
+                              requiredMessage="#{msg['error.timeStartRequired']}"
+                              converterMessage="#{msg['error.timeFormat']}">
+                    <p:ajax event="dateSelect" listener="#{entryBlockBean.recalcFormHours}" update="hours" />
+                </p:datePicker>
+            </h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="field-col">
+                <h:outputLabel for="end" value="#{msg['label.end']}" />
+                <p:datePicker id="end"
+                              value="#{entryBlockBean.currentEntry.endTime}"
+                              pattern="HH:mm"
+                              timeOnly="true"
+                              hourFormat="24"
+                              placeholder="#{msg['placeholder.end']}"
+                              showIcon="true"
+                              required="true"
+                              requiredMessage="#{msg['error.timeEndRequired']}"
+                              converterMessage="#{msg['error.timeFormat']}">
+                    <p:ajax event="dateSelect" listener="#{entryBlockBean.recalcFormHours}" update="hours" />
+                </p:datePicker>
+            </h:panelGroup>
+        </h:panelGrid>
+
+        <h:panelGroup layout="block" styleClass="inline-row" style="margin-top:12px">
+            <h:panelGroup layout="block" styleClass="inline-col inline-col--type">
+                <h:outputLabel for="type" value="#{msg['label.type']}" />
+                <h:selectOneMenu id="type"
+                                 value="#{entryBlockBean.currentEntry.type}"
+                                 styleClass="field-select">
+                    <f:selectItem itemValue="WORK" itemLabel="#{msg['type.work']}" />
+                    <f:selectItem itemValue="VACATION" itemLabel="#{msg['type.vacation']}" />
+                    <f:selectItem itemValue="SICK_LEAVE" itemLabel="#{msg['type.sick_leave']}" />
+                </h:selectOneMenu>
+            </h:panelGroup>
+
+
+            <h:panelGroup layout="block" styleClass="inline-col inline-col--hours">
+                <h:outputLabel for="hours" value="#{msg['label.hours']}" />
+                <h:panelGroup id="hours" layout="block" styleClass="field-box">
+                    <h:outputText value="#{entryBlockBean.currentEntry.hours}">
+                        <f:convertNumber minFractionDigits="0" maxFractionDigits="2" />
+                    </h:outputText>
+                    <span style="margin-left:6px">h</span>
+                </h:panelGroup>
+            </h:panelGroup>
+
+        </h:panelGroup>
+
+
+        <h:panelGroup layout="block" style="margin-top:12px">
+            <h:outputLabel for="desc" value="#{msg['label.desc']}" />
+            <p:inputTextarea id="desc"
+                             value="#{entryBlockBean.currentEntry.description}"
+                             rows="3"
+                             placeholder="#{msg['placeholder.desc']}"
+                             autoResize="false"
+                             style="width:100%" />
+        </h:panelGroup>
+
+        <div style="margin-top:16px">
+            <p:commandButton id="addBtn"
+                             value="#{msg['btn.add']}"
+                             action="#{entryBlockBean.save}"
+                             process="@form"
+                             update="@form msgs entries"
+                             styleClass="btn-primary" />
+        </div>
+
+    </p:panel>
+
+    <p:panel header="#{msg['recent.title']}" styleClass="panel--small">
+        <p:dataTable id="entries" value="#{entryBlockBean.entries}" var="entry" rows="5" paginator="false"
+                     emptyMessage="#{msg['recent.empty']}" style="width:100%">
+            <p:column headerText="#{msg['col.date']}">#{entryBlockBean.formatDate(entry.entryDate)}</p:column>
+            <p:column headerText="#{msg['col.start']}">#{entry.startTime}</p:column>
+            <p:column headerText="#{msg['col.end']}">#{entry.endTime}</p:column>
+            <p:column headerText="#{msg['col.type']}">#{entry.type.displayName}</p:column>
+            <p:column headerText="#{msg['col.hours']}">#{entryBlockBean.calcHours(entry)}</p:column>
+            <p:column headerText="#{msg['col.desc']}">#{entry.description}</p:column>
+        </p:dataTable>
+    </p:panel>
+
+</ui:composition>

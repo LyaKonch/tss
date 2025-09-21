@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:comp="jakarta.faces.composite/comp">
+
+    <f:facet name="" />  <!-- Use jakarta.faces.core - else might be autoremoved by IntelliJ -->
+
+    <p:dialog header="#{contractDetailsBean.contract.name}" widgetVar="detailsDialog" modal="true"
+              closable="true" resizable="true" responsive="true" closeOnEscape="true"
+              rendered="#{not empty contractDetailsBean.contract}">
+
+        <div class="ui-fluid formgrid grid" style="max-width: 600px;">
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel value="Your Role:" styleClass="label-headline" />
+                <ui:repeat value="#{contractDetailsBean.roles}" var="role">
+                    <comp:coloredLabel color="#{role.color}">
+                        #{role.displayName}
+                    </comp:coloredLabel>
+                </ui:repeat>
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="status" value="${msg.contractStatusLabel}" styleClass="label-headline" />
+                <comp:coloredLabel id="status" color="#{contractDetailsBean.contract.status.color}">
+                    #{contractDetailsBean.contract.status.displayName}
+                </comp:coloredLabel>
+            </div>
+
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="startDate" value="${msg.contractStartDateLabel}" styleClass="label-headline" />
+                <p:outputLabel id="startDate"
+                               value="#{contractDetailsBean.formatDate(contractDetailsBean.contract.startDate)}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="endDate" value="${msg.contractEndDateLabel}" styleClass="label-headline" />
+                <p:outputLabel id="endDate"
+                               value="#{contractDetailsBean.formatDate(contractDetailsBean.contract.endDate)}" />
+            </div>
+
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="frequency" value="${msg.contractFrequencyLabel}" styleClass="label-headline" />
+                <p:outputLabel id="frequency"
+                               value="#{contractDetailsBean.contract.frequency.displayName}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="hoursPerWeek" value="${msg.contractHoursPerWeekLabel}"
+                               styleClass="label-headline" />
+                <p:outputLabel id="hoursPerWeek"
+                               value="#{contractDetailsBean.contract.hoursPerWeek}" />
+            </div>
+
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="workingDaysPerWeek" value="${msg.contractWorkingDaysPerWeekLabel}"
+                               styleClass="label-headline" />
+                <p:outputLabel id="workingDaysPerWeek"
+                               value="#{contractDetailsBean.contract.workingDaysPerWeek}" />
+            </div>
+
+            <div class="field col-12 md:col-6 flex flex-column">
+                <p:outputLabel for="vacationDaysPerYear" value="${msg.contractVacationDaysPerYearLabel}"
+                               styleClass="label-headline" />
+                <p:outputLabel id="vacationDaysPerYear"
+                               value="#{contractDetailsBean.contract.vacationDaysPerYear}" />
+            </div>
+
+
+            <div class="field col-12 md:col-10">
+                <p:outputLabel value="${msg.contractContactsLabel}" styleClass="label-headline" />
+                <p:importEnum type="bravo.enums.RoleType" var="RoleType" />
+
+                <div class="contact-box">
+                    <span>#{contractDetailsBean.getFullName(contractDetailsBean.employee)}</span>
+                    <comp:coloredLabel color="#{RoleType.Employee.color}">
+                        #{RoleType.Employee.displayName}
+                    </comp:coloredLabel>
+                </div>
+
+                <div class="contact-box">
+                    <span>#{contractDetailsBean.getFullName(contractDetailsBean.supervisor)}</span>
+                    <comp:coloredLabel color="#{RoleType.Supervisor.color}">
+                        #{RoleType.Supervisor.displayName}
+                    </comp:coloredLabel>
+                </div>
+
+                <ui:repeat value="#{contractDetailsBean.secretaries}" var="secretary">
+                    <div class="contact-box">
+                        <span>#{contractDetailsBean.getFullName(secretary)}</span>
+                        <comp:coloredLabel color="#{RoleType.Secretary.color}">
+                            #{RoleType.Secretary.displayName}
+                        </comp:coloredLabel>
+                    </div>
+                </ui:repeat>
+
+                <ui:repeat value="#{contractDetailsBean.assistants}" var="assistant">
+                    <div class="contact-box">
+                        <span>#{contractDetailsBean.getFullName(assistant)}</span>
+                        <comp:coloredLabel color="#{RoleType.Assistant.color}">
+                            #{RoleType.Assistant.displayName}
+                        </comp:coloredLabel>
+                    </div>
+                </ui:repeat>
+            </div>
+        </div>
+
+    </p:dialog>
+
+</ui:composition>
