@@ -45,18 +45,20 @@
                     }
                 </h:outputScript>
                 <p:menubar>
-                    <p:menuitem outcome="dashboard" value="Dashboard" icon="pi pi-th-large" />
-                    <p:menuitem outcome="timesheetList" value="Timesheets" icon="pi pi-home" />
-                    <p:menuitem outcome="contractList" value="Contract List" icon="pi pi-list" />
-                    <p:menuitem value="#{msg['menu.userDetails']}" outcome="userDetails" icon="pi pi-user" />
-                    <p:menuitem outcome="personForm" value="Persons" icon="pi pi-users"
+                    <p:menuitem outcome="dashboard" value="${msg['menu.dashboard']}" icon="pi pi-th-large" />
+                    <p:menuitem outcome="timesheetList" value="${msg['menu.timesheetList']}" icon="pi pi-home" />
+                    <p:menuitem outcome="contractList" value="${msg['menu.contractList']}" icon="pi pi-list" />
+                    <p:menuitem outcome="userDetails" value="${msg['menu.userDetails']}" icon="pi pi-user" />
+                    <p:menuitem outcome="personForm" value="${msg.personsLabel}" icon="pi pi-users"
                                 rendered='#{authorization.isUserInRole("ADMIN")}' />
                     <!-- New -->
-                    <p:submenu label="Language" icon="pi pi-globe">
-                        <p:menuitem value="Deutsch" action="#{userSessionBean.setLocale('de')}" update="@all" />
-                        <p:menuitem value="English" action="#{userSessionBean.setLocale('en')}" update="@all" />
+                    <p:submenu label="${msg.languageLabel}" icon="pi pi-globe">
+                        <p:menuitem value="${msg.germanLabel}" action="#{userSessionBean.setLocale('de')}"
+                                    update="@all" />
+                        <p:menuitem value="${msg.englishLabel}" action="#{userSessionBean.setLocale('en')}"
+                                    update="@all" />
                     </p:submenu>
-                    <p:menuitem outcome="toLoginForm" value="Sign out" icon="pi pi-users"
+                    <p:menuitem outcome="toLoginForm" value="${msg['menu.signout']}" icon="pi pi-users"
                                 action='#{loginBean.logout}' />
                 </p:menubar>
             </h:form>
