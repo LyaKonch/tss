@@ -29,9 +29,6 @@ public class ContractSelectBean implements Serializable {
     private PersonLogic personLogic;
 
     @Inject
-    private EntryBlockBean entryBlockBean;
-
-    @Inject
     private Authorization authorization;
 
     @Inject
@@ -46,6 +43,7 @@ public class ContractSelectBean implements Serializable {
 
     public void init(List<ContractDTO> contracts) {
         if (contracts == null) contracts = new ArrayList<>();
+        this.contracts.clear();
         this.contracts = contracts;
         logger.info("ContractSelectBean.init: Got " + contracts.size() + " contracts.");
 
@@ -57,6 +55,14 @@ public class ContractSelectBean implements Serializable {
         }
 
         selectedContract = contracts.getFirst();
+        onContractSelect();
+    }
+
+    public void onContractSelect() {
+        logger.info("ContractSelectBean.onSelect: Selected Contract\n" + selectedContract);
+        contractSelectedEvent.fire(selectedContract);
+
+        roles.clear();
         PersonDTO user = authorization.getLoggedInPerson();
         List<PersonDTO> secretaries = new ArrayList<>();
         List<PersonDTO> assistants = new ArrayList<>();
@@ -72,12 +78,6 @@ public class ContractSelectBean implements Serializable {
         if (user.equals(supervisor)) roles.add(RoleType.Supervisor);
         if (secretaries.contains(user)) roles.add(RoleType.Secretary);
         if (assistants.contains(user)) roles.add(RoleType.Assistant);
-        onContractSelect();
-    }
-
-    public void onContractSelect() {
-        logger.info("ContractSelectBean.onSelect: Selected Contract\n" + selectedContract);
-        contractSelectedEvent.fire(selectedContract);
     }
 
 
@@ -88,11 +88,6 @@ public class ContractSelectBean implements Serializable {
         if (authorization.isAssistant(contract)) return RoleType.Assistant;
         return null;
     }
-
-    public void prepareTimesheetEntries() {
-        entryBlockBean.init(selectedContract);
-    }
-
 
     public ContractDTO getSelectedContract() {
         return selectedContract;

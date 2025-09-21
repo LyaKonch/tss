@@ -28,22 +28,23 @@
                              value="#{timesheetListBean.timesheetList}">
 
                     <p:column headerText="${msg.timesheetWotY}" filterMatchMode="contains"
-                              filterBy="#{timesheet.startDate}">
+                              filterBy="#{timesheet.startDate}" sortable="false">
                         #{timesheetListBean.getWeekOfYear(timesheet.startDate)}
                     </p:column>
 
                     <p:column field="startDate" headerText="${msg.contractStartDateLabel}"
                               filterBy="#{timesheetListBean.formatDate(timesheet.startDate)}"
-                              filterMatchMode="contains">
+                              filterMatchMode="contains" sortable="false">
                         #{timesheetListBean.formatDate(timesheet.startDate)}
                     </p:column>
 
-                    <p:column field="endDate" headerText="${msg.contractEndDateLabel}"
-                              filterBy="#{timesheetListBean.formatDate(timesheet.endDate)}" filterMatchMode="contains">
+                    <p:column field="endDate" headerText="${msg.contractEndDateLabel}" filterMatchMode="contains"
+                              filterBy="#{timesheetListBean.formatDate(timesheet.endDate)}" sortable="false">
                         #{timesheetListBean.formatDate(timesheet.endDate)}
                     </p:column>
 
-                    <p:column field="status" headerText="${msg.contractStatusLabel}" filterMatchMode="contains">
+                    <p:column field="status" headerText="${msg.contractStatusLabel}" filterMatchMode="contains"
+                              sortable="false">
                         <comp:coloredLabel
                                 color="#{timesheet.status.color}">#{timesheet.status.displayName}
                         </comp:coloredLabel>
