@@ -10,6 +10,8 @@
 
     <ui:define name="content">
 
+        <p:growl id="msgs" showDetail="true" skipDetailIfEqualsSummary="true" />
+
         <h:form id="contractSelectForm">
             <ui:include src="contractSelect.xhtml" />
             <f:event type="preRenderView" listener="#{dashboardBean.prepareContractSelect}" />
@@ -19,18 +21,6 @@
 
         <h:form id="entriesForm">
             <ui:include src="timesheetEntry.xhtml" />
-        </h:form>
-
-        <h:form id="restInNeueListPage">
-            <p:panel header="Timesheet Actions"
-                     rendered="#{dashboardBean.currentTimesheet != null and (authorization.isEmployee(dashboardBean.selectedContract) or authorization.isSupervisor(dashboardBean.selectedContract) or authorization.isAssistant(dashboardBean.selectedContract) or authorization.isSecretary(dashboardBean.selectedContract))}">
-                <p>Current Timesheet Status: <strong>#{dashboardBean.currentTimesheet.status}</strong></p>
-                <p:commandButton value="Sign Timesheet" action="#{dashboardBean.signTimesheet}"
-                                 process="@form" update="@form" styleClass="ui-button-info" icon="pi pi-check"
-                                 rendered="#{dashboardBean.currentTimesheet.status == 'IN_PROGRESS' or (dashboardBean.currentTimesheet.status == 'SIGNED_BY_EMPLOYEE' and (authorization.isSupervisor(dashboardBean.selectedContract) or authorization.isAssistant(dashboardBean.selectedContract)))}" />
-                <p:commandButton value="View Statistics" type="button" icon="pi pi-chart-bar"
-                                 styleClass="ui-button-help" style="margin-left: 10px;" />
-            </p:panel>
         </h:form>
     </ui:define>
 </ui:composition>

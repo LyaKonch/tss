@@ -52,6 +52,8 @@ public class EntryBlockBean implements Serializable {
 
     private List<TimesheetEntryDTO> entries = new ArrayList<>();
 
+    private boolean editMode = false;
+
 
     public void init(ContractDTO contract) {
         if (contract == null || contract.getUuid() == null) return;
@@ -70,10 +72,7 @@ public class EntryBlockBean implements Serializable {
             return;
         }
 
-        entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
-
-        newEntryWithDefaults();
-        recalcTimesheetHoursDue();
+        reloadEntryList();
 
         logger.info("Initialized EntryBlockBean for contract " + contract.getName());
     }
@@ -93,6 +92,8 @@ public class EntryBlockBean implements Serializable {
 
     public void reloadEntryList() {
         entries = timesheetEntryLogic.getByTimesheetUuid(timesheet.getUuid());
+        newEntryWithDefaults();
+        recalcTimesheetHoursDue();
     }
 
     public void recalcFormHours() {
@@ -105,19 +106,31 @@ public class EntryBlockBean implements Serializable {
         currentEntry.setHours(hours);
     }
 
+    public void edit(TimesheetEntryDTO entry) {
+        reloadEntryList();
+        currentEntry = entry;
+        editMode = true;
+        addInfo(msg.getString("entry.preparedEdit"));
+    }
+
     public String save() {
         if (!isEditable()) {
-            addError("Timesheet nicht editierbar.");
-
+            if (editMode) {
+                addError(msg.getString("entry.notEditable"));
+            } else {
+                addError(msg.getString("entry.cannotSave"));
+            }
             return null;
         }
         try {
             validateForm();
 
-            if (currentEntry.getUuid() == null) currentEntry = timesheetEntryLogic.create(currentEntry);
-            else currentEntry = timesheetEntryLogic.update(currentEntry);
+            if (currentEntry.getId() == null) timesheetEntryLogic.create(currentEntry);
+            else {
+                timesheetEntryLogic.update(currentEntry);
+                editMode = false;
+            }
 
-            recalcTimesheetHoursDue();
             reloadEntryList();
 
             addInfo(msg.getString("label.saved"));
@@ -129,16 +142,21 @@ public class EntryBlockBean implements Serializable {
         return null;
     }
 
-    public void deleteSelected() {
+    public void deleteSelected(TimesheetEntryDTO entry) {
         if (!isEditable()) {
-            addError(msg.getString("entry.notEditable"));
+            addError(msg.getString("entry.cannotDelete"));
             return;
         }
-        if (currentEntry == null) return;
-        entries.remove(currentEntry);
+        if (entry == null || entry.getId() == null) return;
+        try {
+            timesheetEntryLogic.delete(entry);
+            addInfo(msg.getString("entry.deleted"));
+        } catch (Exception e) {
+            addError(msg.getString("entry.deletionFail"));
+            return;
+        }
 
-        recalcTimesheetHoursDue();
-        newEntryWithDefaults();
+        reloadEntryList();
 
         addInfo(msg.getString("entry.deleted"));
     }
@@ -213,9 +231,8 @@ public class EntryBlockBean implements Serializable {
     }
 
     public boolean isEditable() {
-        return timesheet != null
-                && timesheet.getStatus() == TimesheetStatus.IN_PROGRESS
-                && contract.getStatus() == ContractStatus.STARTED;
+        if (timesheet == null) return false;
+        return timesheet.getStatus() == TimesheetStatus.IN_PROGRESS && contract.getStatus() == ContractStatus.STARTED;
     }
 
     public boolean canSign() {
@@ -236,5 +253,13 @@ public class EntryBlockBean implements Serializable {
 
     public void setCurrentEntry(TimesheetEntryDTO currentEntry) {
         this.currentEntry = currentEntry;
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
     }
 }
