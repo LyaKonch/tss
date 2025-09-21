@@ -21,6 +21,8 @@ public interface TimesheetLogic {
 
     void archive(TimesheetDTO timesheet);
 
+    void addEntry(Timesheet timesheet, TimesheetEntry e);
+
     void removeEntry(TimesheetDTO timesheetdto, TimesheetEntryDTO entryDTO);
 
     void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries);
@@ -30,4 +32,6 @@ public interface TimesheetLogic {
     double hoursDue(String uuid);
 
     TimesheetDTO getCurrent(ContractDTO contract);
+
+    List<TimesheetDTO> findByContractUuid(String contractUuid);
 }

@@ -5,7 +5,6 @@ import bravo.dao.RoleDAO;
 import bravo.dto.PersonDTO;
 import bravo.entities.Person;
 import bravo.entities.Role;
-import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -17,14 +16,13 @@ import java.util.stream.Collectors;
 public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
 
     @Inject
-    private PersonDAO personDAO;
+    private RoleDAO roleDAO;
 
     @Inject
-    private RoleDAO roleDAO;
+    private PersonDAO personDAO;
 
     @Override
     public Person toEntity(PersonDTO dto) {
-
         // If id is null, we are creating a new entity, otherwise we are updating the existing one
         Person entity = dto.getId() == null ? new Person() : personDAO.findByUuid(dto.getUuid());
 

@@ -2,6 +2,8 @@ package bravo.web;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
+import bravo.dto.PersonDTO;
+import bravo.enums.ContractStatus;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
 import jakarta.annotation.PostConstruct;
@@ -24,7 +26,7 @@ import java.util.ResourceBundle;
 
 /**
  * Backing bean for contract list view.
- * This bean provides functionality for viewing and searching lists of contracts.
+ * This bean provides functionality for viewing, searching and interacting with contracts.
  */
 @Named
 @ViewScoped
@@ -66,12 +68,11 @@ public class ContractListBean implements Serializable {
      */
     private void loadContracts() {
         try {
-            if(auth.isUserInRole("ADMIN")) {contractList = contractLogic.findAll();}
-            if(
+            if (auth.isUserInRole("ADMIN")) contractList = contractLogic.findAll();
+            if (
                     auth.isUserInRole("USER")
-                    || auth.isUserInRole("STAFF")
-                    && auth.isUserInRole("ADMIN"))
-            {
+                            || auth.isUserInRole("STAFF")
+                            && auth.isUserInRole("ADMIN")) {
 
                 PersonDTO person = personLogic.findByEmail(auth.getUserEmail());
                 contractList = contractLogic.findContractsAssociatedWithPerson(person);
@@ -83,6 +84,62 @@ public class ContractListBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNoMatches"), e.getMessage()));
         }
     }
+
+    public boolean canEdit(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public boolean canStart(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public void startContract(ContractDTO contract) {
+        try {
+            contractLogic.startContract(contract);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractStarted"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractStartFailed"), e.getMessage()));
+            return;
+        }
+        loadContracts();
+    }
+
+    public boolean canTerminate(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.STARTED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public void terminateContract(ContractDTO contract) {
+        try {
+            contractLogic.terminate(contract.getUuid(), LocalDate.now());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractTerminated"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractTerminationFailed"), e.getMessage()));
+            return;
+        }
+        loadContracts();
+    }
+
+    public boolean canDelete(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public void deleteContract(ContractDTO contract) {
+        try {
+            contractLogic.deleteContract(contract.getUuid());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractDeleted"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractDeletionFailed"), e.getMessage()));
+            return;
+        }
+        loadContracts();
+    }
+
 
     public void prepareDetails(ContractDTO contract) {
         contractDetailsBean.init(contract);

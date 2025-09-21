@@ -11,9 +11,9 @@ import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-
 import java.security.Principal;
 import java.util.List;
+
 import java.util.Objects;
 
 @Stateless

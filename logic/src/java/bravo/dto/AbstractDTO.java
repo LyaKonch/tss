@@ -59,8 +59,7 @@ public abstract class AbstractDTO implements Serializable {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AbstractDTO other = (AbstractDTO) obj;
-        return Objects.equals(this.uuid, other.getUuid());
+        if (!(obj instanceof AbstractDTO that)) return false;
+        return Objects.equals(this.uuid, that.getUuid());
     }
 }

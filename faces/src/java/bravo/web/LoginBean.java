@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 @Named
 @RequestScoped
 public class LoginBean {
+
     private static final Logger logger = Logger.getLogger(LoginBean.class.getName());
 
     private String email;
@@ -117,9 +118,30 @@ public class LoginBean {
 
         return securityRole;
     }
+    public String getEmailAddress() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        Principal principal = request.getUserPrincipal();
+
+        if (principal == null) {
+            return null; // User is not authenticated
+        }
+        return principal.getName();
+    }
 
     public void setSecurityRole(String securityRole) {
         this.securityRole = securityRole;
+    }
+
+    public boolean isIsLoggedIn(){
+                FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        Principal principal = request.getUserPrincipal();
+
+        if (principal == null) {
+            return false; // User is not authenticated
+        }
+        return true;
     }
 
     public class WhoAmI {

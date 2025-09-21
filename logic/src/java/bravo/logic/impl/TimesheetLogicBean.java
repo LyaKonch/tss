@@ -31,6 +31,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Inject
     private AuthorizationService authService;
 
+    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
+
+    @Inject
+    TimesheetEntryMapper timesheetEntryMapper;
+
     @EJB
     private PublicHolidayService holidayChecker;
 
@@ -42,12 +47,6 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     @Inject
     private TimesheetMapper timesheetMapper;
-
-    @Inject
-    TimesheetEntryMapper timesheetEntryMapper;
-
-    private static final Logger logger = Logger.getLogger(TimesheetLogicBean.class.getName());
-
 
     public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUuid(entryDto.getUuid());
@@ -187,6 +186,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
         TimesheetDTO dto = timesheetMapper.toDto(entity);
         dto.setHoursDue(hoursDue(dto.getUuid()));
         return dto;
+    }
+
+    @Override
+    public List<TimesheetDTO> findByContractUuid(String contractUuid) {
+        return timesheetDAO.findByContractUuid(contractUuid).stream().map(timesheetMapper::toDto).toList();
     }
 
     @Override

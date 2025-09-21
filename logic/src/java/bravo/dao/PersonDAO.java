@@ -5,33 +5,34 @@ import bravo.entities.Role;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.NoResultException;
+
 import java.util.List;
 import java.util.Optional;
 
 @LocalBean
 @Stateless
 public class PersonDAO extends AbstractDAO<Person> {
-    public PersonDAO(){
+    public PersonDAO() {
         super(Person.class);
     }
-    
+
     public Optional<Person> findByEmailAddress(String emailAddress) {
         try {
             return Optional.of(em.createNamedQuery("Person.findByEmail", Person.class).
                     setParameter("emailAddress", emailAddress).
-                    getSingleResult() //i am not sure if several persons with the same email can exist, but i return single result
+                    getSingleResult()
             );
         } catch (NoResultException e) {
             return Optional.empty();
         }
     }
-    
+
     public List<Person> findByFullName(String firstName, String lastName) {
         return em.createNamedQuery("Person.findByFullName", Person.class)
                 .setParameter("firstName", firstName)
                 .setParameter("lastName", lastName).getResultList();
     }
-    
+
     public List<Person> findByRoleType(Class<? extends Role> roleClass) {
         String roleTypeName = roleClass.getSimpleName();
         // this one is tricky
