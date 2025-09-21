@@ -25,7 +25,7 @@ public class TimesheetEntryDAO extends AbstractDAO<TimesheetEntry> {
 
     public List<TimesheetEntryDTO> findProjectedByTimesheetUuid(String timesheetUuid) {
         return em.createQuery(
-                        "SELECT new bravo.dto.TimesheetEntryDTO(e.type, e.description, e.startTime, e.endTime, e.entryDate, e.timesheet.uuid)" +
+                        "SELECT new bravo.dto.TimesheetEntryDTO(e.id, e.uuid, e.type, e.description, e.startTime, e.endTime, e.entryDate, e.timesheet.uuid)" +
                                 "FROM TimesheetEntry e " +
                                 "WHERE e.timesheet.uuid = :uuid " +
                                 "ORDER BY e.entryDate DESC",
