@@ -24,6 +24,13 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
                 getResultList();
     }
 
+    public List<Timesheet> findByContractUuid(String uuid) {
+        return em.createNamedQuery("Timesheet.findByContractUuid", Timesheet.class).
+                setParameter("uuid", UUID.fromString(uuid)).
+                getResultList();
+    }
+
+
     public List<Timesheet> findbyStatus(TimesheetStatus status) {
         return em.createNamedQuery("Timesheet.findByStatus", Timesheet.class).
                 setParameter("status", status).
@@ -32,15 +39,14 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
 
     public Timesheet findCurrent(String contractUuid) {
         LocalDate today = LocalDate.now();
-        return em.createQuery(
+        return getSingleResultOrNull(em.createQuery(
                         "SELECT t FROM Timesheet t " +
                                 "WHERE t.contract.uuid = :contractUuid " +
                                 "AND :today BETWEEN t.startDate AND t.endDate",
                         Timesheet.class
-                )
-                .setParameter("contractUuid", UUID.fromString(contractUuid))
+                ).setParameter("contractUuid", UUID.fromString(contractUuid))
                 .setParameter("today", today)
-                .getSingleResult();
+                );
     }
 
     public List<Timesheet> findTimesheetsBetweenDates(LocalDate startDate, LocalDate endDate) {
@@ -57,10 +63,12 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
     }
 
     // end date of the timesheet doesn't exactly point at the time it was archived.
-    public List<Timesheet> findArchivedBefore(LocalDate date) {
-        return em.createQuery("SELECT t FROM Timesheet t WHERE t.status = ARCHIVED AND t.endDate < :date", Timesheet.class)
+    public List<Timesheet> findArchivedByContractBeforeDate(Contract contract, LocalDate date) {
+        return em.createQuery("SELECT t FROM Timesheet t WHERE t.contract = :contract " +
+                        "AND t.status = :status AND t.signedBySupervisor < :date", Timesheet.class)
+                .setParameter("contract", contract)
+                .setParameter("status", TimesheetStatus.ARCHIVED)
                 .setParameter("date", date)
                 .getResultList();
-
     }
 }

@@ -9,6 +9,7 @@ import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serial;
@@ -43,6 +44,9 @@ public class ContractEditBean implements Serializable {
     @EJB
     private PersonLogic personLogic;
 
+    @Inject
+    private ContractListBean contractListBean;
+
     private ContractDTO contract;
 
     private PersonDTO employee;
@@ -67,6 +71,7 @@ public class ContractEditBean implements Serializable {
         contract.setHoursPerWeek(40.0);
         contract.setWorkingDaysPerWeek(5);
         contract.setVacationDaysPerYear(20);
+        contract.setArchivationDuration(2);
     }
 
     /**
@@ -80,7 +85,8 @@ public class ContractEditBean implements Serializable {
         if (dto == null) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNotFound"), null));
-            throw new IllegalArgumentException("Tried to edit a null contract.");
+            logger.warning("Tried to edit a null contract.");
+            return;
         }
 
         contract = dto;
@@ -110,6 +116,7 @@ public class ContractEditBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractSaveError"), e.getMessage()));
         }
+        contractListBean.loadContracts();
     }
 
     /**

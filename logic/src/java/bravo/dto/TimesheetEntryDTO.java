@@ -29,8 +29,10 @@ public class TimesheetEntryDTO extends AbstractDTO {
         super();
     }
 
-    public TimesheetEntryDTO(ReportType type, String description, LocalTime startTime, LocalTime endTime, LocalDate entryDate, UUID timesheetUuid) {
+    public TimesheetEntryDTO(Long id, UUID uuid, ReportType type, String description, LocalTime startTime, LocalTime endTime, LocalDate entryDate, UUID timesheetUuid) {
         super();
+        this.setId(id);
+        this.setUuid(uuid.toString());
         this.type = type;
         this.description = description;
         this.startTime = startTime;

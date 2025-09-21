@@ -34,11 +34,22 @@ public class AbstractDAO<T extends AbstractEntity> {
     }
 
     public T findByUuid(String uuid) {
-        return em.createNamedQuery(entityClass.getSimpleName() + ".findByUuid", entityClass)
-                .setParameter("uuid", UUID.fromString(uuid))
-                .getSingleResult();
+        return getSingleResultOrNull(
+                em.createNamedQuery(entityClass.getSimpleName() + ".findByUuid", entityClass)
+                        .setParameter("uuid", UUID.fromString(uuid))
+        );
     }
 
+
+    protected T getSingleResultOrNull(jakarta.persistence.TypedQuery<T> q) {
+        List<T> list = q.getResultList();
+        if (list == null || list.isEmpty()) return null;
+        if (list.size() > 1) {
+            logger.warning("Expected single result for query but found " + list.size() +
+                    ". Returning first result. Query: " + q);
+        }
+        return list.get(0);
+    }
 
     public T save(T entry) {
         try {

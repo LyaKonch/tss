@@ -9,6 +9,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
+
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
@@ -53,7 +55,9 @@ public class TestUserCreation {
 
         UserDTO dto = new UserDTO();
         dto.setEmail(email);
-        dto.setGroupName(group.name());
+        ArrayList list = new ArrayList<>();
+        list.add(group.name());
+        dto.setGroupName(list);
         dto.setPassword(password);
 
         UserDTO created = userLogic.createUser(dto);

@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:comp="jakarta.faces.composite/comp">
+
+    <p:card header="Contract Selection" styleClass="panel ui-fluid bold label-headline">
+
+        <p:panelGrid columns="1" styleClass="ui-noborder">
+            <p:selectOneMenu id="contractSelect" value="#{contractSelectBean.selectedContract}" var="listVar"
+                             filter="true" filterMatchMode="contains" filterNormalize="true"
+                             converter="contractConverter" hideNoSelectionOption="false">
+                <f:selectItems value="#{contractSelectBean.contracts}" var="contract"
+                               itemLabel="#{contract.name}" itemValue="#{contract}" />
+                <p:ajax update=":contractSelectForm :entriesForm :tableForm"
+                        listener="#{contractSelectBean.onContractSelect()}" />
+
+                <p:column>
+                    <f:facet name="header">
+                        <h:outputText value="Contract Name" />
+                    </f:facet>
+                    <h:outputText value="#{listVar.name}" />
+                </p:column>
+
+                <p:column>
+                    <f:facet name="header">
+                        <h:outputText value="Role" />
+                    </f:facet>
+                    <comp:coloredLabel color="#{contractSelectBean.mainRole(listVar).color}">
+                        #{contractSelectBean.mainRole(listVar).displayName}
+                    </comp:coloredLabel>
+                </p:column>
+
+                <f:facet name="footer">
+                    <h:outputText value="#{contractSelectBean.contracts.size()} contracts"
+                                  style="font-weight:bold;" styleClass="py-1 block" />
+                </f:facet>
+            </p:selectOneMenu>
+            <ui:repeat value="#{contractSelectBean.roles}" var="role">
+                <comp:coloredLabel color="#{role.color}">
+                    #{role.displayName}
+                </comp:coloredLabel>
+            </ui:repeat>
+        </p:panelGrid>
+    </p:card>
+</ui:composition>

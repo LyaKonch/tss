@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.Month;
 
 @Singleton
-@Startup
 public class TestPublicHolidayService {
 
     @EJB

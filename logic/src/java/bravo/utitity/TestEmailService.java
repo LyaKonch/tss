@@ -7,7 +7,7 @@ import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 
 @Singleton
-@Startup
+//@Startup
 public class TestEmailService {
 
     @EJB

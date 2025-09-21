@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
 
     @Inject
-    private PersonDAO personDAO;
+    private RoleDAO roleDAO;
 
     @Inject
-    private RoleDAO roleDAO;
+    private PersonDAO personDAO;
 
     @Override
     public Person toEntity(PersonDTO dto) {

@@ -8,12 +8,13 @@ import bravo.dao.PersonDAO;
 import bravo.dao.RoleDAO;
 import bravo.dto.ContractDTO;
 import bravo.entities.*;
+import bravo.logic.PersonLogic;
+import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -54,7 +55,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         if (dto.getHoursPerWeek() != null) entity.setHoursPerWeek(dto.getHoursPerWeek());
         if (dto.getWorkingDaysPerWeek() != null) entity.setWorkingDaysPerWeek(dto.getWorkingDaysPerWeek());
         if (dto.getVacationDaysPerYear() != null) entity.setVacationDaysPerYear(dto.getVacationDaysPerYear());
-
+        if (dto.getArchivationDuration() != null) entity.setArchiveDurationInYears(dto.getArchivationDuration());
         // Get the current Employee of the entity or null if it doesn't exist
         Employee employeeRole = entity.getEmployee() != null ? entity.getEmployee() : new Employee();
         Person currentEmployee = entity.getEmployee() != null ? entity.getEmployee().getPerson() : null;
@@ -134,7 +135,7 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
         dto.setHoursPerWeek(entity.getHoursPerWeek());
         dto.setWorkingDaysPerWeek(entity.getWorkingDaysPerWeek());
         dto.setVacationDaysPerYear(entity.getVacationDaysPerYear());
-
+        dto.setArchivationDuration(entity.getArchiveDurationInYears());
         // No Role relation can be null
         dto.setEmployeeUuid(entity.getEmployee().getPerson().getUuid().toString());
         dto.setSupervisorUuid(entity.getSupervisor().getPerson().getUuid().toString());
@@ -145,6 +146,11 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
                 .map(assistant -> assistant.getPerson().getUuid().toString())
                 .toList());
 
+        dto.setTimesheetUuids(entity.getTimesheets().stream().map(Timesheet::getUuid).map(UUID::toString).toList());
+
         return dto;
     }
+
+
+
 }
