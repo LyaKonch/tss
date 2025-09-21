@@ -2,6 +2,7 @@ package bravo.web;
 
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
+import bravo.enums.ContractStatus;
 import bravo.logic.ContractLogic;
 import bravo.logic.PersonLogic;
 import jakarta.annotation.PostConstruct;
@@ -50,6 +51,9 @@ public class ContractListBean implements Serializable {
     @Inject
     private ContractEditBean contractEditBean;
 
+    @Inject
+    private Authorization authorization;
+
     private List<ContractDTO> contractList;
 
     /**
@@ -82,6 +86,56 @@ public class ContractListBean implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractNoMatches"), e.getMessage()));
         }
     }
+
+    public boolean canEdit(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public boolean canStart(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public void startContract(ContractDTO contract) {
+        try {
+            contractLogic.startContract(contract);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractStarted"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractStartFailed"), e.getMessage()));
+        }
+    }
+
+    public boolean canTerminate(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.STARTED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public void terminateContract(ContractDTO contract) {
+        try {
+            contractLogic.terminate(contract.getUuid(), LocalDate.now());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractTerminated"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractTerminationFailed"), e.getMessage()));
+        }
+    }
+
+    public boolean canDelete(ContractDTO contract) {
+        return contract.getStatus() == ContractStatus.PREPARED && (authorization.isSupervisor(contract) || authorization.isAssistant(contract));
+    }
+
+    public void deleteContract(ContractDTO contract) {
+        try {
+            contractLogic.deleteContract(contract.getUuid());
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, locale.getString("contractDeleted"), contract.getName()));
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, locale.getString("contractDeletionFailed"), e.getMessage()));
+        }
+    }
+
 
     public void prepareDetails(ContractDTO contract) {
         contractDetailsBean.init(contract);
