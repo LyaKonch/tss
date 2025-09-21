@@ -9,6 +9,18 @@ import jakarta.ejb.Startup;
 import java.time.LocalDate;
 import java.time.Month;
 
+/**
+ * TestPublicHolidayService is a startup singleton that verifies the functionality
+ * of the {@link PublicHolidayService}.
+ * <p>
+ * When the application starts, it runs several test cases to check whether
+ * specific dates are correctly recognized as holidays or non-holidays
+ * for a given {@link FederalState}.
+ * <p>
+ * This class is intended purely for development and testing purposes.
+ * It prints the results of the tests to the console.
+ */
+//startup
 @Singleton
 public class TestPublicHolidayService {
 

@@ -10,6 +10,12 @@ import jakarta.inject.Inject;
 
 import java.util.UUID;
 
+/**
+ * Mapper for converting between {@link TimesheetEntry} entities and {@link TimesheetEntryDTO} objects.
+ * <p>
+ * Handles both simple fields (type, description, start/end time, entry date) and relationships
+ * ({@link Timesheet}). Can create new {@link TimesheetEntry} instances or update existing ones.
+ */
 @ApplicationScoped
 public class TimesheetEntryMapper extends AbstractMapper<TimesheetEntry, TimesheetEntryDTO> {
 
@@ -19,6 +25,16 @@ public class TimesheetEntryMapper extends AbstractMapper<TimesheetEntry, Timeshe
     @Inject
     private TimesheetEntryDAO timesheetEntryDAO;
 
+    /**
+     * Converts a {@link TimesheetEntryDTO} to a {@link TimesheetEntry} entity.
+     * <p>
+     * If the DTO contains an ID, the existing entity is retrieved and updated.
+     * Otherwise, a new entity is created. The associated {@link Timesheet} is resolved
+     * using its UUID.
+     *
+     * @param dto the DTO to convert
+     * @return the mapped {@link TimesheetEntry} entity
+     */
     @Override
     public TimesheetEntry toEntity(TimesheetEntryDTO dto) {
         TimesheetEntry entity;
@@ -43,7 +59,16 @@ public class TimesheetEntryMapper extends AbstractMapper<TimesheetEntry, Timeshe
 
         return entity;
     }
-
+    /**
+     * Converts a {@link TimesheetEntry} entity to a {@link TimesheetEntryDTO}.
+     * <p>
+     * Maps all simple fields and stores the related {@link Timesheet} as a UUID.
+     * The {@code hours} field is not mapped here because it is transient and
+     * calculated in {@code TimesheetEntryLogicBean}.
+     *
+     * @param entity the entity to convert
+     * @return the mapped {@link TimesheetEntryDTO}
+     */
     @Override
     public TimesheetEntryDTO toDto(TimesheetEntry entity) {
         TimesheetEntryDTO dto = new TimesheetEntryDTO();
@@ -54,9 +79,8 @@ public class TimesheetEntryMapper extends AbstractMapper<TimesheetEntry, Timeshe
         dto.setType(entity.getType());
         dto.setDescription(entity.getDescription());
         dto.setStartTime(entity.getStartTime());
-        // TODO: Calculate here or give as parameter or ...?
-        // TODO: Or call .setHoursDue() in TimesheetEntryLogicBean? <- using this right now
-//        dto.setHours(999);
+
+        dto.setHours(entity.getHours());
         dto.setEndTime(entity.getEndTime());
         dto.setEntryDate(entity.getEntryDate());
 

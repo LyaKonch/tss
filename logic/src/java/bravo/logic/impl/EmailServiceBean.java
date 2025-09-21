@@ -11,6 +11,11 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+/**
+ * Stateless EJB implementing email sending functionality.
+ * Uses JavaMail to send simple text emails.
+ */
+
 @Stateless
 public class EmailServiceBean implements EmailService {
 
@@ -18,7 +23,15 @@ public class EmailServiceBean implements EmailService {
 
     @Resource(lookup = "mail/TSSMailSession")
     private Session mailSession;
+    // --- Methods ---
 
+    /**
+     * Sends a simple text email.
+     *
+     * @param to      recipient email address
+     * @param subject email subject line
+     * @param body    email body content
+     */
     @Override
     public void sendEmail(String to, String subject, String body) {
         try {

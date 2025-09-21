@@ -19,6 +19,12 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Stateless EJB implementing {@link UserLogic}.
+ * <p>
+ * Provides business logic for managing users, including creation, update, deletion, and retrieval.
+ * Handles mapping between users and groups, password hashing, and validation.
+ */
 @Stateless
 public class UserLogicBean implements UserLogic {
 
@@ -34,6 +40,12 @@ public class UserLogicBean implements UserLogic {
     @Inject
     private UserGroupDAO userGroupDAO;
 
+    /**
+     * Finds a user by its database ID.
+     *
+     * @param id primary key of the user
+     * @return corresponding {@link UserDTO} or null if not found
+     */
     @Override
     public UserDTO findById(Long id) {
         if (!authService.isUserInRole("ADMIN")) {
@@ -44,6 +56,13 @@ public class UserLogicBean implements UserLogic {
         return toDTO(u);
     }
 
+
+    /**
+     * Finds a user by email (username).
+     *
+     * @param username user's email
+     * @return corresponding {@link UserDTO} or null if not found
+     */
     @Override
     public UserDTO findByEmail(String username) {
         //if (!authService.isUserInRole("ADMIN")) {
@@ -53,6 +72,11 @@ public class UserLogicBean implements UserLogic {
         return toDTO(u);
     }
 
+    /**
+     * Returns all users as DTOs.
+     *
+     * @return list of {@link UserDTO} objects
+     */
     @Override
     public List<UserDTO> findAll() {
         if (!authService.isUserInRole("ADMIN")) {
@@ -61,6 +85,15 @@ public class UserLogicBean implements UserLogic {
         return userDAO.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Creates a new user with email, password, and group mapping.
+     * Validates that the user does not already exist and hashes the password.
+     *
+     * @param dto the user data transfer object
+     * @return created {@link UserDTO}
+     * @throws IllegalArgumentException if dto is null, missing password, or person not found
+     * @throws IllegalStateException    if user with same email already exists
+     */
     @Override
     @Transactional
     public UserDTO createUser(UserDTO dto) {
@@ -110,6 +143,13 @@ public class UserLogicBean implements UserLogic {
         return toDTO(user);
     }
 
+    /**
+     * Updates an existing user, including email, password, and group mapping.
+     *
+     * @param dto the user DTO with updated values
+     * @return updated {@link UserDTO}
+     * @throws IllegalArgumentException if dto is null or user/person not found
+     */
     @Override
     @Transactional
     public UserDTO updateUser(UserDTO dto) {
@@ -152,6 +192,11 @@ public class UserLogicBean implements UserLogic {
         return toDTO(user);
     }
 
+    /**
+     * Deletes a user by ID and removes all group mappings.
+     *
+     * @param id primary key of the user
+     */
     @Override
     @Transactional
     public void deleteUser(Long id) {
@@ -167,6 +212,12 @@ public class UserLogicBean implements UserLogic {
 
     }
 
+    /**
+     * Converts a {@link User} entity to {@link UserDTO}.
+     *
+     * @param user the user entity
+     * @return corresponding {@link UserDTO} or null if user is null
+     */
     private UserDTO toDTO(User user) {
         if (user == null) return null;
         UserDTO dto = new UserDTO();
