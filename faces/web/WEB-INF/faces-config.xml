@@ -38,5 +38,10 @@
             <to-view-id>/pages/user/contractList.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
+        <navigation-case>
+            <from-outcome>aboutTSS</from-outcome>
+            <to-view-id>/pages/user/about.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
     </navigation-rule>
 </faces-config>
