@@ -1,87 +1,151 @@
 package bravo.utitity;
 
-import bravo.dao.ContractDAO;
 import bravo.dao.PersonDAO;
-import bravo.dao.UserDAO;
 import bravo.dao.UserGroupDAO;
 import bravo.entities.Contract;
 import bravo.entities.Person;
-import bravo.entities.Supervisor;
+import bravo.entities.Timesheet;
+import bravo.enums.GroupName;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
-import jakarta.ejb.Stateless;
 import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.faces.context.FacesContext;
+
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
-/**
- * Authorization service for business logic and JSF/EJB usage.
- */
 @Stateless
-@DeclareRoles({"ADMIN","USER","STAFF"})
+@DeclareRoles({"ADMIN", "USER", "STAFF"})
 public class AuthorizationService {
 
-    private static final Logger LOG = Logger.getLogger(AuthorizationService.class.getName());
-
     @Resource
-    private SessionContext sessionContext; // gives caller principal
-
-    @Inject
-    private UserGroupDAO userGroupDAO;
-
-    @Inject
-    private ContractDAO contractDAO;
+    private SessionContext sessionContext;
 
     @Inject
     private PersonDAO personDAO;
 
+    @Inject
+    private UserGroupDAO userGroupDAO;
+
+    public boolean isAuthorized() {
+        // returns null if not authorized
+        return sessionContext.getCallerPrincipal() != null;
+    }
+
     public String getCurrentEmail() {
-        Principal p = sessionContext.getCallerPrincipal();
-        return p == null ? null : p.getName(); // if principal isn't null it means the user has logined
+        Principal principal = sessionContext.getCallerPrincipal();
+        return (principal != null) ? principal.getName() : null;
+    }
+
+    public Person getCurrentPerson() {
+        String email = getCurrentEmail();
+        return (email != null) ? personDAO.findByEmailAddress(email).orElse(null) : null;
+    }
+
+    public List<GroupName> getCurrentUserGroups() {
+        String email = getCurrentEmail();
+        if (email == null) {
+            return List.of();
+        }
+        return userGroupDAO.findGroupsByEmail(email);
     }
 
     public boolean isUserInRole(String role) {
         return sessionContext.isCallerInRole(role);
     }
 
-    public List<String> getGroupsForCurrentUser() {
-        String username = getCurrentEmail();
-        if (username == null) return List.of();
-        return userGroupDAO.findGroupsByEmail(username)
-                .stream().map(Enum::name).collect(Collectors.toList());
-    }
+    public boolean canAdministrateContract(Contract contract) {
 
-    public boolean isSupervisorForContract(Long contractId) {
-        String username = getCurrentEmail();
-        if (username == null) return false;
-        Contract c = contractDAO.findById(contractId);
-        if (c == null) return false;
-        Supervisor sup = c.getSupervisor();
-        return sup != null && username.equals(sup.getPerson().getEmailAddress());
-    }
-
-    public boolean canManageContract(Long contractId) {
-        // admin always can
         if (isUserInRole("ADMIN")) return true;
-        // staff + being supervisor for that contract
-        if (isUserInRole("STAFF") && isSupervisorForContract(contractId)) return true;
-        // additional domain rules can be added here
-        return false;
+
+        Person currentUser = getCurrentPerson();
+        if (currentUser == null || contract == null) return false;
+
+        return isSupervisorForContract(currentUser, contract)
+                || isAssistantForContract(currentUser, contract)
+                || isSecretaryForContract(currentUser, contract);
     }
 
 
+    public boolean canTerminateContract(Contract contract) {
+        if (isUserInRole("ADMIN")) return true;
 
-    public void logPrincipalAndRoles() {
-        String p = getCurrentEmail();
-        LOG.info("Principal (SessionContext): " + p);
-        LOG.info("isCallerInRole(ADMIN) = " + sessionContext.isCallerInRole("ADMIN"));
-        LOG.info("isCallerInRole(USER)  = " + sessionContext.isCallerInRole("USER"));
-        LOG.info("isCallerInRole(STAFF) = " + sessionContext.isCallerInRole("STAFF"));
+        Person currentUser = getCurrentPerson();
+        if (currentUser == null || contract == null) return false;
+
+        return isSupervisorForContract(currentUser, contract) || isAssistantForContract(currentUser, contract);
+    }
+
+    public boolean canArchiveContract(Contract contract) {
+        if (isUserInRole("ADMIN")) return true;
+
+        Person currentUser = getCurrentPerson();
+        if (currentUser == null || contract == null) return false;
+
+        return isSecretaryForContract(currentUser, contract);
+    }
+
+    public boolean canEditTimesheetEntry(Timesheet timesheet) {
+        if (isUserInRole("ADMIN")) return true;
+
+        Person currentUser = getCurrentPerson();
+        if (currentUser == null || timesheet == null) return false;
+
+        return isEmployeeForContract(currentUser, timesheet.getContract());
+    }
+
+    public boolean canAbortContract(Contract contract) {
+        if (isUserInRole("ADMIN")) {
+            return true;
+        }
+        Person currentUser = getCurrentPerson();
+        if (currentUser == null || contract == null) {
+            return false;
+        }
+        return isSupervisorForContract(currentUser, contract) || isAssistantForContract(currentUser, contract);
+    }
+
+    public boolean canSignTimesheetAsEmployee(Contract contract) {
+        if (isUserInRole("ADMIN")) return true;
+
+        Person currentUser = getCurrentPerson();
+        if (currentUser == null || contract == null) return false;
+
+        return isEmployeeForContract(currentUser, contract) ;
+    }
+
+
+    public boolean canSignTimesheetAsSupervisor(Contract contract) {
+        if (isUserInRole("ADMIN")) return true;
+
+        Person currentUser = getCurrentPerson();
+        if (currentUser == null || contract == null) return false;
+
+        return isSupervisorForContract(currentUser, contract);
+    }
+
+
+    private boolean isEmployeeForContract(Person person, Contract contract) {
+        if (person == null || contract == null || contract.getEmployee() == null) return false;
+        return Objects.equals(person.getUuid(), contract.getEmployee().getPerson().getUuid());
+    }
+
+    private boolean isSupervisorForContract(Person person, Contract contract) {
+        if (person == null || contract == null || contract.getSupervisor() == null) return false;
+        return Objects.equals(person.getUuid(), contract.getSupervisor().getPerson().getUuid());
+    }
+
+    private boolean isAssistantForContract(Person person, Contract contract) {
+        if (person == null || contract == null || contract.getAssistants() == null) return false;
+        return contract.getAssistants().stream()
+                .anyMatch(assistant -> Objects.equals(person.getUuid(),assistant.getPerson().getUuid()));
+    }
+
+    private boolean isSecretaryForContract(Person person, Contract contract) {
+        if (person == null || contract == null || contract.getSecretaries() == null) return false;
+        return contract.getSecretaries().stream()
+                .anyMatch(secretary -> Objects.equals(person.getUuid(),secretary.getPerson().getUuid()));
     }
 }

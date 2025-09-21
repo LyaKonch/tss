@@ -41,6 +41,10 @@ public class Contract extends AbstractEntity {
     @Nullable
     private LocalDate terminationDate = null;
 
+    @Column(nullable = false)
+    @Min(0) // 0 means it wont be deleted automatically
+    private int archiveDurationInYears = 2;
+
     @Positive
     private Double hoursPerWeek;
 
@@ -276,5 +280,13 @@ public class Contract extends AbstractEntity {
             timesheets.remove(timesheet);
             timesheet.setContract(null); // this removes the reference  
         }
+    }
+
+    public int getArchiveDurationInYears() {
+        return archiveDurationInYears;
+    }
+
+    public void setArchiveDurationInYears(int archiveDurationInYears) {
+        this.archiveDurationInYears = archiveDurationInYears;
     }
 }

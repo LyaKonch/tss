@@ -29,7 +29,6 @@ public class WhoAmIBean {
     public void load() {
         logger.info("Invocation load() in WhoAmIBean.");
         username = auth.getCurrentEmail();
-        auth.logPrincipalAndRoles();
         groups = new ArrayList<>();
         if(auth.isUserInRole("ADMIN")) groups.add("ADMIN");
         if(auth.isUserInRole("USER")) groups.add("USER");

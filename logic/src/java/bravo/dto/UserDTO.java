@@ -1,14 +1,16 @@
 package bravo.dto;
 
+import java.util.List;
+
 public class UserDTO extends AbstractDTO {
     private String email;
-    private String groupName;
+    private List<String> groupName;
     private String password;
 
     public UserDTO() {
     }
 
-    public UserDTO(String email, Long personId, String groupName) {
+    public UserDTO(String email, Long personId,  List<String> groupName) {
         this.email = email;
         this.groupName = groupName;
     }
@@ -30,11 +32,11 @@ public class UserDTO extends AbstractDTO {
         return password;
     }
 
-    public String getGroupName() {
+    public  List<String> getGroupName() {
         return groupName;
     }
 
-    public void setGroupName(String groupName) {
+    public void setGroupName( List<String> groupName) {
         this.groupName = groupName;
     }
 }

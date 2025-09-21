@@ -56,10 +56,12 @@ public class TimesheetDAO extends AbstractDAO<Timesheet> {
     }
 
     // end date of the timesheet doesn't exactly point at the time it was archived.
-    public List<Timesheet> findArchivedBefore(LocalDate date) {
-        return em.createQuery("SELECT t FROM Timesheet t WHERE t.status = ARCHIVED AND t.endDate < :date", Timesheet.class)
+    public List<Timesheet> findArchivedByContractBeforeDate(Contract contract, LocalDate date) {
+        return em.createQuery("SELECT t FROM Timesheet t WHERE t.contract = :contract " +
+                        "AND t.status = :status AND t.signedBySupervisor < :date", Timesheet.class)
+                .setParameter("contract", contract)
+                .setParameter("status", TimesheetStatus.ARCHIVED)
                 .setParameter("date", date)
                 .getResultList();
-
     }
 }

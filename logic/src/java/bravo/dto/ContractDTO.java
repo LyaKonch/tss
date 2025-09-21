@@ -31,6 +31,8 @@ public class ContractDTO extends AbstractDTO {
 
     private LocalDate terminationDate;
 
+    private int archivationDuration;
+
     private Double hoursPerWeek;
 
     private Integer workingDaysPerWeek;
@@ -218,5 +220,13 @@ public class ContractDTO extends AbstractDTO {
         this.timesheetUuids.clear();
         if (timesheetUuids == null) return;
         this.timesheetUuids.addAll(timesheetUuids);
+    }
+
+    public Integer getArchivationDuration() {
+        return archivationDuration;
+    }
+
+    public void setArchivationDuration(int archivationDuration) {
+        this.archivationDuration = archivationDuration;
     }
 }

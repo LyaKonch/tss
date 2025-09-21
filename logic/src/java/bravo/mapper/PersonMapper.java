@@ -24,9 +24,7 @@ public class PersonMapper extends AbstractMapper<Person, PersonDTO> {
 
     @Override
     public Person toEntity(PersonDTO dto) {
-        Person maybe = personDAO.findByUuid(dto.getUuid());
-        if(maybe!= null){ return maybe ;}
-        Person entity = new Person();
+
         // If id is null, we are creating a new entity, otherwise we are updating the existing one
         Person entity = dto.getId() == null ? new Person() : personDAO.findByUuid(dto.getUuid());
 

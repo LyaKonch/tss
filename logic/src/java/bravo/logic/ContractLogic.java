@@ -86,4 +86,6 @@ public interface ContractLogic {
     ContractDTO archiveContract(String uuid);
 
     List<ContractDTO> findContractsAssociatedWithPerson(PersonDTO person);
+
+    ContractDTO abortContract(String uuid);
 }
