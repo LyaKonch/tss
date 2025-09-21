@@ -15,6 +15,9 @@ import java.util.logging.Logger;
 
 /**
  * Creates initial users at application startup if they do not exist.
+ *<p>
+ * This ensures that an ADMIN and a USER account are present in the system
+ * to allow immediate access after deployment.
  */
 @Singleton
 @Startup

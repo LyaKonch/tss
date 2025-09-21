@@ -17,6 +17,14 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Mapper for converting between {@link Contract} entities and {@link ContractDTO} objects.
+ * <p>
+ * Responsible for mapping both simple attributes and complex relationships (Employee, Supervisor,
+ * Assistants, Secretaries, and Timesheets). Also handles creating new instances of roles if needed.
+ * <p>
+ * Persisted entities are updated and saved as part of the mapping process.
+ */
 @ApplicationScoped
 public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
 
@@ -30,7 +38,15 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
     private RoleDAO roleDAO;
 
     /**
-     * Converts a Contract DTO to a Contract entity.
+     * Converts a {@link ContractDTO} to a {@link Contract} entity.
+     * <p>
+     * If the DTO contains an ID, the existing entity is fetched and updated.
+     * Otherwise, a new {@link Contract} instance is created.
+     * Handles the mapping of Employee, Supervisor, Assistants, and Secretaries roles,
+     * including removal of old roles not present in the DTO.
+     *
+     * @param dto the DTO to convert
+     * @return the persisted {@link Contract} entity
      */
     @Override
     public Contract toEntity(ContractDTO dto) {
@@ -116,7 +132,13 @@ public class ContractMapper extends AbstractMapper<Contract, ContractDTO> {
     }
 
     /**
-     * Converts a Contract entity to a Contract DTO.
+     * Converts a {@link Contract} entity to a {@link ContractDTO}.
+     * <p>
+     * Maps all basic fields, role references (Employee, Supervisor, Secretaries, Assistants),
+     * and related timesheets.
+     *
+     * @param entity the {@link Contract} entity to convert
+     * @return the resulting {@link ContractDTO}
      */
     @Override
     public ContractDTO toDto(Contract entity) {

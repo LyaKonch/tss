@@ -15,6 +15,21 @@ import jakarta.inject.Inject;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+/**
+ * TestDataSeeder initializes the database with sample data at application startup.
+ * <p>
+ * This includes:
+ * <ul>
+ *     <li>Sample persons with roles (Employee, Supervisor, Secretary)</li>
+ *     <li>Contracts in various states (STARTED, PREPARED)</li>
+ *     <li>Timesheets and timesheet entries across different scenarios</li>
+ * </ul>
+ *
+ * The seeding is only performed if the database has no existing persons
+ * (see {@link #preventSeeding()}).
+ * <p>
+ * This is intended for development and testing purposes, not for production use.
+ */
 @Singleton
 @Startup
 public class TestDataSeeder {

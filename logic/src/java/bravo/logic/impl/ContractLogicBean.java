@@ -2,7 +2,6 @@ package bravo.logic.impl;
 
 import bravo.dao.ContractDAO;
 import bravo.dao.RoleDAO;
-import bravo.dao.TimesheetDAO;
 import bravo.dto.ContractDTO;
 import bravo.dto.PersonDTO;
 import bravo.dto.TimesheetDTO;
@@ -29,6 +28,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * ContractLogicBean is a stateless EJB that handles contract lifecycle operations
+ * such as creation, updates, starting, terminating, archiving, and timesheet generation.
+ */
 @Stateless
 public class ContractLogicBean implements ContractLogic {
 
@@ -52,6 +55,7 @@ public class ContractLogicBean implements ContractLogic {
     @Inject
     private AuthorizationService authService;
 
+    // --- Contract Operations ---
     @Override
     public ContractDTO create(ContractDTO contractDto) {
         if (!authService.isUserInRole("ADMIN") && !authService.isUserInRole("STAFF")) {

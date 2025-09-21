@@ -26,6 +26,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Stateless EJB implementing {@link TimesheetLogic}.
+ * <p>
+ * Provides business logic for managing timesheets and timesheet entries,
+ * including creation, modification, signing, archiving, and calculation of reported hours.
+ * Handles validation of editable states and enforces business rules for timesheet lifecycle.
+ */
 @Stateless
 public class TimesheetLogicBean implements TimesheetLogic {
 
@@ -52,6 +59,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
     @Inject
     private TimesheetMapper timesheetMapper;
 
+    /**
+     * Creates a new timesheet entry for the corresponding timesheet.
+     * Validates that the entry date is within the timesheet period.
+     *
+     * @param entryDto DTO containing entry data
+     */
     public void createNewEntry(TimesheetEntryDTO entryDto) {
         Timesheet timesheet = timesheetDAO.findByUuid(entryDto.getUuid());
         if (!authService.canEditTimesheetEntry(timesheet)) {
@@ -79,10 +92,22 @@ public class TimesheetLogicBean implements TimesheetLogic {
 
     }
 
+    /**
+     * Checks whether the timesheet has been signed by the employee.
+     *
+     * @param timesheet the timesheet entity
+     * @return true if signed by employee, false otherwise
+     */
     public boolean isSignedByEmployee(Timesheet timesheet) {
         return timesheet.getSignedByEmployee() != null;
     }
 
+    /**
+     * Adds a timesheet entry to a timesheet.
+     *
+     * @param timesheet the timesheet entity
+     * @param e         the timesheet entry to add
+     */
     public void addEntry(Timesheet timesheet, TimesheetEntry e) {
 
         requireEditable(timesheet);
@@ -96,6 +121,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
         timesheetDAO.save(timesheet);
     }
 
+    /**
+     * Removes a timesheet entry from a timesheet.
+     *
+     * @param timesheetdto the timesheet DTO
+     * @param entryDTO     the entry DTO to remove
+     */
     @Override
     public void removeEntry(TimesheetDTO timesheetdto, TimesheetEntryDTO entryDTO) {
         Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
@@ -113,7 +144,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
         entryDAO.save(e);
         timesheetDAO.save(timesheet);
     }
-
+    /**
+     * Signs a timesheet by the employee.
+     *
+     * @param timesheetdto the timesheet DTO
+     * @param date         the signing date; if null, uses current date
+     */
     @Override
     public void signByEmployee(TimesheetDTO timesheetdto, LocalDate date) {
         Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
@@ -126,6 +162,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
         timesheetDAO.save(timesheet);
     }
 
+    /**
+     * Revokes an employee's signature on a timesheet.
+     *
+     * @param timesheetdto the timesheet DTO
+     */
     @Override
     public void revokeEmployeeSignature(TimesheetDTO timesheetdto) {
         Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
@@ -138,6 +179,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
         timesheetDAO.save(timesheet);
     }
 
+    /**
+     * Signs a timesheet by the supervisor.
+     *
+     * @param timesheetdto the timesheet DTO
+     * @param date         the signing date; if null, uses current date
+     */
     @Override
     public void signBySupervisor(TimesheetDTO timesheetdto, LocalDate date) {
         Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
@@ -150,6 +197,11 @@ public class TimesheetLogicBean implements TimesheetLogic {
         timesheetDAO.save(timesheet);
     }
 
+    /**
+     * Archives a timesheet after supervisor approval.
+     *
+     * @param timesheetdto the timesheet DTO
+     */
     @Override
     public void archive(TimesheetDTO timesheetdto) {
         Timesheet timesheet = timesheetDAO.findByUuid(timesheetdto.getUuid());
@@ -165,15 +217,27 @@ public class TimesheetLogicBean implements TimesheetLogic {
         }
     }
 
+    /**
+     * Returns the total reported hours of a timesheet.
+     *
+     * @param timesheetdto the timesheet DTO
+     * @return the sum of all timesheet entry hours
+     */
     @Override
-    public double getReportedHours(TimesheetDTO timesheetdto) {
+    public double getReportedHours(Timesheet timesheet) {
         if (!authService.isAuthorized()) {
             throw new SecurityException("Unauthorized parties can't retrieve information.");
         }
-        Timesheet timesheet = timesheetMapper.toEntity(timesheetdto);
         return timesheet.getEntries().stream().mapToDouble(TimesheetEntry::getHours).sum();
     }
 
+
+    /**
+     * Returns the list of entries for a timesheet.
+     *
+     * @param timesheet the timesheet entity
+     * @return an unmodifiable list of timesheet entries
+     */
     @Override
     public List<TimesheetEntry> getEntries(Timesheet timesheet) {
         if (!authService.isAuthorized()) {
@@ -182,6 +246,12 @@ public class TimesheetLogicBean implements TimesheetLogic {
         return Collections.unmodifiableList(timesheet.getEntries());
     }
 
+    /**
+     * Retrieves the current timesheet for a contract and calculates hours due.
+     *
+     * @param contract the contract DTO
+     * @return current timesheet DTO with hours due set
+     */
     @Override
     public TimesheetDTO getCurrent(ContractDTO contract) {
         if (!authService.isAuthorized()) {
@@ -194,11 +264,23 @@ public class TimesheetLogicBean implements TimesheetLogic {
         return dto;
     }
 
+    /**
+     * Finds all timesheets for a given contract UUID.
+     *
+     * @param contractUuid the contract UUID
+     * @return list of timesheet DTOs
+     */
     @Override
     public List<TimesheetDTO> findByContractUuid(String contractUuid) {
         return timesheetDAO.findByContractUuid(contractUuid).stream().map(timesheetMapper::toDto).toList();
     }
 
+    /**
+     * Replaces all entries in a timesheet with a new list of entries.
+     *
+     * @param timesheet  the timesheet entity
+     * @param newEntries the new list of timesheet entries
+     */
     @Override
     public void setEntries(Timesheet timesheet, List<TimesheetEntry> newEntries) {
         if (!authService.isAuthorized()) {
@@ -214,6 +296,64 @@ public class TimesheetLogicBean implements TimesheetLogic {
         }
         timesheetDAO.save(timesheet);
     }
+
+    /**
+     * Calculates the hours due for a timesheet based on working days and holidays.
+     *
+     * @param uuid timesheet UUID
+     * @return hours due
+     */
+    public double hoursDue(String uuid) {
+        Timesheet timesheet = timesheetDAO.findByUuid(uuid);
+        if (!authService.isAuthorized()) {
+            throw new SecurityException("Unauthorized parties can't retrieve information.");
+        }
+        FederalState state = timesheet.getContract().getEmployee().getPerson().getState();
+        if (timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
+            return 0.0;
+        }
+        int working = countWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
+        int holidays = countHolidaysOnWorkingDays(timesheet.getStartDate(), timesheet.getEndDate(), state);
+        int effectiveDays = Math.max(0, working - holidays);
+        return effectiveDays * (timesheet.getContract().getHoursPerWeek() / timesheet.getContract().getWorkingDaysPerWeek());
+    }
+
+    /**
+     * Counts working days (Mon-Fri) between two dates.
+     *
+     * @param start start date
+     * @param end   end date
+     * @return number of working days
+     */
+    public int countWorkingDays(LocalDate start, LocalDate end) {
+        int count = 0;
+        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
+            DayOfWeek w = dat.getDayOfWeek();
+            if (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Counts holidays that fall on working days for a given federal state.
+     *
+     * @param start start date
+     * @param end   end date
+     * @param state federal state
+     * @return number of holidays on working days
+     */
+    public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end, FederalState state) {
+        if (holidayChecker == null) return 0;
+        int count = 0;
+        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
+            DayOfWeek w = dat.getDayOfWeek();
+            boolean workday = (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY);
+            if (workday && holidayChecker.isHoliday(dat, state)) count++;
+        }
+        return count;
+    }
+
+    // --- Private helper methods ---
 
     private void requireStatus(Timesheet timesheet, TimesheetStatus expected) {
         if (timesheet.getStatus() != expected) {
@@ -234,40 +374,5 @@ public class TimesheetLogicBean implements TimesheetLogic {
     private void deleteTimesheet(Timesheet timesheet) {
         timesheetDAO.delete(timesheet);
         timesheet.getContract().removeTimesheet(timesheet);
-    }
-
-    public double hoursDue(String uuid) {
-        Timesheet timesheet = timesheetDAO.findByUuid(uuid);
-        if (!authService.isAuthorized()) {
-            throw new SecurityException("Unauthorized parties can't retrieve information.");
-        }
-        FederalState state = timesheet.getContract().getEmployee().getPerson().getState();
-        if (timesheet.getContract() == null || timesheet.getStartDate() == null || timesheet.getEndDate() == null) {
-            return 0.0;
-        }
-        int working = countWorkingDays(timesheet.getStartDate(), timesheet.getEndDate());
-        int holidays = countHolidaysOnWorkingDays(timesheet.getStartDate(), timesheet.getEndDate(), state);
-        int effectiveDays = Math.max(0, working - holidays);
-        return effectiveDays * (timesheet.getContract().getHoursPerWeek() / timesheet.getContract().getWorkingDaysPerWeek());
-    }
-
-    public int countWorkingDays(LocalDate start, LocalDate end) {
-        int count = 0;
-        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
-            DayOfWeek w = dat.getDayOfWeek();
-            if (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY) count++;
-        }
-        return count;
-    }
-
-    public int countHolidaysOnWorkingDays(LocalDate start, LocalDate end, FederalState state) {
-        if (holidayChecker == null) return 0;
-        int count = 0;
-        for (LocalDate dat = start; !dat.isAfter(end); dat = dat.plusDays(1)) {
-            DayOfWeek w = dat.getDayOfWeek();
-            boolean workday = (w != DayOfWeek.SATURDAY && w != DayOfWeek.SUNDAY);
-            if (workday && holidayChecker.isHoliday(dat, state)) count++;
-        }
-        return count;
     }
 }

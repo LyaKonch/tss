@@ -16,6 +16,13 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
+/**
+ * Stateless EJB implementing the {@link TimesheetEntryLogic} interface.
+ * <p>
+ * Provides business logic for creating, updating, and retrieving timesheet entries.
+ * Handles mapping between {@link TimesheetEntryDTO} and {@link TimesheetEntry} entities
+ * and delegates persistence operations to {@link TimesheetEntryDAO}.
+ */
 @Stateless
 public class TimesheetEntryLogicBean implements TimesheetEntryLogic {
 
@@ -31,6 +38,12 @@ public class TimesheetEntryLogicBean implements TimesheetEntryLogic {
     @Inject
     private TimesheetEntryMapper timesheetEntryMapper;
 
+    /**
+     * Creates a new timesheet entry.
+     *
+     * @param timesheetEntry the DTO representing the timesheet entry to create
+     * @return the persisted timesheet entry as a DTO
+     */
     @Override
     public TimesheetEntryDTO create(TimesheetEntryDTO timesheetEntry) {
         TimesheetEntry entity = timesheetEntryMapper.toEntity(timesheetEntry);
@@ -53,17 +66,40 @@ public class TimesheetEntryLogicBean implements TimesheetEntryLogic {
                 && entity.getTimesheet().getContract().getStatus() == ContractStatus.STARTED;
     }
 
+    /**
+     * Updates an existing timesheet entry.
+     * <p>
+     * Throws {@link EntityNotFoundException} if the entry is not yet persisted (missing ID or UUID).
+     * Internally delegates to {@link #create(TimesheetEntryDTO)} for saving.
+     *
+     * @param dto the DTO representing the timesheet entry to update
+     * @return the updated timesheet entry as a DTO
+     * @throws EntityNotFoundException if the entry does not have an ID or UUID
+     */
     @Override
     public TimesheetEntryDTO update(TimesheetEntryDTO dto) throws EntityNotFoundException {
         // Can reuse create. The Mapper checks if a new Entity should be created or not.
         return isEditable(dto) ? create(dto) : null;
     }
 
+    /**
+     * Delete the timesheet entry.
+     * The hours for each entry are calculated and set in the DTO.
+     * @param dto the timesheetentryDTO
+     */
     @Override
     public void delete(TimesheetEntryDTO dto) {
         if (isEditable(dto)) timesheetEntryDAO.delete(timesheetEntryDAO.findByUuid(dto.getUuid()));
     }
 
+    /**
+     * Retrieves all timesheet entries for a given timesheet UUID.
+     * <p>
+     * The hours for each entry are calculated and set in the DTO.
+     *
+     * @param timesheetUuid the UUID of the timesheet
+     * @return a list of DTOs representing the timesheet entries
+     */
     @Override
     public List<TimesheetEntryDTO> getByTimesheetUuid(String timesheetUuid) {
         if (!authService.isAuthorized()) {
@@ -73,6 +109,13 @@ public class TimesheetEntryLogicBean implements TimesheetEntryLogic {
         dtos.forEach(dto -> dto.setHours(calculateHours(dto)));
         return dtos;
     }
+
+    /**
+     * Calculates the number of hours for a given timesheet entry based on start and end time.
+     *
+     * @param entry the timesheet entry DTO
+     * @return the calculated hours
+     */
 
     private double calculateHours(TimesheetEntryDTO entry) {
         if (!authService.isAuthorized()) {

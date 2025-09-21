@@ -14,8 +14,10 @@ public interface ContractLogic {
     /**
      * Creates a new contract entity from the given DTO.
      *
+     * @param contractDto the contract data to create
      * @return the created ContractDTO with generated ID
      */
+
     ContractDTO create(ContractDTO contractDto);
 
     /**
@@ -24,7 +26,9 @@ public interface ContractLogic {
      * @param contract the contract DTO with updated data
      * @return the updated contract
      */
+
     ContractDTO update(ContractDTO contract);
+
 
     /**
      * Retrieves a contract by its UUID.
@@ -32,13 +36,16 @@ public interface ContractLogic {
      * @param uuid the UUID of the contract
      * @return the found contract or null if not found
      */
+
     ContractDTO findByUuid(String uuid);
 
     /**
-     * Retrieves all contracts for a given email address that are active with the person being an employee.
+     * Retrieves all contracts for a given email address where the person is an employee and the contract is active.
      *
-     * @return list of contracts by a person
+     * @param email the email of the person
+     * @return list of contracts
      */
+
     List<ContractDTO> findActiveEmployeeContractsByEmail(String email);
 
     /**
@@ -46,6 +53,7 @@ public interface ContractLogic {
      *
      * @return a list of all contracts
      */
+
     List<ContractDTO> findAll();
 
     /**
@@ -53,19 +61,21 @@ public interface ContractLogic {
      *
      * @return a list of all active contracts
      */
+
     List<ContractDTO> getActive();
 
     /**
      * Terminates a contract by setting its status to TERMINATED and recording the termination date.
      *
-     * @param uuid            the UUID of the contract to terminate
+     * @param uuid the UUID of the contract to terminate
      * @param terminationDate the date when the contract is terminated
      * @return the updated contract
      */
+
     ContractDTO terminate(String uuid, LocalDate terminationDate);
 
     /**
-     * Calculates the hours due for a contract based on working days per week and hours per week.
+     * Calculates the hours due for a contract.
      *
      * @param contract the contract to calculate hours for
      * @return the calculated hours due
@@ -73,22 +83,55 @@ public interface ContractLogic {
     double calculateHoursDue(ContractDTO contract);
 
     /**
-     * Calculates the vacation hours for a contract based on vacation days per year and hours per week.
+     * Calculates the vacation hours for a contract.
      *
      * @param contract the contract to calculate vacation hours for
      * @return the calculated vacation hours
      */
     double calculateVacationHours(ContractDTO contract);
 
+    /**
+     * Deletes a contract by its UUID.
+     *
+     * @param uuid the UUID of the contract to delete
+     */
     void deleteContract(String uuid);
 
+    /**
+     * Starts a contract by updating its status.
+     *
+     * @param contractDto the contract to start
+     * @return the updated contract
+     */
     ContractDTO startContract(ContractDTO contractDto);
 
+    /**
+     * Archives a contract by setting its status to ARCHIVED.
+     *
+     * @param uuid the UUID of the contract to archive
+     * @return the updated contract
+     */
     ContractDTO archiveContract(String uuid);
 
+    /**
+     * Finds all contracts associated with a specific person.
+     *
+     * @param person the person to find contracts for
+     * @return a list of associated contracts
+     */
     List<ContractDTO> findContractsAssociatedWithPerson(PersonDTO person);
 
+    /**
+     * Aborts a contract based on its UUID.
+     * @param uuid The UUID of the contract to abort. Cannot be null.
+     * @return The updated {@link ContractDTO} with the new status.
+     */
     ContractDTO abortContract(String uuid);
 
+    /**
+     * Retrieves a list of all timesheets associated with a specific contract.
+     * @param uuid The UUID of the contract for which to retrieve timesheets. Cannot be null.
+     * @return A {@link List} of {@link TimesheetDTO} objects. Returns an empty list if the contract has no timesheets or is not found.
+     */
     List<TimesheetDTO> getAllTimesheetsForContract(String uuid);
 }

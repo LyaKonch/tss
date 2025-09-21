@@ -32,6 +32,7 @@ public class PersonLogicBean implements PersonLogic {
     @Inject
     private RoleDAO roleDao;
 
+    /** Creates a new person in the database. */
     @Override
     public PersonDTO create(PersonDTO person) {
         if (!authService.isUserInRole("ADMIN")) {
@@ -42,6 +43,8 @@ public class PersonLogicBean implements PersonLogic {
         return personMapper.toDto(entity);
     }
 
+
+    /** Updates an existing person based on the provided DTO. */
     @Override
     public PersonDTO update(PersonDTO person) {
         if (!authService.isUserInRole("ADMIN")) {
@@ -53,6 +56,7 @@ public class PersonLogicBean implements PersonLogic {
         return personMapper.toDto(entity);
     }
 
+    /** Retrieves a person by their UUID. */
     @Override
     public PersonDTO findByUuid(String uuid) {
         if (!authService.isAuthorized()) {
@@ -62,12 +66,7 @@ public class PersonLogicBean implements PersonLogic {
         return personMapper.toDto(entity);
     }
 
-    //@Override
-    //public PersonDTO findByEmail(String email) {
-    //    Person entity = personDAO.findByEmailAddress(email).orElseThrow(() -> new IllegalArgumentException("Person with email " + email + " not found."));
-    //    return personMapper.toDto(entity);
-    //}
-
+    /** Retrieves all persons in the database. */
     @Override
     public List<PersonDTO> findAll() {
         if (!authService.isAuthorized()) {
@@ -79,6 +78,7 @@ public class PersonLogicBean implements PersonLogic {
         return dtos;
     }
 
+    /** Returns the person associated with the given email. */
     @Override
     public PersonDTO findByEmail(String email){
         if (!authService.isAuthorized()) {
@@ -88,7 +88,7 @@ public class PersonLogicBean implements PersonLogic {
         return entity.map(person -> personMapper.toDto(person)).orElse(null);
     }
 
-    // returns roles uuid for person
+    /** Returns the UUIDs of all roles associated with the given person. */
     @Override
     public List<String> findPersonRoles(PersonDTO person) {
         if (!authService.isAuthorized()) {
@@ -98,7 +98,7 @@ public class PersonLogicBean implements PersonLogic {
         return personRoles.stream().map(role -> role.getUuid().toString()).collect(Collectors.toList());
     }
 
-    // returns person by role uuid
+    /** Returns the person associated with a specific role UUID. */
     @Override
     public PersonDTO findByRole(String roleUuid) {
         if (!authService.isAuthorized()) {
@@ -119,7 +119,7 @@ public class PersonLogicBean implements PersonLogic {
         return personMapper.toDto(person);
     }
 
-    // returns persons by role uuids
+    /** Returns the person associated with a specific role UUID. */
     @Override
     public List<PersonDTO> findByRole(List<String> roleUuids) {
         if (!authService.isAuthorized()) {
