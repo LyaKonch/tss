@@ -71,18 +71,17 @@ around 3 days or ~20 hours
 
 ### Time spend
 
-02.07. 7,5h from 8pm to 3:30am (and with that its now time to go for reale to go for )
+02.07. 7,5h from 8pm to 3:30am
 08.09. 1h from 6pm to 7pm
 08.09. 2h from 11pm to 1am
-11.09. 12h from 1pm to 1am (writing at 0:55, had like an hour meeting but also about the project at 5pm - finally can
-create contracts and MR is open)
+11.09. 12h from 1pm to 1am
 
 ### Interesting Problems
 
-- Setting up all those classes to pass objects around. Luckily not a real issue since I could take the Contacts example
-  as reference.
-    - Or so i thought all the interrelations between entities make for a hard start
-- Noticed some minor IntelliJ Inspection hiccups and spend some time mitigating them. It's not ideal to have
+- Setting up all those classes to pass objects around. Luckily, not a real issue since I could take the Contacts example
+  as a reference.
+    - Or so I thought all the interrelations between entities made for a hard start
+- Noticed some minor IntelliJ Inspection hiccups and spent some time mitigating them. It's not ideal to have
   ide-specific comments, but this is still preferable to deactivating useful inspections that are plain missing in
   NetBeans and preventing those usually useful inspections from deleting "unused" xmlns declarations. No functionality
   loss, but a bunch of "unused" locales/methods that are at risk when cleaning up too fast.
@@ -93,18 +92,18 @@ Refactor to layered architecture and streamline class usage/naming/dataflow
 
 ### Time spend
 
-15.08. +-2days about 3 hours answering various questions and trying to troubleshoot issues remotely with Linda
+15.08. +-2 days about 3 hours answering various questions and trying to troubleshoot issues remotely with Linda
 22.08. 3h from 3:30pm to 6:30pm
 
 ### Interesting Problems
 
 - None really. Mainly issues with the latest merge not booting. Fixed most stuff but will need to generate additional
-  test data now that all entity relations were already defined but not all actually created/worked on yet.
+  test data now that all entity relations were defined but not all actually created/worked on yet.
 
 ### Open
 
 Still refactor to more layer architecture.
-Additionally seed the database with all entity types. Probably 3-10 entries each.
+Additionally, seed the database with all entity types. Probably 3–10 entries each. See TestDataSeeding.
 
 ### Time spend
 
@@ -128,11 +127,20 @@ Additionally seed the database with all entity types. Probably 3-10 entries each
 ### Time spend
 
 02.09. 4h from 1pm to 5pm
-(Meeting) 02.09. 2,5h from 5pm to 7:30pm
+02.09. 2,5h from 5pm to 7:30pm (Meeting)
 07.09. 1,5h from 5pm to 6:30pm
 07.09. 6h from 10pm to 4am
 
 ## Debugging with Yev
+
+- Adding library dependencies for the holiday calculator Yev is working on
+    - Both NetBeans and IntelliJ didn't like them at first, Yev figured NetBeans out, IntelliJ was done by me
+    - most difficult is figuring out where glassfish expects dependencies to be located in war vs ejb
+- Learned that I made two errors when helping him switch IDE:
+    1. Didn't take care that the global library (glassfish) should still have the same name for everyone
+        - global libraries definitions (like paths to the classes) were not included in git
+        - but the iml definition of the module mentions it as a dependency
+    2. Some iml entries are dependent on plugins (described in my own setup guide, but forgot)
 
 ### Time spend
 
@@ -140,23 +148,24 @@ Additionally seed the database with all entity types. Probably 3-10 entries each
 
 ## Review/refactor TimesheetEntryPage
 
-- Basically everything aside from the xhtml page itself
-- works now to be able to save a new Entry using the layered architecture
+- Big refactoring of the page to make it follow the layered architecture
+- This included a merge from main to use classes present but embedded here
 
 Also fitted a 2h merging session in, where i helped Yev setup intelliJ because it has the only decent merge interface
-for something so complex as his double structure because he never updated main since idk june or sth.
+for something so complex as this merge
 
 ### Time spend
 
-- 15.09. 7h from 1pm to 8pm - even cancelled my plans to make food because i switched to merging at ~6pm
+- 15.09. 7h from 1pm to 8pm
+-
 
-## Contract List Update and Contract View Modal
+## Contract List Update and Contract Details/View Modal
 
-Figuring out how to open a modal over the page while styling it and importing primeflex.css (i made a stupid mistake
-that took 30min to see).
-But the biggest hurdle was mapping from dto to entity that got really messy. A big refactor by yev didn't fix it sadly,
-so i had to refactor it again. Such huge changes to the codebase quickly lead to merge issues, i.e. oversights that then
-resulted in a not working merged branch.
+- Figuring out how to open a modal over the page while styling it and importing primeflex.css (i made a stupid mistake
+  that took 30min to notice). Your CSS resource folder is not supposed to be in WEB-INF.
+- The biggest hurdle was mapping from dto to entity - it got really messy. A big refactor by yev didn't fix it sadly
+- Had to refactor it again. Such huge changes to the codebase quickly lead to merge issues, i.e., oversights resulting
+  in some old code being reapplied
 
 ### Time spend
 
@@ -177,34 +186,43 @@ wouldn't open no matter what. Even using the update from the button resulted in 
 out. Place it in its own form and don't update the dialog but the form its in. Or at least when you start with a
 colon (:) it might also work with formName.dialogId but i didn't try now.
 
-## Contract Edit/Creation
+## Contract Edit/Creation Refactor
 
-Restyling Creation as a creation+edit popup over the list.
-I spend now long, really really long, to get this done. JPA is really bad.
-Finds trigger flushs. So you run into problems is persons are managed entities and contracts and/or roles not.
-Part of the problem though was also the logic to update. Deletion of related entities was an issue. I didn't spend long
-on but Yev spent several days.
-I don't delete stuff right now. I reassign it. And unlink secretaries and assistants. I will need to test if they get
-orphan removed. If so i maybe can remove his weird delete sql queries.
-
-While on this journey i also streamlined entity creation/uuid assignment. Refactored equals and hash for Role's and
-ContractDTO or so. Need to check those again and maybe apply everywhere.
+- Reusing the knowledge of creation a modal dialog to make a form for both creating and editing contracts.
+- JPA is really weird, I said it
+    - long story short: much time spent figuring out what and when creates flushes that lead to half-finished states of
+      entities and thus to crashes while it works in other situations
+    - learned more about managed vs. detached entities
+    - I still don't like the JPA model, it feels restrictive and unintuitive
+    - biggest challange: challenge of creating and editing contracts without major duplication of code
+- Refactored cascading update definitions and bidirectional setters to make use of orphan removal
+    - one big problem was: we read it's best to remove the relation on both sides, but doing this lead even thought we
+      deleted in this transaction to a not-nullable exception
+- Used this to streamline entity creation's uuid assignment
+    - id's can be used to check if something was persisted
+    - uuid's are now reliable present on all new entities and not only @PrePersist
 
 ### Time spend
 
-- 19.09. 10:30 hours from 12am(?) mittags to 10:30pm
-- 19.09. 10:30 hours from 11pm to 9:30am yes- im dead. my Rhythm will be fucked D: 21 hours in one day D:
-- 20.09. 2 hours from 3pm to 5pm - now with some sleep in, double check changes and commit the mapper rework + review
-  min/lindas branches
-- 20.09. 1 hours from 5:40pm to 6:40pm - review open MR's, start work on filtering contractList by logged-in user and
-  general polishing of its table filters and i18n'izing facesmessage -> eating break now
-- 20.09 3 hours from 7:10pm to 10:10pm
-    - finishing the i18n, making dateformat i18n, then trying to review new branch of yev
-- 20.09. (21. basically D:?) 13h from 11:30pm to 12:30pm working on the dashboard to select contract to enter timesheet
-  entries and similarily a contract selection based timesheet list with various interaction buttons
-    - especially how to reuse the contract select wheel cause some trouble during setup. jakarta's structure here
-      follows a different kind of style. seems you rather don't pass parameters but call the setter/setup function of
-      the other bean from your current one
-    - annoyingly jakarta isn't quite that good at two-way-databinding, i had for some time an issue where i logged that
-      there are two contracts in my list of contracts that should be display but something or other failed... completely
-      silently - apparently the call to the setup from inside the supposed parents PostConstruct setup
+- 19.09. 10:30 hours from 12am(?) midday to 10:30pm
+- 19.09. 10:30 hours from 11pm to 9:30am crunch at the end of software dev starts in uni projects it seems
+- 20.09. 2 hours from 3pm to 5pm: double check changes and commit the mapper rework + review Min and Linda's branches
+- 20.09. 1 hours from 5:40pm to 6:40pm: review open MR's, start work on filtering contractList by logged-in user,
+  polished table filters and i18n (and started using it outside xhtml)
+- 20.09 3 hours from 7:10pm to 10:10pm: more i18n, making dateformat change based on i18n, more reviewing
+- 20.09. (21. basically) 13h from 11:30pm to 12:30pm working on the new dashboard design:
+    - Need to be able to select which contract is in use while still keeping roles and access in mind
+    - Learned to use CDI events to be able to reuse the contract selection fragment in the timesheet list
+    - created the timesheet list page successfully reusing the contract selection fragment
+    - had some issues for a while due to silent crashes (i assume) and data not being reflected in the UI
+      entries and similarly a contract-selection-based timesheet list with various interaction buttons
+- 21.09. 7:30 hours from 4:30pm to EOD:
+    - half a dozen tiny fixes and polishing
+    - many smaller reviews of MRs
+    - helping with a manual git "merge" from an unmergeable branch
+    - helping solve merge conflicts and fixing integration issues into new auth
+    - project cleanup and helping fill the requirement checklist
+
+# Time Overall
+
+~149 hours and 20 minutes
